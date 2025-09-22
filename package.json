@@ -4,12 +4,12 @@
 	"private": true,
 	"scripts": {
 		"dev": "next dev --turbopack",
-		"build": "next build --turbopack",
+		"build": "node -r dotenv/config ./node_modules/.bin/next build --turbopack",
 		"start": "next start",
 		"lint": "eslint",
 		"predev": "npm run typegen",
 		"prebuild": "npm run typegen",
-		"typegen": "sanity schema extract --path=./sanity/extract.json && sanity typegen generate"
+		"typegen": "node -r dotenv/config ./node_modules/.bin/sanity schema extract --path=./sanity/extract.json && node -r dotenv/config ./node_modules/.bin/sanity typegen generate"
 	},
 	"packageManager": "npm@10.5.2",
 	"overrides": {
@@ -59,6 +59,7 @@
 		"@types/react": "^19",
 		"@types/react-dom": "^19",
 		"@types/sanitize-html": "^2.16.0",
+		"cross-env": "^10.0.0",
 		"dotenv": "^17.2.2",
 		"eslint": "^9",
 		"eslint-config-next": "15.5.3",
