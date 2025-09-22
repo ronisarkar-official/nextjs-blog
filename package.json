@@ -4,12 +4,12 @@
 	"private": true,
 	"scripts": {
 		"dev": "next dev --turbopack",
-		"build": "node -r dotenv/config ./node_modules/.bin/next build --turbopack",
+		"build": "next build --turbopack",
 		"start": "next start",
 		"lint": "eslint",
 		"predev": "npm run typegen",
 		"prebuild": "npm run typegen",
-		"typegen": "node -r dotenv/config ./node_modules/.bin/sanity schema extract --path=./sanity/extract.json && node -r dotenv/config ./node_modules/.bin/sanity typegen generate"
+		"typegen": "cross-env NODE_OPTIONS='-r dotenv/config' sanity schema extract --path=./sanity/extract.json && cross-env NODE_OPTIONS='-r dotenv/config' sanity typegen generate"
 	},
 	"packageManager": "npm@10.5.2",
 	"overrides": {
