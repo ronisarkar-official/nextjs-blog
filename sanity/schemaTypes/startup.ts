@@ -1,3 +1,4 @@
+// sanity/schemaTypes/startup.ts
 import { defineField, defineType } from 'sanity';
 
 export const startup = defineType({
@@ -8,16 +9,19 @@ export const startup = defineType({
 		defineField({
 			name: 'title',
 			type: 'string',
+			title: 'Title',
+			validation: (Rule) => Rule.required().error('Title is required'),
 		}),
 		defineField({
 			name: 'slug',
 			type: 'slug',
+			title: 'Slug',
 			options: {
 				source: 'title',
 				maxLength: 96,
 			},
+			validation: (Rule) => Rule.required().error('Slug is required'),
 		}),
-
 		defineField({
 			name: 'author',
 			type: 'reference',
@@ -47,4 +51,20 @@ export const startup = defineType({
 			type: 'markdown',
 		}),
 	],
+
+	preview: {
+		select: {
+			title: 'title',
+			slug: 'slug.current',
+			media: 'image',
+		},
+		prepare(selection) {
+			const { title, slug } = selection;
+			return {
+				title,
+				subtitle: slug ? `/startups/${slug}` : 'no slug',
+				media: selection.media,
+			};
+		},
+	},
 });

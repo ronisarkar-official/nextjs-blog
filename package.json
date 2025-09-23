@@ -9,7 +9,8 @@
 		"lint": "eslint",
 		"predev": "npm run typegen",
 		"prebuild": "npm run typegen",
-		"typegen": "cross-env NODE_OPTIONS='-r dotenv/config' sanity schema extract --path=./sanity/extract.json && cross-env NODE_OPTIONS='-r dotenv/config' sanity typegen generate"
+		"postbuild": "next-sitemap",
+		"typegen": " sanity schema extract --path=./sanity/extract.json && sanity typegen generate"
 	},
 	"packageManager": "npm@10.5.2",
 	"overrides": {
@@ -35,6 +36,7 @@
 		"next": "^15.6.0-canary.16",
 		"next-auth": "^5.0.0-beta.29",
 		"next-sanity": "^10.0.17-canary.1",
+		"next-sitemap": "^4.2.3",
 		"only": "^0.0.2",
 		"radix-ui": "^1.4.3",
 		"react": "^19.1.0",

@@ -6,12 +6,12 @@ import { Author, Startup } from '@/sanity/types';
 import { Skeleton } from './ui/skeleton';
 import { cn } from '@/lib/utils';
 
-
 export type StartupTypeCard = Omit<Startup, 'author'> & { author?: Author };
 
 const Startupposts = ({ post }: { post: StartupTypeCard }) => {
 	const {
 		_id,
+		slug,
 		title,
 		image: postImage,
 		description,
@@ -38,7 +38,7 @@ const Startupposts = ({ post }: { post: StartupTypeCard }) => {
 				<div className="relative h-52 sm:h-60 md:h-48 lg:h-60 2xl:h-72">
 					{/* Single overlay link to reduce duplicate anchors */}
 					<Link
-						href={`/startups/${_id}`}
+						href={`/startups/${slug?.current}`}
 						className="absolute inset-0 z-10">
 						<span className="sr-only">Open {title}</span>
 					</Link>
@@ -123,7 +123,7 @@ const Startupposts = ({ post }: { post: StartupTypeCard }) => {
 				</Link>
 				<h2 className="text-black text-lg font-semibold leading-tight mb-2 hover:text-indigo-600">
 					<Link
-						href={`/startups/${_id}`}
+						href={`/startups/${slug?.current}`}
 						className="inline-block">
 						{title}
 					</Link>
@@ -142,7 +142,7 @@ const Startupposts = ({ post }: { post: StartupTypeCard }) => {
 					</div>
 
 					<Link
-						href={`/startups/${_id}`}
+						href={`/startups/${slug?.current}`}
 						className="text-sm text-indigo-400 font-medium">
 						Read more
 					</Link>

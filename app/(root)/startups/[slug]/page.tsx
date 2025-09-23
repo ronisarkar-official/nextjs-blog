@@ -1,3 +1,4 @@
+// app/(root)/startups/[slug]/page.tsx
 import React, { Suspense } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -7,24 +8,22 @@ import sanitizeHtml from 'sanitize-html';
 import Greeting from '@/components/Greeting';
 
 import { client } from '@/sanity/lib/client';
-import { STARTUP_BY_ID_QUERY } from '@/sanity/lib/queries';
+import {
+	STARTUP_BY_SLUG_QUERY,
+	PLAYLIST_BY_SLUG_QUERY,
+} from '@/sanity/lib/queries';
 import { Skeleton } from '@/components/ui/skeleton';
 import View from '@/components/View';
-import { PLAYLIST_BY_SLUG_QUERY } from '@/sanity/lib/queries';
 import StartupCard from '@/components/StartupCard';
-
-// NOTE: adjust this type to match your Sanity schema if you have TypeScript types available.
-type StartupPost = any;
 
 // Server rendering policy: change to `force-dynamic` if you need always-fresh data.
 export const dynamic = 'force-dynamic';
 // If you prefer ISR instead of fully dynamic responses, replace the above with a revalidate value like:
 // export const revalidate = 60; // seconds
 
+type StartupPost = any;
+
 const md = new markdownit({ html: true, linkify: true });
-const { select: editorPosts } = await client.fetch(PLAYLIST_BY_SLUG_QUERY, {
-	slug: 'related-posts',
-});
 
 // Sanitize options pulled out to top-level for reuse and performance
 const SANITIZE_OPTIONS = {
@@ -37,7 +36,7 @@ const SANITIZE_OPTIONS = {
 		...sanitizeHtml.defaults.allowedAttributes,
 		img: ['src', 'alt', 'width', 'height', 'loading'],
 		a: ['href', 'name', 'target', 'rel'],
-		'*': ['id'], // allow ids on headings so TOC links work
+		'*': ['id'],
 	},
 	allowedSchemes: ['http', 'https', 'data', 'mailto'],
 };
@@ -63,11 +62,8 @@ const formatDate = (dateString?: string) => {
 
 // extract headings and inject ids into rendered HTML so TOC works without client JS
 const renderMarkdownWithIds = (rawMd: string) => {
-	// render HTML first
 	const html = md.render(rawMd || '');
 
-	// find headings and add id attributes
-	// This is a simple regex-based approach (works reliably for standard md -> HTML headings)
 	const headingPattern = /<(h[1-6])>(.*?)<\/\1>/gi;
 	const headings: { id: string; text: string; level: number }[] = [];
 
@@ -81,37 +77,40 @@ const renderMarkdownWithIds = (rawMd: string) => {
 	return { html: htmlWithIds, headings };
 };
 
-export default async function Page({ params }: { params: { id: string } }) {
-	const { id } = params;
+export default async function Page({ params }: { params: { slug: string } }) {
+	const { slug } = params;
 
+	// fetch the startup by slug
 	let post: StartupPost | null = null;
 	try {
-		// keep fetch narrow (select only required fields in your GROQ query for further perf wins)
-		post = await client.fetch(STARTUP_BY_ID_QUERY, { id });
+		post = await client.fetch(STARTUP_BY_SLUG_QUERY, { slug });
 	} catch (err) {
-		// server-side logging for debugging
+		// server-side logging
 		// eslint-disable-next-line no-console
-		console.error('Sanity fetch error:', err);
+		console.error('Sanity fetch error (by slug):', err);
 	}
 
 	if (!post) return notFound();
 
+	// markdown -> html + headings
 	const rawMd = post.pitch || '';
 	const { html: htmlWithIds, headings } = renderMarkdownWithIds(rawMd);
-
-	// sanitize once with top-level options
 	const safeHtml = sanitizeHtml(htmlWithIds, SANITIZE_OPTIONS);
 
-	// computed meta / helpers
 	const authorImage = post.author?.image || '/images/avatar-placeholder.png';
 	const heroImage = post.image || '/images/cover-placeholder.jpg';
 
-	// Popular posts fallback; consider replacing with a real query for accuracy in the future
-	const { select: popularPosts } = await client.fetch(PLAYLIST_BY_SLUG_QUERY, {
-		slug: 'popular-posts',
-	});
+	// fetch editor picks / popular posts (done server-side)
+	const { select: editorPosts = [] } =
+		(await client.fetch(PLAYLIST_BY_SLUG_QUERY, { slug: 'related-posts' })) ||
+		{};
+	const { select: popularPosts = [] } =
+		(await client.fetch(PLAYLIST_BY_SLUG_QUERY, { slug: 'popular-posts' })) ||
+		{};
 
 	// Structured data (Article) for SEO — server-rendered JSON-LD
+	const siteBase = process.env.NEXT_PUBLIC_SITE_URL || '';
+	const postUrl = `${siteBase}/startups/${post.slug?.current || post._id}`;
 	const jsonLd = {
 		'@context': 'https://schema.org',
 		'@type': 'Article',
@@ -120,7 +119,8 @@ export default async function Page({ params }: { params: { id: string } }) {
 		datePublished: post._createdAt,
 		author: { '@type': 'Person', name: post.author?.name || 'Unknown' },
 		publisher: { '@type': 'Organization', name: 'Your Site Name' },
-		description: post.excerpt || '',
+		description: post.description || '',
+		url: postUrl,
 	};
 
 	return (
@@ -167,8 +167,10 @@ export default async function Page({ params }: { params: { id: string } }) {
 
 							<div className="text-xs text-gray-500 flex items-center gap-3">
 								<Suspense fallback={<Skeleton className="view-skeleton" />}>
-									<View id={id} />
+									{/* View component expects id; keep that contract */}
+									<View id={post._id} />
 								</Suspense>
+
 								<div className="hidden sm:inline text-xs bg-gray-100 px-2 py-2 shadow-sm rounded">
 									{post.category}
 								</div>
@@ -203,7 +205,6 @@ export default async function Page({ params }: { params: { id: string } }) {
 									'[&_img]:mx-auto [&_img]:rounded-lg [&_img]:shadow-sm [&_img]:max-w-full ' +
 									'[&_pre]:rounded-lg [&_pre]:bg-gray-50 dark:[&_pre]:bg-gray-800 [&_code]:rounded [&_code]:px-1.5 [&_code]:py-0.5 '
 								}
-								// safeHtml is sanitized and rendered server-side
 								dangerouslySetInnerHTML={{ __html: safeHtml }}
 							/>
 						:	<div className="mx-auto max-w-4xl py-8 text-center">
@@ -213,39 +214,44 @@ export default async function Page({ params }: { params: { id: string } }) {
 
 						<hr className="my-8 border-t-2 border-gray-100 dark:border-gray-800 rounded" />
 
-						{/* Social share links (graceful, no client JS required) */}
+						{/* Social share links (use the slug URL for share target) */}
 						<div className="flex items-center gap-3 text-sm">
 							<a
-								href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(post.title)}&url=${encodeURIComponent(process.env.NEXT_PUBLIC_SITE_URL || '') + '/startup/' + post._id}`}
+								href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(
+									post.title,
+								)}&url=${encodeURIComponent(postUrl)}`}
 								target="_blank"
 								rel="noreferrer"
 								className="underline">
 								Share on Twitter
 							</a>
 							<a
-								href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(process.env.NEXT_PUBLIC_SITE_URL || '') + '/startup/' + post._id}`}
+								href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(postUrl)}`}
 								target="_blank"
 								rel="noreferrer"
 								className="underline">
 								Share on Facebook
 							</a>
 							<a
-								href={`mailto:?subject=${encodeURIComponent(post.title)}&body=${encodeURIComponent((post.excerpt || '') + '\n\n' + (process.env.NEXT_PUBLIC_SITE_URL || '') + '/startup/' + post._id)}`}
+								href={`mailto:?subject=${encodeURIComponent(
+									post.title,
+								)}&body=${encodeURIComponent((post.description || '') + '\n\n' + postUrl)}`}
 								className="underline">
 								Email
 							</a>
 						</div>
 					</section>
+
 					{editorPosts?.length > 0 && (
-						<section className=" max-w-none mt-4">
-							<p className="text-80-semibold text-2xl  border-b-2 border-gray-400">
+						<section className="max-w-none mt-4">
+							<p className="text-80-semibold text-2xl border-b-2 border-gray-400">
 								You Might Like
 							</p>
-							<ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2  mt-4">
-								{editorPosts.map((post: any) => (
+							<ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 mt-4 gap-4">
+								{editorPosts.map((p: any) => (
 									<StartupCard
-										key={post._id}
-										post={post}
+										key={p._id}
+										post={p}
 									/>
 								))}
 							</ul>
@@ -264,11 +270,10 @@ export default async function Page({ params }: { params: { id: string } }) {
 								{popularPosts.map((p: any) => (
 									<Link
 										key={p._id}
-										href={`/startup/${p._id}`}
+										href={`/startups/${p.slug?.current || p._id}`}
 										className="block group"
 										prefetch>
 										<div className="flex items-start gap-4 bg-white border border-gray-300 rounded-xl p-4 shadow-sm hover:shadow-md hover:border-gray-300 transition-all duration-200">
-											{/* Thumbnail */}
 											<div className="w-24 h-16 relative rounded-lg overflow-hidden flex-shrink-0 bg-gray-100 border-gray-300">
 												<Image
 													src={p.image || '/images/cover-placeholder.jpg'}
@@ -279,11 +284,10 @@ export default async function Page({ params }: { params: { id: string } }) {
 												/>
 											</div>
 
-											{/* Content */}
 											<div className="flex-1">
 												<div className="text-xs text-gray-500 mb-1">
-													{formatDate(p.date)} <span className="mx-1">•</span>{' '}
-													{p.category}
+													{formatDate(p._createdAt)}{' '}
+													<span className="mx-1">•</span> {p.category}
 												</div>
 												<div className="text-sm font-semibold text-gray-900 leading-snug group-hover:text-blue-600 transition-colors">
 													{p.title}
