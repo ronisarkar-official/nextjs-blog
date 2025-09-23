@@ -110,7 +110,7 @@ export default async function Page({ params }: { params: { slug: string } }) {
 
 	// Structured data (Article) for SEO — server-rendered JSON-LD
 	const siteBase = process.env.NEXT_PUBLIC_SITE_URL || '';
-	const postUrl = `${siteBase}/startups/${post.slug?.current || post._id}`;
+	const postUrl = `${siteBase}/startups/${post.slug?.current}`;
 	const jsonLd = {
 		'@context': 'https://schema.org',
 		'@type': 'Article',
@@ -125,7 +125,7 @@ export default async function Page({ params }: { params: { slug: string } }) {
 
 	return (
 		<main className="min-h-screen bg-white text-gray-900">
-			<div className="max-w-7xl mx-auto px-6 py-12 grid md:grid-cols-3 gap-8">
+			<div className="max-w-6xl mx-auto px-6 py-12 grid md:grid-cols-3 gap-8">
 				<article className="md:col-span-2">
 					<nav className="text-sm text-gray-500 mb-4">Home / games</nav>
 
