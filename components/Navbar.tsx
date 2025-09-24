@@ -95,62 +95,64 @@ export default async function Navbar() {
 						)}
 
 						{/* Profile / Auth */}
-						{session && session.user ?
-							<details className="relative">
-								<summary
-									className="flex items-center gap-2 cursor-pointer rounded-full focus:outline-none focus:ring-2 focus:ring-indigo-500"
-									aria-haspopup="true"
-									aria-expanded="false">
-									<img
-										src={session.user.image || '/images/default-avatar.png'}
-										alt={session.user.name || 'User'}
-										className="h-9 w-9 rounded-full object-cover"
-									/>
-								</summary>
+						<div className="hidden sm:block">
+							{session && session.user ?
+								<details className="relative">
+									<summary
+										className="flex items-center gap-2 cursor-pointer rounded-full focus:outline-none focus:ring-2 focus:ring-indigo-500"
+										aria-haspopup="true"
+										aria-expanded="false">
+										<img
+											src={session.user.image || '/images/default-avatar.png'}
+											alt={session.user.name || 'User'}
+											className="h-9 w-9 rounded-full object-cover"
+										/>
+									</summary>
 
-								<div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-md shadow-lg py-2">
-									<div className="px-3 py-2 border-b border-gray-100">
-										<p className="text-sm font-medium">{session.user.name}</p>
-										<p className="text-xs text-gray-500">
-											{session.user.email}
-										</p>
+									<div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-md shadow-lg py-2">
+										<div className="px-3 py-2 border-b border-gray-100">
+											<p className="text-sm font-medium">{session.user.name}</p>
+											<p className="text-xs text-gray-500">
+												{session.user.email}
+											</p>
+										</div>
+										<Link
+											href={`/user/${session.id}`}
+											className="block px-3 py-2 text-sm hover:bg-gray-50">
+											Profile
+										</Link>
+										<Link
+											href="/admin"
+											className="block px-3 py-2 text-sm hover:bg-gray-50">
+											Admin
+										</Link>
+										<Link
+											href="/settings"
+											className="block px-3 py-2 text-sm hover:bg-gray-50">
+											Settings
+										</Link>
+										<form
+											action={handleSignOut}
+											className="m-0">
+											<button
+												type="submit"
+												className="w-full text-left text-red-600 px-3 py-2 text-sm hover:bg-gray-50">
+												Logout
+											</button>
+										</form>
 									</div>
-									<Link
-										href={`/user/${session.id}`}
-										className="block px-3 py-2 text-sm hover:bg-gray-50">
-										Profile
-									</Link>
-									<Link
-										href="/admin"
-										className="block px-3 py-2 text-sm hover:bg-gray-50">
-										Admin
-									</Link>
-									<Link
-										href="/settings"
-										className="block px-3 py-2 text-sm hover:bg-gray-50">
-										Settings
-									</Link>
-									<form
-										action={handleSignOut}
-										className="m-0">
-										<button
-											type="submit"
-											className="w-full text-left text-red-600 px-3 py-2 text-sm hover:bg-gray-50">
-											Logout
-										</button>
-									</form>
-								</div>
-							</details>
-						:	<form
-								action={handleSignIn}
-								className="m-0">
-								<button
-									type="submit"
-									className="inline-flex items-center gap-2 border border-gray-300 px-3 py-2 rounded-md text-sm hover:bg-gray-50">
-									Sign in
-								</button>
-							</form>
-						}
+								</details>
+							:	<form
+									action={handleSignIn}
+									className="m-0">
+									<button
+										type="submit"
+										className="inline-flex items-center gap-2 border border-gray-300 px-3 py-2 rounded-md text-sm hover:bg-gray-50">
+										Sign in
+									</button>
+								</form>
+							}
+						</div>
 
 						{/* Mobile menu toggle */}
 						<details className="md:hidden relative">
@@ -184,7 +186,7 @@ export default async function Navbar() {
 									</Link>
 									{session && session.user && (
 										<Link
-											href="/blog/create"
+											href="/startups/create"
 											className="px-2 py-2 rounded hover:bg-gray-50">
 											Create
 										</Link>
@@ -238,4 +240,3 @@ export default async function Navbar() {
 		</header>
 	);
 }
-

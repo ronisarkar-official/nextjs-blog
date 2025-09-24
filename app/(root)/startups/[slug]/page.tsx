@@ -15,6 +15,14 @@ import {
 import { Skeleton } from '@/components/ui/skeleton';
 import View from '@/components/View';
 import StartupCard from '@/components/StartupCard';
+import {
+	Breadcrumb,
+	BreadcrumbItem,
+	BreadcrumbLink,
+	BreadcrumbList,
+	BreadcrumbPage,
+	BreadcrumbSeparator,
+} from '@/components/ui/breadcrumb';
 
 // Server rendering policy: change to `force-dynamic` if you need always-fresh data.
 export const dynamic = 'force-dynamic';
@@ -116,6 +124,7 @@ export default async function Page({ params }: { params: { slug: string } }) {
 		'@type': 'Article',
 		headline: post.title,
 		image: [heroImage],
+		category: post.category,
 		datePublished: post._createdAt,
 		author: { '@type': 'Person', name: post.author?.name || 'Unknown' },
 		publisher: { '@type': 'Organization', name: 'Your Site Name' },
@@ -127,7 +136,22 @@ export default async function Page({ params }: { params: { slug: string } }) {
 		<main className="min-h-screen bg-white text-gray-900">
 			<div className="max-w-6xl mx-auto px-6 py-12 grid md:grid-cols-3 gap-8">
 				<article className="md:col-span-2">
-					<nav className="text-sm text-gray-500 mb-4">Home / games</nav>
+					<Breadcrumb className="mb-4">
+						<BreadcrumbList>
+							<BreadcrumbItem>
+								<BreadcrumbLink asChild>
+									<Link href="/feed">Home</Link>
+								</BreadcrumbLink>
+							</BreadcrumbItem>
+							<BreadcrumbSeparator />
+
+							<BreadcrumbItem>
+								<Link href={`/feed?query=${post.category?.toLowerCase()}`}>
+									<BreadcrumbPage>{post.category}</BreadcrumbPage>
+								</Link>
+							</BreadcrumbItem>
+						</BreadcrumbList>
+					</Breadcrumb>
 
 					<header className="mb-8">
 						<Greeting className="inline-block text-xs px-3 py-2 rounded-full mb-3" />

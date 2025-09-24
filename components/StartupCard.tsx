@@ -117,7 +117,7 @@ const Startupposts = ({ post }: { post: StartupTypeCard }) => {
 			{/* BODY */}
 			<div className="px-4 bg-transparent">
 				<Link
-					href={`/?query=${category?.toLowerCase()}`}
+					href={`/feed?query=${category?.toLowerCase()}`}
 					className="inline-block">
 					<p className="text-sm text-gray-500 font-medium">in {category}</p>
 				</Link>

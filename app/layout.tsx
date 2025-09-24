@@ -4,6 +4,8 @@ import './globals.css';
 import 'easymde/dist/easymde.min.css';
 import { ToastProvider } from '@radix-ui/react-toast';
 import { Toaster } from 'react-hot-toast';
+import '@toast-ui/editor/dist/toastui-editor.css';
+
 const workSans = localFont({
 	src: [
 		{

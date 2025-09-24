@@ -1,20 +1,25 @@
 'use client';
 
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, {
+	useCallback,
+	useEffect,
+	useRef,
+	useState,
+	type ChangeEvent,
+} from 'react';
+import dynamic from 'next/dynamic';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import MDEditor from '@uiw/react-md-editor';
 import { Button } from '@/components/ui/button';
 import { Send } from 'lucide-react';
 import { formSchema } from '@/lib/validation';
 import { z } from 'zod';
 import toast, { Toaster } from 'react-hot-toast';
-import { useRouter } from 'next/navigation';
 import { createPitch } from '@/lib/actions';
 
+/* ---------- Helpers (kept pure & outside component) ---------- */
 type ErrorsMap = Record<string, string | undefined>;
 
-/* ---------- Helpers (kept pure & outside component) ---------- */
 const mapZodFieldErrors = (zErr: z.ZodError): ErrorsMap => {
 	const flattened = zErr.flatten().fieldErrors;
 	const out: ErrorsMap = {};
@@ -25,7 +30,7 @@ const mapZodFieldErrors = (zErr: z.ZodError): ErrorsMap => {
 };
 
 const fetchFallback = async (payload: Record<string, any>) => {
-	const res = await fetch('/api/startups', {
+	const res = await fetch('/startups', {
 		method: 'POST',
 		headers: { 'Content-Type': 'application/json' },
 		body: JSON.stringify(payload),
@@ -57,10 +62,6 @@ const extractCreatedId = (result: any) =>
 type PreviewStatus = 'idle' | 'loading' | 'ok' | 'error';
 const previewCache = new Map<string, PreviewStatus>();
 
-/**
- * Loads an image via the browser Image() API and resolves ok/error.
- * Uses a timeout and caches results.
- */
 function loadImagePreview(
 	url: string,
 	timeoutMs = 5000,
@@ -109,14 +110,14 @@ function loadImagePreview(
 	});
 }
 
-/* ---------- Inline ImageUrlPreviewInput component ---------- */
+/* ---------- Memoized ImageUrlPreviewInput ---------- */
 interface ImageUrlPreviewInputProps extends React.ComponentProps<typeof Input> {
 	debounceMs?: number;
 	previewHeightClassName?: string;
 	onPreviewStatusChange?: (status: PreviewStatus) => void;
 }
 
-function ImageUrlPreviewInput({
+const ImageUrlPreviewInput = React.memo(function ImageUrlPreviewInput({
 	id,
 	name,
 	defaultValue,
@@ -159,28 +160,26 @@ function ImageUrlPreviewInput({
 			onPreviewStatusChange?.('loading');
 
 			loadImagePreview(url).then((result) => {
-				// ignore stale results
-				if (lastRequestedRef.current !== url) return;
+				if (lastRequestedRef.current !== url) return; // stale
 				setStatus(result);
 				onPreviewStatusChange?.(result);
-				if (result === 'ok') {
-					setPreviewSrc(url);
-				} else {
-					setPreviewSrc(null);
-				}
+				if (result === 'ok') setPreviewSrc(url);
+				else setPreviewSrc(null);
 			});
 		}, debounceMs);
 
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [value, debounceMs]);
 
-	const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-		setValue(e.target.value);
-		// Call original onChange if provided via props (Input supports onChange)
-		if (typeof rest.onChange === 'function') {
-			rest.onChange(e);
-		}
-	};
+	const handleChange = useCallback(
+		(e: ChangeEvent<HTMLInputElement>) => {
+			setValue(e.target.value);
+			if (typeof rest.onChange === 'function') {
+				rest.onChange(e as any);
+			}
+		},
+		[rest],
+	);
 
 	const statusText =
 		status === 'idle' ? 'Add an image URL to preview'
@@ -190,7 +189,6 @@ function ImageUrlPreviewInput({
 
 	return (
 		<div>
-			{/* Use your Input component so name/id/styles remain identical */}
 			<Input
 				id={id}
 				name={name}
@@ -269,19 +267,37 @@ function ImageUrlPreviewInput({
 			</div>
 		</div>
 	);
-}
+});
+
+/* ---------- Toast UI Editor: dynamic import (client-only) ---------- */
+const ToastEditor = dynamic(
+	() => import('@toast-ui/react-editor').then((mod) => mod.Editor),
+	{
+		ssr: false,
+		loading: () => <div className="p-4">Loading editor…</div>,
+	},
+);
 
 /* ---------- Component ---------- */
 const StartupForm: React.FC = () => {
 	const [errors, setErrors] = useState<ErrorsMap>({});
 	const [pitch, setPitch] = useState<string>('');
 	const [isSubmitting, setIsSubmitting] = useState(false);
-	const router = useRouter();
 	const formRef = useRef<HTMLFormElement | null>(null);
+	const editorRef = useRef<any>(null); // ToastUI editor ref
 
-	// update pitch handler memoized
-	const handlePitchChange = useCallback((val?: string | null) => {
-		setPitch(String(val ?? ''));
+	// keep pitch synced with editor (reads from instance for accuracy)
+	const onEditorChange = useCallback(() => {
+		const md = editorRef.current?.getInstance?.()?.getMarkdown?.() ?? '';
+		setPitch(String(md ?? ''));
+	}, []);
+
+	// seed pitch state once editor instance is ready (client)
+	useEffect(() => {
+		if (!editorRef.current) return;
+		const md = editorRef.current?.getInstance?.()?.getMarkdown?.();
+		if (md && md !== pitch) setPitch(md);
+		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, []);
 
 	const handleSubmit = useCallback(
@@ -293,14 +309,17 @@ const StartupForm: React.FC = () => {
 			const formEl = e.currentTarget;
 			const fd = new FormData(formEl);
 
+			// read latest editor markdown directly from editor instance (authoritative)
+			const editorMarkdown =
+				editorRef.current?.getInstance?.()?.getMarkdown?.() ?? pitch ?? '';
+			fd.set('pitch', editorMarkdown.trim());
+
 			// Build trimmed payload from FormData (handles File values safely)
 			const payload: Record<string, any> = {};
 			for (const [key, val] of fd.entries()) {
 				payload[key] =
 					typeof val === 'string' ? (val as string).trim() : (val as File);
 			}
-			// ensure pitch is included / trimmed
-			payload.pitch = (pitch ?? '').toString().trim();
 
 			const toastId = toast.loading('Posting your startup pitch...');
 
@@ -312,11 +331,8 @@ const StartupForm: React.FC = () => {
 
 				if (hasCreatePitch) {
 					try {
-						// Prefer server action when available (keep fd for file support)
-						result = await createPitch(undefined, fd, pitch);
+						result = await createPitch(undefined, fd, editorMarkdown);
 					} catch (actionErr) {
-						// fallback to fetch if action fails
-						// eslint-disable-next-line no-console
 						console.warn(
 							'createPitch failed — falling back to /api/startups',
 							actionErr,
@@ -331,12 +347,15 @@ const StartupForm: React.FC = () => {
 
 				toast.success('Startup pitch created.', { id: toastId });
 
-				// reset form + editor
-				if (formRef.current) formRef.current.reset();
-				setPitch('');
-
+				// --- IMPORTANT: keep all form values intact (don't reset)
+				// previous behavior reset the form and cleared the editor; we removed that.
+				// Instead, open the created post in a new tab so users stay on the current form page:
 				if (createdId) {
-					router.push(`/startup/${createdId}`);
+					try {
+						window.open(`/startup/${createdId}`, '_blank', 'noopener');
+					} catch {
+						/* ignore popup errors; user stays on form page with values */
+					}
 				}
 
 				return result;
@@ -354,19 +373,18 @@ const StartupForm: React.FC = () => {
 					err instanceof Error ? err.message : 'An unexpected error occurred';
 				setErrors({ form: message });
 				toast.error(message, { id: toastId });
-				// eslint-disable-next-line no-console
 				console.error(err);
 				return { error: message, status: 'ERROR' };
 			} finally {
 				setIsSubmitting(false);
 			}
 		},
-		[pitch, router],
+		[pitch],
 	);
 
 	return (
 		<>
-			{/* Remove this if Toaster is already placed globally */}
+			{/* Optionally remove this if a global Toaster exists */}
 			<Toaster position="top-right" />
 
 			<form
@@ -374,7 +392,7 @@ const StartupForm: React.FC = () => {
 				onSubmit={handleSubmit}
 				className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8 px-4"
 				aria-busy={isSubmitting}>
-				<div className="max-w-7xl mx-auto">
+				<div className="max-w-6xl ml-8">
 					<div className="relative flex flex-col lg:flex-row gap-6">
 						{/* Main editor column */}
 						<main className="flex-1">
@@ -398,14 +416,12 @@ const StartupForm: React.FC = () => {
 									{errors.title && (
 										<p className="text-sm text-red-500 mt-2">{errors.title}</p>
 									)}
-
-									{/* small meta row */}
 								</div>
 
 								<div className="border-t border-gray-100 dark:border-gray-700" />
 
 								{/* Editor */}
-								<div className="px-6 py-4">
+								<div className="px-6 py-4 max-w-4xl">
 									<div className="mb-3 flex items-center justify-between gap-4">
 										<div className="flex items-center gap-3 text-xs text-gray-500">
 											<span>{(pitch?.length ?? 0).toLocaleString()} chars</span>
@@ -417,16 +433,21 @@ const StartupForm: React.FC = () => {
 									</div>
 									<div
 										data-color-mode="light"
-										className="w-full bg-white dark:bg-gray-900 rounded-md border border-gray-300 dark:border-gray-800 shadow-inner overflow-auto">
-										<MDEditor
-											value={pitch}
-											onChange={(val) => handlePitchChange(String(val ?? ''))}
-											height={520}
+										className="w-full h-fit bg-white dark:bg-gray-900 rounded-md border border-gray-300 dark:border-gray-800 shadow-inner overflow-auto">
+										<ToastEditor
+											ref={editorRef}
+											initialValue={pitch}
+											previewStyle="vertical"
+											height="500px"
+											initialEditType="markdown"
+											useCommandShortcut={true}
+											usageStatistics={false}
 											textareaProps={{
 												placeholder:
 													'Write your startup pitch — problem, solution, traction, ask...',
 												'aria-label': 'Startup pitch editor',
 											}}
+											onChange={onEditorChange}
 										/>
 									</div>
 									{errors.pitch && (
@@ -453,16 +474,12 @@ const StartupForm: React.FC = () => {
 						<aside className="w-full lg:w-80 flex-shrink-0">
 							<div className="sticky top-6">
 								<div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm p-4">
-									{/* Header inside sidebar */}
 									<div className="flex items-center justify-between mb-3">
 										<h3 className="text-sm font-medium text-gray-700 dark:text-gray-200">
 											Post settings
 										</h3>
-
-										{/* small status pill */}
 									</div>
 
-									{/* Post button on top of settings for convenience */}
 									<div className="mb-4">
 										<Button
 											type="submit"
@@ -507,7 +524,6 @@ const StartupForm: React.FC = () => {
 												Image URL
 											</label>
 
-											{/* IMAGE URL WITH PREVIEW */}
 											<ImageUrlPreviewInput
 												id="link"
 												name="link"
@@ -548,7 +564,6 @@ const StartupForm: React.FC = () => {
 									</div>
 								</div>
 
-								{/* spacer so the sticky area has breathing room */}
 								<div className="h-44" />
 							</div>
 						</aside>

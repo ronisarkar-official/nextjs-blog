@@ -100,7 +100,7 @@ function getFallbackMetadata(): Metadata {
 function generatePostMetadata(post: StartupData, slug: string): Metadata {
 	const siteName = 'SpecHype';
 	const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://example.com';
-	const url = new URL(`/startup/${slug}`, baseUrl).toString();
+	const url = new URL(`/startups/${slug}`, baseUrl).toString();
 
 	const title = post.title;
 
