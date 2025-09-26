@@ -23,9 +23,8 @@ import {
 	BreadcrumbPage,
 	BreadcrumbSeparator,
 } from '@/components/ui/breadcrumb';
-
-
-
+import ShareButton from '@/components/ShareButton';
+import { Facebook, Mail, Twitter } from 'lucide-react';
 
 // Server rendering policy: change to `force-dynamic` if you need always-fresh data.
 export const dynamic = 'force-dynamic';
@@ -135,8 +134,6 @@ export default async function Page({ params }: { params: { slug: string } }) {
 		url: postUrl,
 	};
 
-
-
 	return (
 		<main className="min-h-screen bg-white text-gray-900">
 			<div className="max-w-6xl mx-auto px-6 py-12 grid md:grid-cols-3 gap-8">
@@ -189,7 +186,6 @@ export default async function Page({ params }: { params: { slug: string } }) {
 											<div className="text-xs">
 												Published: {formatDate(post._createdAt)}
 											</div>
-											
 										</div>
 									</div>
 								</div>
@@ -246,28 +242,44 @@ export default async function Page({ params }: { params: { slug: string } }) {
 
 						{/* Social share links (use the slug URL for share target) */}
 						<div className="flex items-center gap-3 text-sm">
+							<ShareButton
+								postTitle={post.title}
+								postUrl={postUrl}
+							/>
 							<a
 								href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(
 									post.title,
 								)}&url=${encodeURIComponent(postUrl)}`}
 								target="_blank"
 								rel="noreferrer"
-								className="underline">
-								Share on Twitter
+								aria-label="Share on Twitter"
+								className="flex items-center space-x-1 text-blue-500 hover:text-blue-700 transition-colors">
+								<Twitter className="w-5 h-5" />
+								<span className="hidden sm:inline">Twitter</span>{' '}
+								{/* Keep text for accessibility, hide on smaller screens if desired */}
 							</a>
+
+							{/* Share on Facebook */}
 							<a
 								href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(postUrl)}`}
 								target="_blank"
 								rel="noreferrer"
-								className="underline">
-								Share on Facebook
+								aria-label="Share on Facebook"
+								// Consider changing the className to a custom utility class
+								className="flex items-center space-x-1 text-blue-800 hover:text-blue-900 transition-colors">
+								<Facebook className="w-5 h-5" />
+								<span className="hidden sm:inline">Facebook</span>
 							</a>
+
+							{/* Email Link */}
 							<a
 								href={`mailto:?subject=${encodeURIComponent(
 									post.title,
 								)}&body=${encodeURIComponent((post.description || '') + '\n\n' + postUrl)}`}
-								className="underline">
-								Email
+								aria-label="Share via Email"
+								className="flex items-center space-x-1 text-gray-600 hover:text-gray-900 transition-colors">
+								<Mail className="w-5 h-5" />
+								<span className="hidden sm:inline">Email</span>
 							</a>
 						</div>
 					</section>
