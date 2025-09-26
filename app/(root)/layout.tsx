@@ -23,19 +23,19 @@ export default function Layout({
 					socialLinks={[
 						{
 							icon: <Twitter className="h-5 w-5" />,
-							href: 'https://twitter.com',
+							href: 'https://x.com/ronisarkarDev',
 							label: 'Twitter',
 						},
 						{
 							icon: <Github className="h-5 w-5" />,
-							href: 'https://github.com',
+							href: 'https://github.com/ronisarkar-official',
 							label: 'GitHub',
 						},
 					]}
 					mainLinks={[
 						{ href: '/products', label: 'Products' },
 						{ href: '/about', label: 'About' },
-						{ href: '/blog', label: 'Blog' },
+						{ href: '/feed', label: 'Blog' },
 						{ href: '/contact', label: 'Contact' },
 					]}
 					legalLinks={[
@@ -43,7 +43,7 @@ export default function Layout({
 						{ href: '/terms', label: 'Terms' },
 					]}
 					copyright={{
-						text: '© 2024 Awesome Corp',
+						text: '© 2025 SpecHype',
 						license: 'All rights reserved',
 					}}
 				/>

@@ -16,6 +16,13 @@ export const STARTUPS_QUERY =
   image,
 }`);
 
+
+
+// Returns an array of slug strings: ['hello-world', 'another-post']
+export const ALL_STARTUP_SLUG_STRINGS = defineQuery(
+	`*[_type == "startup" && defined(slug.current)].slug.current`,
+);
+
 export const STARTUP_BY_ID_QUERY = defineQuery(
 	`*[_type == "startup" && _id == $id][0]{
     _id,
@@ -61,6 +68,11 @@ export const AUTHOR_BY_GITHUB_ID_QUERY = defineQuery(
 export const AUTHOR_BY_ID_QUERY = defineQuery(
 	`*[_type == "author" && _id == $id][0]{ _id, id, name, username, email, image, bio }`,
 );
+
+export const STARTUP_ID_BY_SLUG = defineQuery(
+	`*[_type == "startup" && slug.current == $slug][0]._id`,
+);
+
 
 export const STARTUPS_BY_AUTHOR_QUERY = defineQuery(
 	`*[_type == "startup" && author._ref == $id] | order(_createdAt desc) {

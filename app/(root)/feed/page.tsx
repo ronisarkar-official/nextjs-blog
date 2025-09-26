@@ -28,18 +28,7 @@ export default async function Home({
 
 	return (
 		<main className="pt-16 pb-5 max-w-screen-xl mx-auto min-h-screen px-2 sm:px-6 lg:px-14">
-			<article className="w-fit mx-auto 2xl:max-w-5xl xl:max-w-4xl max-w-2xl text-center space-y-6">
-				<div className="2xl:text-7xl text-black xl:text-6xl sm:text-5xl text-4xl leading-[100%]">
-					Pitch Your{' '}
-					<span className="font-semibold bg-gradient-to-r from-red-500 to-orange-500 bg-clip-text text-transparent">
-						Startups,
-					</span>{' '}
-					Connect with{' '}
-					<span className="font-semibold bg-gradient-to-r from-blue-400 to-blue-600 bg-clip-text text-transparent">
-						Entrepreneurs
-					</span>
-				</div>
-			</article>
+			
 
 			<SearchForm query={query} />
 

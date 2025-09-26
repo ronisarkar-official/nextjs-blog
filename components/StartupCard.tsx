@@ -1,12 +1,20 @@
+// ...existing code...
 import React, { memo, useMemo } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import imageUrlBuilder from '@sanity/image-url';
 import { formatDate } from '@/lib/utils';
 import { Author, Startup } from '@/sanity/types';
 import { Skeleton } from './ui/skeleton';
 import { cn } from '@/lib/utils';
+import { client as sanityClient } from '@/sanity/lib/client';
+import DeletePostButton from './DeletePostButton';
+import { Delete, DeleteIcon, Trash } from 'lucide-react';
 
 export type StartupTypeCard = Omit<Startup, 'author'> & { author?: Author };
+
+const builder = imageUrlBuilder(sanityClient);
+const urlFor = (source: any) => (source ? builder.image(source) : null);
 
 const Startupposts = ({ post }: { post: StartupTypeCard }) => {
 	const {
@@ -31,6 +39,29 @@ const Startupposts = ({ post }: { post: StartupTypeCard }) => {
 	const authorName = author?.name ?? '';
 	const authorInitial = useMemo(() => authorName.charAt(0) || '', [authorName]);
 
+	// Normalize image sources to strings usable by next/image
+	const postImageUrl: string = useMemo(() => {
+		if (!postImage) return '/fallback-image.jpg';
+		if (typeof postImage === 'string') return postImage;
+		const url = urlFor(postImage)?.width(1200).url();
+		return url ?? '/fallback-image.jpg';
+	}, [postImage]);
+
+	const authorImageUrl: string | null = useMemo(() => {
+		if (!author?.image) return null;
+		if (typeof author.image === 'string') return author.image;
+		const url = urlFor(author.image)?.width(200).url();
+		return url ?? null;
+	}, [author?.image]);
+
+	// Safe hrefs
+	const startupHref = slug?.current ? `/startups/${slug.current}` : '#';
+	const authorHref = author?._id ? `/user/${author._id}` : '#';
+	const feedHref =
+		category ?
+			`/feed?query=${encodeURIComponent(category.toLowerCase())}`
+		:	'/feed';
+
 	return (
 		<article className="rounded-2xl overflow-hidden relative">
 			{/* HERO / VISUAL */}
@@ -38,7 +69,7 @@ const Startupposts = ({ post }: { post: StartupTypeCard }) => {
 				<div className="relative h-52 sm:h-60 md:h-48 lg:h-60 2xl:h-72">
 					{/* Single overlay link to reduce duplicate anchors */}
 					<Link
-						href={`/startups/${slug?.current}`}
+						href={startupHref}
 						className="absolute inset-0 z-10">
 						<span className="sr-only">Open {title}</span>
 					</Link>
@@ -46,9 +77,10 @@ const Startupposts = ({ post }: { post: StartupTypeCard }) => {
 					{/* Visual container (kept separate so avatar sits above) */}
 					<div className="absolute inset-3 rounded-xl overflow-hidden z-0 bg-black/10">
 						<div className="relative w-full h-full border border-white/10 rounded-xl overflow-hidden bg-gray-300 flex items-center justify-center">
+							{/* next/image requires a string or StaticImageData for src — postImageUrl is normalized above */}
 							<Image
-								src={postImage}
-								alt={title}
+								src={postImageUrl || 'logo.png'}
+								alt={title || 'Startup image'}
 								fill
 								className="object-cover bg-transparent"
 								sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
@@ -84,12 +116,12 @@ const Startupposts = ({ post }: { post: StartupTypeCard }) => {
 
 					{/* profile chip (bottom-left) */}
 					<Link
-						href={`/user/${author?._id}`}
+						href={authorHref}
 						className="absolute left-5 bottom-5 z-20 flex items-center gap-3 bg-white rounded-sm px-2 py-1 border border-gray-300">
 						<div className="w-5 h-5 rounded-full overflow-hidden ring-0 bg-white/10 flex-shrink-0">
-							{author?.image ?
+							{authorImageUrl ?
 								<Image
-									src={author.image}
+									src={authorImageUrl || 'logo.png'}
 									alt={authorName || 'Author'}
 									width={20}
 									height={20}
@@ -114,16 +146,15 @@ const Startupposts = ({ post }: { post: StartupTypeCard }) => {
 				</div>
 			</div>
 
-			{/* BODY */}
 			<div className="px-4 bg-transparent">
 				<Link
-					href={`/feed?query=${category?.toLowerCase()}`}
+					href={feedHref}
 					className="inline-block">
 					<p className="text-sm text-gray-500 font-medium">in {category}</p>
 				</Link>
 				<h2 className="text-black text-lg font-semibold leading-tight mb-2 hover:text-indigo-600">
 					<Link
-						href={`/startups/${slug?.current}`}
+						href={startupHref}
 						className="inline-block">
 						{title}
 					</Link>
@@ -139,15 +170,17 @@ const Startupposts = ({ post }: { post: StartupTypeCard }) => {
 						<span className="text-xs text-gray-600">
 							{formatDate(_createdAt)}
 						</span>
+						
 					</div>
 
 					<Link
-						href={`/startups/${slug?.current}`}
+						href={startupHref}
 						className="text-sm text-indigo-400 font-medium">
 						Read more
 					</Link>
 				</div>
 			</div>
+			
 		</article>
 	);
 };
@@ -157,7 +190,7 @@ export default memo(Startupposts);
 export const StartupCardSkeleton = () => (
 	<>
 		{[0, 1, 2, 3, 4].map((index: number) => (
-			<li key={cn('skeleton', index)}>
+			<li key={cn('skeleton', String(index))}>
 				<Skeleton className="startup-card_skeleton" />
 			</li>
 		))}

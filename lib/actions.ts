@@ -17,20 +17,28 @@ export const createPitch = async (
 			error: 'Not signed in',
 			status: 'ERROR',
 		});
-	const { title, description, category, link } = Object.fromEntries(
+
+	// get form entries (excluding the editor pitch field)
+	const entries = Object.fromEntries(
 		Array.from(form).filter(([key]) => key !== 'pitch'),
-	);
-	const slug = slugify(title as string, { lower: true, strict: true });
+	) as Record<string, any>;
+
+	const { title, description, category, link } = entries;
+
+	// Prefer explicit slug from form if provided, otherwise fall back to title.
+	// Normalize using slugify.
+	const providedSlug = String(form.get('slug') ?? entries.slug ?? '').trim();
+	const rawForSlug = providedSlug || String(title ?? '').trim();
+	const normalizedSlug = slugify(rawForSlug, { lower: true, strict: true });
+
 	try {
 		const startup = {
 			title,
 			description,
 			category,
 			image: link,
-			slug: {
-				_type: slug,
-				current: slug,
-			},
+			slug:
+				normalizedSlug ? { _type: 'slug', current: normalizedSlug } : undefined,
 			author: {
 				_type: 'reference',
 				_ref: session?.id,

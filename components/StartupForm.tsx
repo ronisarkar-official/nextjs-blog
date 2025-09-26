@@ -17,6 +17,10 @@ import { z } from 'zod';
 import toast, { Toaster } from 'react-hot-toast';
 import { createPitch } from '@/lib/actions';
 
+// sanity client + query to check slug uniqueness
+import { client } from '@/sanity/lib/client';
+import { ALL_STARTUP_SLUG_STRINGS } from '@/sanity/lib/queries';
+
 /* ---------- Helpers (kept pure & outside component) ---------- */
 type ErrorsMap = Record<string, string | undefined>;
 
@@ -278,6 +282,16 @@ const ToastEditor = dynamic(
 	},
 );
 
+/* ---------- Utility: slugify ---------- */
+const slugify = (s: string) =>
+	String(s)
+		.trim()
+		.toLowerCase()
+		.replace(/[^a-z0-9\s-]/g, '') // remove invalid chars
+		.replace(/\s+/g, '-') // collapse whitespace -> hyphen
+		.replace(/-+/g, '-') // collapse multiple hyphens
+		.replace(/^-+|-+$/g, ''); // trim leading/trailing hyphens
+
 /* ---------- Component ---------- */
 const StartupForm: React.FC = () => {
 	const [errors, setErrors] = useState<ErrorsMap>({});
@@ -321,6 +335,50 @@ const StartupForm: React.FC = () => {
 					typeof val === 'string' ? (val as string).trim() : (val as File);
 			}
 
+			// Normalize slug: prefer provided slug, else fallback to title (slugify)
+			const rawSlugCandidate =
+				String(payload.slug ?? '').trim() || String(payload.title ?? '').trim();
+			const normalizedSlug = slugify(rawSlugCandidate);
+
+			// set normalized slug into FormData so server action receives it
+			fd.set('slug', normalizedSlug);
+
+			// check uniqueness using Sanity query
+			try {
+				const existingSlugs =
+					(await client.fetch(ALL_STARTUP_SLUG_STRINGS)) || [];
+				// ensure array of strings
+				const slugStrings =
+					Array.isArray(existingSlugs) ?
+						existingSlugs.map((s: any) => String(s ?? '').trim())
+					:	[];
+
+				if (normalizedSlug && slugStrings.includes(normalizedSlug)) {
+					// slug already exists — stop and show user a toast
+					setErrors({ slug: 'Slug already taken' });
+					toast.error('Slug already taken — choose a different one.');
+					setIsSubmitting(false);
+					return { error: 'Slug already taken', status: 'ERROR' };
+				}
+			} catch (fetchErr) {
+				// if slug-check fails, log but continue — we don't want to block creation if the check couldn't run
+				// (you can choose to abort here instead)
+				console.warn(
+					'Slug uniqueness check failed, proceeding anyway',
+					fetchErr,
+				);
+			}
+
+			// include Sanity slug object if finalSlug exists
+			if (normalizedSlug)
+				payload.slug = { _type: 'slug', current: normalizedSlug };
+			else delete payload.slug;
+
+			// copy image link to image.url so Sanity route can use whichever you prefer
+			if (payload.link) {
+				payload.image = { url: payload.link };
+			}
+
 			const toastId = toast.loading('Posting your startup pitch...');
 
 			try {
@@ -347,14 +405,12 @@ const StartupForm: React.FC = () => {
 
 				toast.success('Startup pitch created.', { id: toastId });
 
-				// --- IMPORTANT: keep all form values intact (don't reset)
-				// previous behavior reset the form and cleared the editor; we removed that.
-				// Instead, open the created post in a new tab so users stay on the current form page:
+				// keep fields intact and open created post in a new tab
 				if (createdId) {
 					try {
 						window.open(`/startup/${createdId}`, '_blank', 'noopener');
 					} catch {
-						/* ignore popup errors; user stays on form page with values */
+						/* ignore popup errors */
 					}
 				}
 
@@ -392,7 +448,7 @@ const StartupForm: React.FC = () => {
 				onSubmit={handleSubmit}
 				className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8 px-4"
 				aria-busy={isSubmitting}>
-				<div className="max-w-6xl ml-8">
+				<div className="max-w-6xl ml-4">
 					<div className="relative flex flex-col lg:flex-row gap-6">
 						{/* Main editor column */}
 						<main className="flex-1">
@@ -458,13 +514,14 @@ const StartupForm: React.FC = () => {
 
 							{/* Mobile sticky bottom action */}
 							<div className="lg:hidden fixed left-0 right-0 bottom-4 px-4">
-								<div className="max-w-3xl mx-auto">
+								<div className="max-w-3xl mx-auto ml-4">
 									<Button
 										type="submit"
 										className="w-full py-3 rounded-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium shadow-lg disabled:opacity-60"
 										disabled={isSubmitting}
 										aria-disabled={isSubmitting}>
 										{isSubmitting ? 'Posting...' : 'Post'}
+										<Send className="ml-1 h-4 w-4" />
 									</Button>
 								</div>
 							</div>
@@ -517,13 +574,37 @@ const StartupForm: React.FC = () => {
 											</div>
 										</div>
 
+										<div>
+											<label
+												htmlFor="slug"
+												className="text-xs text-gray-500 dark:text-gray-400 mb-1 block">
+												Slug
+											</label>
+											<Input
+												aria-label="Post slug"
+												id="slug"
+												name="slug"
+												required
+												defaultValue=""
+												placeholder="slug-slug-slug"
+												className="w-full text-sm placeholder:text-gray-400 dark:placeholder:text-gray-500 bg-transparent outline-none"
+											/>
+											{errors.slug && (
+												<p className="text-sm text-red-500 mt-1">
+													{errors.slug}
+												</p>
+											)}
+											<div className="mt-2 text-xs text-gray-400">
+												Choose the most relevant slug
+											</div>
+										</div>
+
 										<div className="border-t border-gray-100 dark:border-gray-700 pt-3">
 											<label
 												htmlFor="link"
 												className="text-xs text-gray-500 dark:text-gray-400 mb-1 block">
 												Image URL
 											</label>
-
 											<ImageUrlPreviewInput
 												id="link"
 												name="link"
@@ -532,7 +613,6 @@ const StartupForm: React.FC = () => {
 												placeholder="https://example.com/image.jpg"
 												className="w-full text-sm placeholder:text-gray-400 dark:placeholder:text-gray-500 bg-transparent outline-none"
 											/>
-
 											{errors.link && (
 												<p className="text-sm text-red-500 mt-1">
 													{errors.link}

@@ -1,4 +1,3 @@
-// components/EditStartupForm.tsx
 'use client';
 
 import React, {
@@ -6,16 +5,22 @@ import React, {
 	useEffect,
 	useRef,
 	useState,
+	useMemo,
 	type ChangeEvent,
 } from 'react';
 import dynamic from 'next/dynamic';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
-import { Send } from 'lucide-react';
+import { Send, Trash } from 'lucide-react';
 import { formSchema } from '@/lib/validation';
 import { z } from 'zod';
 import toast, { Toaster } from 'react-hot-toast';
+
+// NEW: sanity client + slugs query
+import { client } from '@/sanity/lib/client';
+import { ALL_STARTUP_SLUG_STRINGS } from '@/sanity/lib/queries';
+import DeletePostButton from './DeletePostButton';
 
 type ErrorsMap = Record<string, string | undefined>;
 
@@ -89,7 +94,7 @@ const ImageUrlPreviewInput = React.memo(function ImageUrlPreviewInput({
 	id,
 	name,
 	defaultValue,
-	className = '',
+	className = 'h-fit',
 	placeholder = 'https://example.com/image.jpg',
 	debounceMs = 500,
 	previewHeightClassName = 'h-28',
@@ -247,6 +252,16 @@ interface EditStartupFormProps {
 	slug: string;
 }
 
+// small slugify helper (same logic used elsewhere)
+const slugify = (s: string) =>
+	String(s)
+		.trim()
+		.toLowerCase()
+		.replace(/[^a-z0-9\s-]/g, '') // remove invalid chars
+		.replace(/\s+/g, '-') // collapse whitespace -> hyphen
+		.replace(/-+/g, '-') // collapse multiple hyphens
+		.replace(/^-+|-+$/g, ''); // trim leading/trailing hyphens
+
 export default function EditStartupForm({
 	initialData,
 	slug,
@@ -259,6 +274,14 @@ export default function EditStartupForm({
 	const formRef = useRef<HTMLFormElement | null>(null);
 	const editorRef = useRef<any>(null);
 	const docIdRef = useRef<string | null>(initialData?._id ?? null);
+
+	// Normalize initial slug so inputs receive a string instead of [object Object]
+	const initialSlug = useMemo(() => { 
+		const s = initialData?.slug;
+		if (!s) return '';
+		if (typeof s === 'string') return s;
+		return String((s as any).current ?? '') || '';
+	}, [initialData]);
 
 	// Sync initial data to editor & pitch state when it changes
 	useEffect(() => {
@@ -314,11 +337,54 @@ export default function EditStartupForm({
 				// docId optional: server route can resolve by slug if docId missing
 				const docId = docIdRef.current ?? undefined;
 
-				// POST to server route which performs the write using server-only writeClient
+				// --- SLUG HANDLING & UNIQUENESS CHECK:
+				// prefer form value, fall back to initialSlug; normalize
+				let rawSlugCandidate = '';
+				if (payload.slug) {
+					// payload.slug could be string or object { _type, current }
+					if (typeof payload.slug === 'string') rawSlugCandidate = payload.slug;
+					else if (typeof payload.slug === 'object' && payload.slug?.current)
+						rawSlugCandidate = String(payload.slug.current);
+				}
+				// if nothing from form, use initialSlug
+				if (!rawSlugCandidate) rawSlugCandidate = initialSlug ?? '';
+
+				const sendSlug = slugify(String(rawSlugCandidate ?? '').trim());
+
+				// Check uniqueness: fetch all existing slug strings and compare.
+				// Allow if sendSlug === initialSlug (editing without changing).
+				if (sendSlug) {
+					try {
+						const existing =
+							(await client.fetch(ALL_STARTUP_SLUG_STRINGS)) || [];
+						const slugStrings =
+							Array.isArray(existing) ?
+								existing.map((s: any) => String(s ?? '').trim())
+							:	[];
+
+						// if slug exists and it's not the same as the original slug on this doc, block
+						if (slugStrings.includes(sendSlug) && sendSlug !== initialSlug) {
+							setErrors({ slug: 'Slug already taken' });
+							toast.error('Slug already taken — choose a different one.', {
+								id: toastId,
+							});
+							setIsSubmitting(false);
+							return { error: 'Slug already taken', status: 'ERROR' };
+						}
+					} catch (err) {
+						// if slug check fails, log and continue (optional: you can abort instead)
+						console.warn('Slug uniqueness check failed — proceeding', err);
+					}
+				}
+
+				// Ensure payload.slug is a proper Sanity slug object for writing/updating
+				if (sendSlug) payload.slug = { _type: 'slug', current: sendSlug };
+				else delete payload.slug;
+
 				const res = await fetch('/api/sanity/update', {
 					method: 'POST',
 					headers: { 'Content-Type': 'application/json' },
-					body: JSON.stringify({ slug, docId, payload }),
+					body: JSON.stringify({ slug: sendSlug, docId, payload }),
 				});
 
 				// try to parse JSON safely
@@ -331,8 +397,6 @@ export default function EditStartupForm({
 				}
 
 				toast.success('Startup updated.', { id: toastId });
-
-				// keep values intact and open public view in a new tab
 
 				// update docIdRef if server returned the patched doc id
 				if (responseBody?.data?._id) docIdRef.current = responseBody.data._id;
@@ -359,7 +423,7 @@ export default function EditStartupForm({
 				setIsSubmitting(false);
 			}
 		},
-		[pitch, slug],
+		[pitch, initialSlug],
 	);
 
 	return (
@@ -432,7 +496,7 @@ export default function EditStartupForm({
 							</div>
 						</div>
 
-						<div className="lg:hidden fixed left-0 right-0 bottom-4 px-4">
+						<div className="lg:hidden fixed left-0 right-0 bottom-4 px-4 ml-4">
 							<div className="max-w-3xl mx-auto">
 								<Button
 									type="submit"
@@ -440,6 +504,7 @@ export default function EditStartupForm({
 									disabled={isSubmitting}
 									aria-disabled={isSubmitting}>
 									{isSubmitting ? 'Updating...' : 'Update'}
+									<Send className="ml-1 h-4 w-4" />
 								</Button>
 							</div>
 						</div>
@@ -455,14 +520,25 @@ export default function EditStartupForm({
 								</div>
 
 								<div className="mb-4">
-									<Button
-										type="submit"
-										className="w-full py-2 rounded-md bg-indigo-600 hover:bg-indigo-700 text-white font-medium disabled:opacity-60"
-										disabled={isSubmitting}
-										aria-disabled={isSubmitting}>
-										{isSubmitting ? 'Updating...' : 'Update'}
-										<Send className="ml-2 h-4 w-4" />
-									</Button>
+									<div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+										<DeletePostButton
+											slug={initialSlug}
+											className="w-full py-2 rounded-md bg-red-600 hover:bg-red-700 text-white focus:outline-none focus:ring-2 focus:ring-red-400 flex items-center justify-center gap-2"
+											aria-label="Delete startup">
+											<Trash className="h-4 w-4" />
+											<span>Delete</span>
+										</DeletePostButton>
+
+										<Button
+											type="submit"
+											className="w-full py-2 rounded-md bg-indigo-600 hover:bg-indigo-700 text-white font-medium disabled:opacity-60 flex items-center justify-center gap-2 focus:outline-none focus:ring-2 focus:ring-indigo-400"
+											disabled={isSubmitting}
+											aria-disabled={isSubmitting}
+											aria-label="Update startup">
+											{isSubmitting ? 'Updating...' : 'Update'}
+											<Send className="ml-1 h-4 w-4" />
+										</Button>
+									</div>
 								</div>
 
 								<div className="space-y-4 text-sm text-gray-600 dark:text-gray-300">
@@ -491,6 +567,29 @@ export default function EditStartupForm({
 										</div>
 									</div>
 
+									<div>
+										<label
+											htmlFor="slug"
+											className="text-xs text-gray-500 dark:text-gray-400 mb-1 block">
+											Slug
+										</label>
+										<Input
+											aria-label="Post category"
+											id="slug"
+											name="slug"
+											required
+											defaultValue={initialSlug}
+											placeholder="slug-slug-slug"
+											className="w-full text-sm placeholder:text-gray-400 dark:placeholder:text-gray-500 bg-transparent outline-none"
+										/>
+										{errors.slug && (
+											<p className="text-sm text-red-500 mt-1">{errors.slug}</p>
+										)}
+										<div className="mt-2 text-xs text-gray-400">
+											Choose the most relevant slug
+										</div>
+									</div>
+
 									<div className="border-t border-gray-100 dark:border-gray-700 pt-3">
 										<label
 											htmlFor="link"
@@ -506,7 +605,7 @@ export default function EditStartupForm({
 												initialData?.link ?? initialData?.image ?? ''
 											}
 											placeholder="https://example.com/image.jpg"
-											className="w-full text-sm placeholder:text-gray-400 dark:placeholder:text-gray-500 bg-transparent outline-none"
+											className="w-full text-sm placeholder:text-gray-400 dark:placeholder:text-gray-500 bg-transparent outline-none "
 										/>
 
 										{errors.link && (

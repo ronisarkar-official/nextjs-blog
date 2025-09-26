@@ -24,6 +24,9 @@ import {
 	BreadcrumbSeparator,
 } from '@/components/ui/breadcrumb';
 
+
+
+
 // Server rendering policy: change to `force-dynamic` if you need always-fresh data.
 export const dynamic = 'force-dynamic';
 // If you prefer ISR instead of fully dynamic responses, replace the above with a revalidate value like:
@@ -132,6 +135,8 @@ export default async function Page({ params }: { params: { slug: string } }) {
 		url: postUrl,
 	};
 
+
+
 	return (
 		<main className="min-h-screen bg-white text-gray-900">
 			<div className="max-w-6xl mx-auto px-6 py-12 grid md:grid-cols-3 gap-8">
@@ -168,7 +173,7 @@ export default async function Page({ params }: { params: { slug: string } }) {
 								<div className="flex items-center gap-3">
 									<div className="relative w-8 h-8 rounded-full overflow-hidden bg-gray-300">
 										<Image
-											src={authorImage}
+											src={authorImage || '/logo.png'}
 											alt={post.author?.name || 'Author'}
 											fill
 											style={{ objectFit: 'cover' }}
@@ -184,6 +189,7 @@ export default async function Page({ params }: { params: { slug: string } }) {
 											<div className="text-xs">
 												Published: {formatDate(post._createdAt)}
 											</div>
+											
 										</div>
 									</div>
 								</div>
@@ -205,7 +211,7 @@ export default async function Page({ params }: { params: { slug: string } }) {
 					<figure className="mb-8 border border-gray-300 rounded-lg overflow-hidden">
 						<div className="relative w-full h-[220px] md:h-[440px] rounded-lg overflow-hidden border-gray-300 ">
 							<Image
-								src={heroImage}
+								src={heroImage || '/logo.png'}
 								alt={post.title || 'Cover image'}
 								fill
 								className="object-cover"

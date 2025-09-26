@@ -3,6 +3,19 @@
 import Link from 'next/link';
 import { auth, signIn, signOut } from '@/auth';
 import ScrollHideController from './ScrollHideController';
+import {
+	User,
+	Home,
+	Settings,
+	LogOut,
+	LogIn,
+	PlusCircle,
+	Bell,
+	BellOff,
+	Signal,
+	ChartNoAxesColumnIncreasing,
+	Files,
+} from 'lucide-react';
 
 type Session = any;
 
@@ -66,36 +79,66 @@ export default async function Navbar() {
 								New Post
 							</Link>
 						)}
-
 						{/* Notifications (stub) */}
 						{session && session.user && (
-							<button
-								type="button"
-								className="relative p-2 rounded-md hover:bg-gray-100"
-								aria-label="View notifications">
-								<svg
-									xmlns="http://www.w3.org/2000/svg"
-									className="h-5 w-5"
-									fill="none"
-									viewBox="0 0 24 24"
-									strokeWidth={2}
-									stroke="currentColor"
-									aria-hidden>
-									<path
-										strokeLinecap="round"
-										strokeLinejoin="round"
-										d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6 6 0 10-12 0v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
+							<details className="relative hidden md:block">
+								<summary
+									className="relative flex items-center gap-2 p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 transition"
+									aria-haspopup="true"
+									aria-expanded="false"
+									aria-controls="notification-panel"
+									aria-label="Notifications">
+									{/* icon */}
+									<Bell
+										className="h-5 w-5 text-gray-600 dark:text-gray-300"
+										aria-hidden="true"
 									/>
-								</svg>
-								<span className="sr-only">3 new notifications</span>
-								<span className="absolute -top-1 -right-1 inline-flex items-center justify-center px-1.5 py-0.5 text-xs font-semibold leading-none text-white bg-red-600 rounded-full">
-									3
-								</span>
-							</button>
-						)}
+								</summary>
 
+								{/* panel */}
+								<div
+									id="notification-panel"
+									role="menu"
+									aria-label="Notifications panel"
+									className="absolute right-0 mt-2 w-80 max-w-[92vw] bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg ring-1 ring-black ring-opacity-5 py-2 z-50
+									sm:max-[62vw]
+									">
+									{/* header */}
+									<div className="flex items-center justify-between px-4 py-2 border-b border-gray-100 dark:border-gray-700">
+										<h3 className="text-sm font-medium text-gray-900 dark:text-gray-100">
+											Notifications
+										</h3>
+										{/* small hint - replace with an action if desired */}
+										<span className="text-xs text-gray-500 dark:text-gray-400">
+											Recent
+										</span>
+									</div>
+
+									{/* empty state */}
+									<div className="flex flex-col items-center gap-2 py-6 px-4 text-center">
+										<BellOff
+											className="h-6 w-6 text-gray-400 dark:text-gray-500"
+											aria-hidden="true"
+										/>
+										<p className="text-sm text-gray-600 dark:text-gray-300">
+											No notifications
+										</p>
+										<p className="text-xs text-gray-500 dark:text-gray-400">
+											You're all caught up
+										</p>
+									</div>
+
+									{/* optional: scrollable list area (use when you have items) */}
+									<div className="hidden overflow-y-auto max-h-64 divide-y divide-gray-100 dark:divide-gray-700">
+										{/* map notifications here as role="menuitem" */}
+										{/* <button role="menuitem" className="w-full text-left px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-700">...</button> */}
+									</div>
+								</div>
+							</details>
+						)}
 						{/* Profile / Auth */}
-						<div className="hidden sm:block">
+
+						
 							{session && session.user ?
 								<details className="relative">
 									<summary
@@ -116,27 +159,48 @@ export default async function Navbar() {
 												{session.user.email}
 											</p>
 										</div>
+
 										<Link
 											href={`/user/${session.id}`}
-											className="block px-3 py-2 text-sm hover:bg-gray-50">
+											className="flex items-center gap-2 px-3 py-2 text-sm hover:bg-gray-100">
+											<User className="h-4 w-4 text-gray-500 dark:text-gray-400" />
 											Profile
 										</Link>
+
 										<Link
-											href="/admin"
-											className="block px-3 py-2 text-sm hover:bg-gray-50">
-											Admin
+											href="/startups/create"
+											className=" flex items-center gap-2 px-3 py-2 text-sm hover:bg-gray-100 md:hidden">
+											<PlusCircle className="h-4 w-4 text-gray-500 dark:text-gray-400" />
+											Create
 										</Link>
+
+										<Link
+											href="/posts"
+											className="flex items-center gap-2 px-3 py-2 text-sm hover:bg-gray-100">
+											<Files className="h-4 w-4 text-gray-500 dark:text-gray-400" />
+											Posts
+										</Link>
+										<Link
+											href="/views"
+											className="flex items-center gap-2 px-3 py-2 text-sm hover:bg-gray-100">
+											<ChartNoAxesColumnIncreasing className="h-4 w-4 text-gray-500 dark:text-gray-400" />
+											Analytics
+										</Link>
+
 										<Link
 											href="/settings"
-											className="block px-3 py-2 text-sm hover:bg-gray-50">
+											className="flex items-center gap-2 px-3 py-2 text-sm hover:bg-gray-100">
+											<Settings className="h-4 w-4 text-gray-500 dark:text-gray-400" />
 											Settings
 										</Link>
+
 										<form
 											action={handleSignOut}
-											className="m-0">
+											className="m-0 border-t-1">
 											<button
 												type="submit"
-												className="w-full text-left text-red-600 px-3 py-2 text-sm hover:bg-gray-50">
+												className="w-full text-left flex items-center gap-2 text-red-600 px-3 py-2 text-sm hover:bg-gray-50">
+												<LogOut className="h-4 w-4" />
 												Logout
 											</button>
 										</form>
@@ -148,92 +212,12 @@ export default async function Navbar() {
 									<button
 										type="submit"
 										className="inline-flex items-center gap-2 border border-gray-300 px-3 py-2 rounded-md text-sm hover:bg-gray-50">
+										<LogIn className="h-4 w-4 text-gray-500 dark:text-gray-400" />
 										Sign in
 									</button>
 								</form>
 							}
-						</div>
-
-						{/* Mobile menu toggle */}
-						<details className="md:hidden relative">
-							<summary className="p-2 rounded-md inline-flex items-center justify-center hover:bg-gray-100 cursor-pointer">
-								<span className="sr-only">Open menu</span>
-								<svg
-									xmlns="http://www.w3.org/2000/svg"
-									className="h-5 w-5"
-									viewBox="0 0 20 20"
-									fill="currentColor"
-									aria-hidden>
-									<path
-										fillRule="evenodd"
-										d="M3 5h14a1 1 0 010 2H3a1 1 0 010-2zm0 4h14a1 1 0 010 2H3a1 1 0 010-2zm0 4h14a1 1 0 010 2H3a1 1 0 010-2z"
-										clipRule="evenodd"
-									/>
-								</svg>
-							</summary>
-
-							<div className="absolute right-0 mt-2 w-64 bg-white border border-gray-200 rounded-md shadow-lg p-4">
-								<nav className="flex flex-col gap-2">
-									<Link
-										href="/admin"
-										className="px-2 py-2 rounded hover:bg-gray-50">
-										Dashboard
-									</Link>
-									<Link
-										href="/blog"
-										className="px-2 py-2 rounded hover:bg-gray-50">
-										Posts
-									</Link>
-									{session && session.user && (
-										<Link
-											href="/startups/create"
-											className="px-2 py-2 rounded hover:bg-gray-50">
-											Create
-										</Link>
-									)}
-									<Link
-										href="/admin/categories"
-										className="px-2 py-2 rounded hover:bg-gray-50">
-										Categories
-									</Link>
-									<Link
-										href="/admin/users"
-										className="px-2 py-2 rounded hover:bg-gray-50">
-										Users
-									</Link>
-
-									<div className="mt-2 border-t pt-2">
-										{session && session.user ?
-											<>
-												<Link
-													href={`/user/${session.user.id}`}
-													className="block px-2 py-2 rounded hover:bg-gray-50">
-													Profile
-												</Link>
-												<form
-													action={handleSignOut}
-													className="m-0">
-													<button
-														type="submit"
-														className="w-full text-left text-red-600 px-2 py-2 rounded hover:bg-gray-50">
-														Logout
-													</button>
-												</form>
-											</>
-										:	<form
-												action={handleSignIn}
-												className="m-0">
-												<button
-													type="submit"
-													className="w-full text-left px-2 py-2 rounded hover:bg-gray-50">
-													Sign in
-												</button>
-											</form>
-										}
-									</div>
-								</nav>
-							</div>
-						</details>
+						
 					</div>
 				</div>
 			</div>
