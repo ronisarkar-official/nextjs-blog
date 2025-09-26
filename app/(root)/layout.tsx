@@ -3,10 +3,10 @@ import Navbar from '../../components/Navbar';
 import { Footer } from '@/components/footer';
 import { Hexagon, Twitter, Github } from 'lucide-react';
 
-
 export const metadata: Metadata = {
-	title: 'Startup Hub',
-	description: 'A platform for startup enthusiasts',
+	title: 'SpecHype: Read, write, and share technical insights.',
+	description:
+		'On SpecHype, anyone can share intricate specifications, useful methodologies, and technical expertise with the global developer and engineering community.',
 };
 export default function Layout({
 	children,
