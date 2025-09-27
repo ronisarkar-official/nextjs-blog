@@ -4,6 +4,10 @@ import { client } from '@/sanity/lib/client'; // Ensure this path is correct
 // Only import the necessary query for Startups
 import { ALL_STARTUP_ROUTES_QUERY } from '@/sanity/lib/queries'; // Ensure this path is correct
 
+// 🛑 FIX APPLIED HERE: Set a revalidation time (e.g., 1 hour = 3600 seconds)
+// This ensures Next.js fetches fresh data after the cache expires.
+export const revalidate = 60;
+
 // Define the common structure for the fetched slug/date data
 interface SanityRoute {
 	slug: string;
@@ -23,9 +27,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 		changeFrequency: 'weekly',
 		priority: 0.8,
 	}));
-
-	// Removed: Playlists fetch and mapping (B)
-	// Removed: Authors fetch and mapping (C)
 
 	// 2. Define Static Routes
 	const staticRoutes: MetadataRoute.Sitemap = [
