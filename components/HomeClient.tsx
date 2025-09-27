@@ -60,28 +60,18 @@ export default function HomeClient() {
 
 						<div className="flex flex-col sm:flex-row gap-3 mt-3 sm:mt-4">
 							<Link
-								href="/dashboard"
+								href="/feed"
 								className="w-full sm:w-auto">
 								<Button
 									size="lg"
 									className="w-full sm:w-auto rounded-full px-6 py-3 flex items-center justify-center gap-3"
-									aria-label="Start creating">
-									Start Creating
+									aria-label="Start explore">
+									Start Explore
 									<ArrowRight className="w-4 h-4" />
 								</Button>
 							</Link>
 
-							<Link
-								href="/feed"
-								className="w-full sm:w-auto">
-								<Button
-									variant="ghost"
-									size="lg"
-									className="w-full sm:w-auto rounded-full px-5 py-3 border border-gray-200"
-									aria-label="Explore feed">
-									Explore
-								</Button>
-							</Link>
+							
 						</div>
 
 						{/* Compact trust strip */}
@@ -294,8 +284,6 @@ export default function HomeClient() {
 					</div>
 				</div>
 			</section>
-
-			
 
 			{/* Compact bottom action bar for mobile */}
 		</div>

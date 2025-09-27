@@ -18,11 +18,13 @@ interface StartupData {
 	image?: string | { url?: string; asset?: { url?: string } };
 	author?: { name?: string };
 	_createdAt?: string;
+	_updatedAt?: string;
 	_id?: string;
 }
 
 interface ResolvedParams {
-	slug: string | string[];
+	slug?: string | string[];
+	id?: string | string[];
 }
 
 function resolveImageUrl(img: any): string | null {
@@ -31,10 +33,13 @@ function resolveImageUrl(img: any): string | null {
 	return img.url || img.asset?.url || null;
 }
 
-function truncateDescription(text: string, maxLength: number = 160): string {
+function truncateDescription(
+	text: string = '',
+	maxLength: number = 160,
+): string {
+	const cleaned = text.replace(/\s+/g, ' ').trim();
 	return (
-		text.replace(/\s+/g, ' ').trim().slice(0, maxLength) +
-		(text.length > maxLength ? '...' : '')
+		cleaned.slice(0, maxLength) + (cleaned.length > maxLength ? '...' : '')
 	);
 }
 
@@ -45,9 +50,9 @@ export async function generateMetadata({
 }): Promise<Metadata> {
 	const paramsResolved = await params;
 	const slug =
-		Array.isArray(paramsResolved.slug) ?
-			paramsResolved.slug[0]
-		:	paramsResolved.slug;
+		Array.isArray(paramsResolved.slug ?? paramsResolved.id) ?
+			(paramsResolved.slug ?? paramsResolved.id)[0]
+		:	((paramsResolved.slug ?? paramsResolved.id) as string);
 
 	let post: StartupData | null = null;
 
@@ -102,9 +107,9 @@ function generatePostMetadata(post: StartupData, slug: string): Metadata {
 	const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://example.com';
 	const url = new URL(`/startups/${slug}`, baseUrl).toString();
 
-	const title = post.title;
+	const title = post.title ?? siteName;
 
-	const description = post.description;
+	const description = post.description ?? post.pitch ?? post.excerpt ?? '';
 
 	const imageUrl =
 		resolveImageUrl(post.image) || `${baseUrl}/images/og-default.jpg`;
@@ -153,9 +158,7 @@ function generatePostMetadata(post: StartupData, slug: string): Metadata {
 				'max-snippet': -1,
 			},
 		},
-		...(post._createdAt && {
-			publishTime: post._createdAt,
-		}),
+		...(post._createdAt && { publishTime: post._createdAt }),
 	};
 }
 
@@ -179,14 +182,69 @@ function generateKeywords(title?: string, pitch?: string): string {
 	return uniqueKeywords.slice(0, 10).join(', ');
 }
 
-export default function StartupLayout({
+export default async function StartupLayout({
 	children,
+	params,
 }: {
 	children: React.ReactNode;
-	params: { id: string | string[] };
+	params: { id?: string | string[]; slug?: string | string[] };
 }) {
+	// allow both /startup/[slug] and /startup/[id] style params
+	const rawParam = params?.slug ?? params?.id;
+	const slug = Array.isArray(rawParam) ? rawParam[0] : rawParam;
+
+	let post: StartupData | null = null;
+	try {
+		if (slug) {
+			post = await client.fetch(STARTUP_BY_SLUG_QUERY, { slug });
+		}
+	} catch (err) {
+		console.error('Sanity fetch error in layout:', err);
+	}
+
+	const siteName = 'SpecHype';
+	const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://example.com';
+	const pageUrl =
+		slug ? new URL(`/startups/${slug}`, baseUrl).toString() : baseUrl;
+	const imageUrl =
+		resolveImageUrl(post?.image) || `${baseUrl}/images/og-default.jpg`;
+	const authorName = post?.author?.name ?? siteName;
+	const datePublished = post?._createdAt;
+	const dateModified = post?._updatedAt ?? post?._createdAt;
+
+	const jsonLd = {
+		'@context': 'https://schema.org',
+		'@type': 'NewsArticle',
+		mainEntityOfPage: { '@type': 'WebPage', '@id': pageUrl },
+		headline: post?.title ?? `${siteName} - Startup`,
+		image: [imageUrl],
+		datePublished: datePublished,
+		dateModified: dateModified,
+		author: { '@type': 'Person', name: authorName },
+		publisher: {
+			'@type': 'Organization',
+			name: siteName,
+			logo: { '@type': 'ImageObject', url: `${baseUrl}/logo.png` },
+		},
+		description: truncateDescription(
+			post?.description ?? post?.pitch ?? post?.excerpt ?? '',
+			200,
+		),
+		keywords: generateKeywords(post?.title, post?.pitch),
+		isAccessibleForFree: true,
+		articleSection: 'Feed',
+	};
+
 	return (
 		<div className="min-h-screen bg-white text-gray-900">
+			{/* JSON-LD for NewsArticle */}
+			{typeof window === 'undefined' && (
+				<script
+					type="application/ld+json"
+					dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+				/>
+			)}
+
 			<main
 				itemScope
 				itemType="https://schema.org/Article">
