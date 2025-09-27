@@ -37,7 +37,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 			priority: 1.0,
 		},
 		{
-			url: `${baseUrl}/startups`, // List page for all startups
+			url: `${baseUrl}/feed`, // List page for all startups
 			lastModified: new Date().toISOString(),
 			changeFrequency: 'weekly',
 			priority: 0.9,
