@@ -500,7 +500,7 @@ export default function EditStartupForm({
 							<div className="max-w-3xl mx-auto">
 								<Button
 									type="submit"
-									className="w-full py-3 rounded-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium shadow-lg disabled:opacity-60"
+									className="w-full py-3 rounded-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium shadow-lg disabled:opacity-60 cursor-pointer"
 									disabled={isSubmitting}
 									aria-disabled={isSubmitting}>
 									{isSubmitting ? 'Updating...' : 'Update'}
@@ -523,7 +523,7 @@ export default function EditStartupForm({
 									<div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
 										<DeletePostButton
 											slug={initialSlug}
-											className="w-full py-2 rounded-md bg-red-600 hover:bg-red-700 text-white focus:outline-none focus:ring-2 focus:ring-red-400 flex items-center justify-center gap-2"
+											className="w-full py-2 rounded-md bg-red-600 hover:bg-red-700 text-white focus:outline-none focus:ring-2 focus:ring-red-400 flex items-center justify-center gap-2 cursor-pointer"
 											aria-label="Delete startup">
 											<Trash className="h-4 w-4" />
 											<span>Delete</span>
@@ -531,7 +531,7 @@ export default function EditStartupForm({
 
 										<Button
 											type="submit"
-											className="w-full py-2 rounded-md bg-indigo-600 hover:bg-indigo-700 text-white font-medium disabled:opacity-60 flex items-center justify-center gap-2 focus:outline-none focus:ring-2 focus:ring-indigo-400"
+											className="w-full py-2 rounded-md bg-indigo-600 hover:bg-indigo-700 text-white font-medium disabled:opacity-60 flex items-center justify-center gap-2 focus:outline-none focus:ring-2 focus:ring-indigo-400 cursor-pointer"
 											disabled={isSubmitting}
 											aria-disabled={isSubmitting}
 											aria-label="Update startup">

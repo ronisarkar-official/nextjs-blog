@@ -85,7 +85,7 @@ export default function DeletePostButton({
 						aria-hidden="true"
 					/>
 
-					<div className="relative z-10 w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl">
+					<div className="relative z-50 w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl">
 						<h2
 							id="delete-startup-title"
 							className="text-lg font-semibold">
@@ -103,7 +103,7 @@ export default function DeletePostButton({
 							<button
 								ref={cancelRef}
 								type="button"
-								className="rounded-md px-3 py-2 text-sm"
+								className="rounded-md px-3 py-2 text-sm cursor-pointer"
 								onClick={() => setOpen(false)}
 								disabled={isDeleting}>
 								Cancel
@@ -111,7 +111,7 @@ export default function DeletePostButton({
 
 							<button
 								type="button"
-								className="rounded-md bg-red-600 px-3 py-2 text-sm text-white disabled:opacity-50"
+								className="rounded-md bg-red-600 px-3 py-2 text-sm text-white disabled:opacity-50 cursor-pointer"
 								onClick={confirmDelete}
 								disabled={isDeleting}
 								aria-disabled={isDeleting}>

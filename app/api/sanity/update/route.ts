@@ -21,11 +21,6 @@ async function uploadImageFromUrlToSanity(
 		);
 	}
 
-	const contentLength = res.headers.get('content-length');
-	if (contentLength && Number(contentLength) > 10 * 1024 * 1024) {
-		throw new Error('Image is too large (>10MB)');
-	}
-
 	const arrayBuffer = await res.arrayBuffer();
 
 	let fileBody: any;
@@ -91,37 +86,53 @@ export async function POST(request: NextRequest) {
 			);
 		}
 
-		// Build base patch object
+		// Build base patch object from payload BUT we will avoid overwriting
+		// image/link unless the payload explicitly includes a non-empty link.
 		const patchObject: Record<string, any> = { ...payload };
 
-		// If payload.link is present, try uploading and then set image and link to the uploaded URL (string)
+		// If payload does NOT include link (or it's empty), remove image/link from patchObject
+		// so we don't overwrite existing/default image in the doc.
 		if (
-			payload.link &&
-			typeof payload.link === 'string' &&
-			payload.link.trim()
+			!('link' in payload) ||
+			!payload.link ||
+			typeof payload.link !== 'string' ||
+			!payload.link.trim()
 		) {
+			// Ensure we don't set image/link to undefined/empty when user didn't intend to.
+			delete patchObject.link;
+			delete patchObject.image;
+		} else {
+			// payload.link exists and is non-empty — upload behind the scenes but preserve the original URL
 			try {
 				const uploaded = await uploadImageFromUrlToSanity(
 					payload.link,
 					`startup-${docId ?? slug ?? 'img'}`,
 				);
-				// Prefer uploaded.url if available, else fallback to original payload.link
-				const uploadedUrl = uploaded?.url ?? uploaded?.asset?.url ?? null;
 
-				if (uploadedUrl) {
-					// WRITE image as a plain string URL (per your request)
-					patchObject.image = uploadedUrl;
-					patchObject.link = uploadedUrl;
-				} else {
-					// fallback - we didn't get a public URL; write original link string
-					patchObject.image = payload.link;
-					patchObject.link = payload.link;
+				// preserve the original user-supplied URL string as visible fields
+				patchObject.link = payload.link;
+				patchObject.image = payload.link;
+
+				// Extract any asset id/ref to store separately (so we can use the uploaded asset if needed)
+				const assetId =
+					uploaded?._id ??
+					uploaded?.asset?._id ??
+					uploaded?.asset?._ref ??
+					null;
+
+				if (assetId) {
+					patchObject.imageAssetRef = {
+						_type: 'reference',
+						_ref: assetId,
+					};
+					patchObject.imageAssetId = assetId;
 				}
 			} catch (imgErr) {
 				console.error(
-					'Image upload failed, falling back to link as image string:',
+					'Image upload failed; preserving original URL as image/link:',
 					imgErr,
 				);
+				// Fall back to preserving the original link so we don't remove the visible image
 				patchObject.image = payload.link;
 				patchObject.link = payload.link;
 			}
@@ -139,7 +150,7 @@ export async function POST(request: NextRequest) {
 			}
 		}
 
-		// Perform the patch — note this will set `image` to a string
+		// Perform the patch — avoid touching image/link unless intended
 		const patched = await writeClient
 			.patch(docId)
 			.set(patchObject)

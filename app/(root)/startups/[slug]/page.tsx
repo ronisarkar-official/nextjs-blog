@@ -253,7 +253,7 @@ export default async function Page({ params }: { params: { slug: string } }) {
 								target="_blank"
 								rel="noreferrer"
 								aria-label="Share on Twitter"
-								className="flex items-center space-x-1 text-blue-500 hover:text-blue-700 transition-colors">
+								className="flex items-center space-x-1 text-blue-500 hover:text-blue-700 transition-colors cursor-pointer">
 								<Twitter className="w-5 h-5" />
 								<span className="hidden sm:inline">Twitter</span>{' '}
 								{/* Keep text for accessibility, hide on smaller screens if desired */}
@@ -266,7 +266,7 @@ export default async function Page({ params }: { params: { slug: string } }) {
 								rel="noreferrer"
 								aria-label="Share on Facebook"
 								// Consider changing the className to a custom utility class
-								className="flex items-center space-x-1 text-blue-800 hover:text-blue-900 transition-colors">
+								className="flex items-center space-x-1 text-blue-800 hover:text-blue-900 transition-colors cursor-pointer">
 								<Facebook className="w-5 h-5" />
 								<span className="hidden sm:inline">Facebook</span>
 							</a>
@@ -277,7 +277,7 @@ export default async function Page({ params }: { params: { slug: string } }) {
 									post.title,
 								)}&body=${encodeURIComponent((post.description || '') + '\n\n' + postUrl)}`}
 								aria-label="Share via Email"
-								className="flex items-center space-x-1 text-gray-600 hover:text-gray-900 transition-colors">
+								className="flex items-center space-x-1 text-gray-600 hover:text-gray-900 transition-colors cursor-pointer">
 								<Mail className="w-5 h-5" />
 								<span className="hidden sm:inline">Email</span>
 							</a>

@@ -106,7 +106,7 @@ export default function ShareButton({
 				onClick={handleShare}
 				title="Share"
 				aria-label={ariaLabel}
-				className="inline-flex items-center gap-2 px-3 py-1.5 rounded-md bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition-shadow shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500">
+				className="inline-flex items-center gap-2 px-3 py-1.5 rounded-md bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition-shadow shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 cursor-pointer">
 				<Share2
 					className="w-4 h-4"
 					aria-hidden
