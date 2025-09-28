@@ -121,12 +121,13 @@ const Startupposts = ({ post }: { post: StartupTypeCard }) => {
 								src={postImageUrl || 'logo.png'}
 								alt={title || 'Startup image'}
 								fill
-								fetchPriority="high"
+								priority={true} // <-- FIX: Use 'priority' to ensure immediate loading and set high fetch priority
 								className="object-cover bg-transparent"
 								sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-								loading="lazy"
 								placeholder="empty"
-								unoptimized
+								// REMOVED: loading="lazy" (The cause of the LCP discovery issue)
+								// REMOVED: fetchPriority="high" (Redundant when using priority={true})
+								// REMOVED: unoptimized (To enable Next.js optimizations)
 							/>
 						</div>
 
