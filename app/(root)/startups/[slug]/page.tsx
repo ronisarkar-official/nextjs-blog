@@ -11,6 +11,7 @@ import { client } from '@/sanity/lib/client';
 import {
 	STARTUP_BY_SLUG_QUERY,
 	PLAYLIST_BY_SLUG_QUERY,
+	RECENT_STARTUPS_QUERY,
 } from '@/sanity/lib/queries';
 import { Skeleton } from '@/components/ui/skeleton';
 import View from '@/components/View';
@@ -27,7 +28,7 @@ import ShareButton from '@/components/ShareButton';
 import { Facebook, Mail, Twitter } from 'lucide-react';
 
 // Server rendering policy: change to `force-dynamic` if you need always-fresh data.
-export const dynamic = 'force-dynamic';
+export const experimental_ppr = true;
 // If you prefer ISR instead of fully dynamic responses, replace the above with a revalidate value like:
 // export const revalidate = 60; // seconds
 
@@ -111,28 +112,12 @@ export default async function Page({ params }: { params: { slug: string } }) {
 	const heroImage = post.image || '/images/cover-placeholder.jpg';
 
 	// fetch editor picks / popular posts (done server-side)
-	const { select: editorPosts = [] } =
-		(await client.fetch(PLAYLIST_BY_SLUG_QUERY, { slug: 'related-posts' })) ||
-		{};
-	const { select: popularPosts = [] } =
-		(await client.fetch(PLAYLIST_BY_SLUG_QUERY, { slug: 'popular-posts' })) ||
-		{};
+	const editorPosts = (await client.fetch(RECENT_STARTUPS_QUERY)) || [];
+	const popularPosts = (await client.fetch(RECENT_STARTUPS_QUERY)) || [];
 
 	// Structured data (Article) for SEO — server-rendered JSON-LD
 	const siteBase = process.env.NEXT_PUBLIC_SITE_URL || '';
 	const postUrl = `${siteBase}/startups/${post.slug?.current}`;
-	const jsonLd = {
-		'@context': 'https://schema.org',
-		'@type': 'Article',
-		headline: post.title,
-		image: [heroImage],
-		category: post.category,
-		datePublished: post._createdAt,
-		author: { '@type': 'Person', name: post.author?.name || 'Unknown' },
-		publisher: { '@type': 'Organization', name: 'Your Site Name' },
-		description: post.description || '',
-		url: postUrl,
-	};
 
 	return (
 		<main className="min-h-screen bg-white text-gray-900">
@@ -210,6 +195,7 @@ export default async function Page({ params }: { params: { slug: string } }) {
 								src={heroImage || '/logo.png'}
 								alt={post.title || 'Cover image'}
 								fill
+								fetchPriority="high"
 								className="object-cover"
 								sizes="(max-width: 968px) 100vw, 768px"
 								priority
@@ -360,12 +346,6 @@ export default async function Page({ params }: { params: { slug: string } }) {
 					</div>
 				</aside>
 			</div>
-
-			{/* JSON-LD structured data (server-side) */}
-			<script
-				type="application/ld+json"
-				dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-			/>
 		</main>
 	);
 }

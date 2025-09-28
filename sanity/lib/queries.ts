@@ -17,6 +17,21 @@ export const STARTUPS_QUERY =
 }`);
 
 
+export const RECENT_STARTUPS_QUERY = defineQuery(`
+  *[_type == "startup" && defined(slug.current)] 
+  | order(_createdAt desc)[0..3] {
+    _id,
+    title,
+    "slug": slug.current,
+    _createdAt,
+    author->{ _id, name, image, bio },
+    views,
+    description,
+    category,
+    image
+  }
+`);
+
 
 // Query to fetch data required for the RSS feed
 export const RSS_STARTUPS_QUERY = defineQuery(`

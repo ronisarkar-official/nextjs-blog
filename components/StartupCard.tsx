@@ -82,6 +82,7 @@ const Startupposts = ({ post }: { post: StartupTypeCard }) => {
 								src={postImageUrl || 'logo.png'}
 								alt={title || 'Startup image'}
 								fill
+								fetchPriority='high'
 								className="object-cover bg-transparent"
 								sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
 								loading="lazy"
@@ -122,7 +123,7 @@ const Startupposts = ({ post }: { post: StartupTypeCard }) => {
 							{authorImageUrl ?
 								<Image
 									src={authorImageUrl || 'logo.png'}
-									alt={authorName || 'Author'}
+									alt={'Author'}
 									width={20}
 									height={20}
 									className="object-cover h-full w-full"
@@ -173,11 +174,7 @@ const Startupposts = ({ post }: { post: StartupTypeCard }) => {
 						
 					</div>
 
-					<Link
-						href={startupHref}
-						className="text-sm text-indigo-400 font-medium">
-						Read more
-					</Link>
+					
 				</div>
 			</div>
 			
