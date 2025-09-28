@@ -1,5 +1,5 @@
-// ...existing code...
-import React, { memo, useMemo } from 'react';
+'use client';
+import React, { memo, useMemo, useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import imageUrlBuilder from '@sanity/image-url';
@@ -17,6 +17,32 @@ const builder = imageUrlBuilder(sanityClient);
 const urlFor = (source: any) => (source ? builder.image(source) : null);
 
 const Startupposts = ({ post }: { post: StartupTypeCard }) => {
+	// Keep a local "fresh" copy of the post and re-fetch on mount to avoid CDN/SSG staleness.
+	const [freshPost, setFreshPost] = useState<StartupTypeCard>(post);
+
+	useEffect(() => {
+		// Try to fetch the freshest version from Sanity when this component mounts or when id/slug changes.
+		const idOrSlug = post._id ?? post.slug?.current;
+		if (!idOrSlug) return;
+
+		const query = `*[_type == "startup" && (_id == $idOrSlug || slug.current == $idOrSlug)][0]{
+			..., 
+			author->{name, image, _id}
+		}`;
+
+		// Force bypass CDN by using withConfig({ useCdn: false })
+		sanityClient
+			.withConfig({ useCdn: false, useReadOnlyToken: false })
+			.fetch(query, { idOrSlug })
+			.then((res: any) => {
+				if (res) setFreshPost(res);
+			})
+			.catch(() => {
+				/* ignore fetch errors and show the passed-in post */
+			});
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [post._id, post.slug?.current]);
+
 	const {
 		_id,
 		slug,
@@ -28,7 +54,8 @@ const Startupposts = ({ post }: { post: StartupTypeCard }) => {
 		_createdAt,
 		author,
 		excerpt,
-	} = post;
+		_updatedAt,
+	} = freshPost as StartupTypeCard;
 
 	// Derived values memoized to avoid re-computation on each render
 	const displayText = useMemo(
@@ -39,27 +66,38 @@ const Startupposts = ({ post }: { post: StartupTypeCard }) => {
 	const authorName = author?.name ?? '';
 	const authorInitial = useMemo(() => authorName.charAt(0) || '', [authorName]);
 
-	// Normalize image sources to strings usable by next/image
+	// Normalize image sources to strings usable by next/image and add a small cache-buster (updatedAt) to force refresh
 	const postImageUrl: string = useMemo(() => {
-		if (!postImage) return '/fallback-image.jpg';
-		if (typeof postImage === 'string') return postImage;
+		const updatedStamp = (freshPost as any)?._updatedAt ?? _createdAt;
+		if (!postImage)
+			return `/fallback-image.jpg?v=${Date.parse(String(updatedStamp || _createdAt))}`;
+		if (typeof postImage === 'string')
+			return `${postImage}?v=${Date.parse(String(updatedStamp || _createdAt))}`;
 		const url = urlFor(postImage)?.width(1200).url();
-		return url ?? '/fallback-image.jpg';
-	}, [postImage]);
+		return url ?
+				`${url}&v=${Date.parse(String(updatedStamp || _createdAt))}`
+			:	'/fallback-image.jpg';
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [postImage, (freshPost as any)?._updatedAt, _createdAt]);
 
 	const authorImageUrl: string | null = useMemo(() => {
+		const updatedStamp = (freshPost as any)?._updatedAt ?? _createdAt;
 		if (!author?.image) return null;
-		if (typeof author.image === 'string') return author.image;
+		if (typeof author.image === 'string')
+			return `${author.image}?v=${Date.parse(String(updatedStamp || _createdAt))}`;
 		const url = urlFor(author.image)?.width(200).url();
-		return url ?? null;
-	}, [author?.image]);
+		return url ?
+				`${url}&v=${Date.parse(String(updatedStamp || _createdAt))}`
+			:	null;
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [author?.image, (freshPost as any)?._updatedAt, _createdAt]);
 
 	// Safe hrefs
 	const startupHref = slug?.current ? `/startups/${slug.current}` : '#';
 	const authorHref = author?._id ? `/user/${author._id}` : '#';
 	const feedHref =
 		category ?
-			`/feed?query=${encodeURIComponent(category.toLowerCase())}`
+			`/feed?query=${encodeURIComponent(String(category).toLowerCase())}`
 		:	'/feed';
 
 	return (
@@ -79,14 +117,18 @@ const Startupposts = ({ post }: { post: StartupTypeCard }) => {
 						<div className="relative w-full h-full border border-white/10 rounded-xl overflow-hidden bg-gray-300 flex items-center justify-center">
 							{/* next/image requires a string or StaticImageData for src — postImageUrl is normalized above */}
 							<Image
+								key={
+									postImageUrl + String((freshPost as any)?._updatedAt ?? '')
+								}
 								src={postImageUrl || 'logo.png'}
 								alt={title || 'Startup image'}
 								fill
-								fetchPriority='high'
+								fetchPriority="high"
 								className="object-cover bg-transparent"
 								sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
 								loading="lazy"
 								placeholder="empty"
+								unoptimized
 							/>
 						</div>
 
@@ -122,6 +164,10 @@ const Startupposts = ({ post }: { post: StartupTypeCard }) => {
 						<div className="w-5 h-5 rounded-full overflow-hidden ring-0 bg-white/10 flex-shrink-0">
 							{authorImageUrl ?
 								<Image
+									key={
+										authorImageUrl +
+										String((freshPost as any)?._updatedAt ?? '')
+									}
 									src={authorImageUrl || 'logo.png'}
 									alt={'Author'}
 									width={20}
@@ -129,6 +175,7 @@ const Startupposts = ({ post }: { post: StartupTypeCard }) => {
 									className="object-cover h-full w-full"
 									loading="lazy"
 									placeholder="empty"
+									unoptimized
 								/>
 							:	<div className="w-full h-full flex items-center justify-center text-xs text-white">
 									{authorInitial}
@@ -171,13 +218,9 @@ const Startupposts = ({ post }: { post: StartupTypeCard }) => {
 						<span className="text-xs text-gray-600">
 							{formatDate(_createdAt)}
 						</span>
-						
 					</div>
-
-					
 				</div>
 			</div>
-			
 		</article>
 	);
 };
