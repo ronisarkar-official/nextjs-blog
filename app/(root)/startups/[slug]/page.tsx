@@ -189,19 +189,17 @@ export default async function Page({ params }: { params: { slug: string } }) {
 						</div>
 					</header>
 
-					<figure className="mb-8 border border-gray-300 rounded-lg overflow-hidden">
-						<div className="relative w-full h-[220px] md:h-[440px] rounded-lg overflow-hidden border-gray-300 ">
-							<Image
-								src={heroImage || '/logo.png'}
-								alt={post.title || 'Cover image'}
-								fill
-								fetchPriority="high"
-								className="object-cover"
-								sizes="(max-width: 968px) 100vw, 768px"
-								priority
-							/>
-						</div>
-					</figure>
+					<div
+						className="relative w-full aspect-video rounded-lg overflow-hidden bg-gray-100 
+					 mb-4">
+						<Image
+							src={heroImage || '/logo.png'}
+							alt={post.title || 'Cover image'}
+							fill
+							className="object-cover object-center"
+							priority
+						/>
+					</div>
 
 					<section className="max-w-none">
 						{safeHtml ?
@@ -298,10 +296,10 @@ export default async function Page({ params }: { params: { slug: string } }) {
 								{popularPosts.map((p: any) => (
 									<Link
 										key={p._id}
-										href={`/startups/${p.slug?.current || p._id}`}
+										href={`/startups/${p.slug}`}
 										className="block group"
 										prefetch>
-										<div className="flex items-start gap-4 bg-white border border-gray-300 rounded-xl p-4 shadow-sm hover:shadow-md hover:border-gray-300 transition-all duration-200">
+										<div className="flex items-start gap-2 bg-white border border-gray-300 rounded-xl p-4 shadow-sm hover:shadow-md hover:border-gray-300 transition-all duration-200">
 											<div className="w-24 h-16 relative rounded-lg overflow-hidden flex-shrink-0 bg-gray-100 border-gray-300">
 												<Image
 													src={p.image || '/images/cover-placeholder.jpg'}

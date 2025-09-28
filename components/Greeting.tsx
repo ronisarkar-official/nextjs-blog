@@ -45,13 +45,11 @@ export default function Greeting({
 	name,
 	variant = 'white',
 	iconVariant = 'filled',
-	onClick,
 }: {
 	className?: string;
 	name?: string;
 	variant?: 'white' | 'outline' | 'soft';
 	iconVariant?: 'filled' | 'outline';
-	onClick?: () => void;
 }) {
 	const [part, setPart] = useState<Part | null>(null);
 	const [timeText, setTimeText] = useState('');
@@ -145,7 +143,6 @@ export default function Greeting({
 
 	return (
 		<Container
-			onClick={onClick}
 			initial={{ opacity: 0, y: 4 }}
 			animate={{ opacity: 1, y: 0 }}
 			transition={{ duration: 0.28, ease: 'easeOut' }}
