@@ -5,6 +5,8 @@ import 'easymde/dist/easymde.min.css';
 import { ToastProvider } from '@radix-ui/react-toast';
 import { Toaster } from 'react-hot-toast';
 import '@toast-ui/editor/dist/toastui-editor.css';
+import PwaInstall from '@/components/PwaInstall';
+import IosAddToHome from '@/components/IosAddToHome';
 
 const workSans = localFont({
 	src: [
@@ -66,6 +68,26 @@ export default function RootLayout({
 		<html lang="en">
 			<head>
 				<link
+					rel="manifest"
+					href="/manifest.json"
+				/>
+				<meta
+					name="theme-color"
+					content="#432dd7"
+				/>
+				<meta
+					name="apple-mobile-web-app-capable"
+					content="yes"
+				/>
+				<meta
+					name="apple-mobile-web-app-status-bar-style"
+					content="default"
+				/>
+				<link
+					rel="apple-touch-icon"
+					href="/icon.png"
+				/>
+				<link
 					rel="alternate"
 					type="application/rss+xml"
 					title="SpecHype Latest Publications"
@@ -74,6 +96,8 @@ export default function RootLayout({
 			</head>
 			<body className={`${workSans.variable}`}>
 				{children}
+				<PwaInstall />
+				<IosAddToHome />
 				<Toaster position="top-right" />
 			</body>
 		</html>
