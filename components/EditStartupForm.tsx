@@ -441,7 +441,7 @@ export default function EditStartupForm({
 							<div className="px-6 py-5">
 								<label
 									htmlFor="title"
-									className="sr-only">
+									className="font-medium">
 									Post title
 								</label>
 								<Input

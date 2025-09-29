@@ -1,6 +1,9 @@
 import { auth } from '@/auth';
 import { client } from '@/sanity/lib/client';
-import { AUTHOR_BY_ID_QUERY } from '@/sanity/lib/queries';
+import {
+	AUTHOR_BY_ID_QUERY,
+	STARTUPS_BY_AUTHOR_QUERY,
+} from '@/sanity/lib/queries';
 import { notFound } from 'next/navigation';
 import Image from 'next/image';
 import UserStartups from '@/components/UserStartups';
@@ -12,7 +15,7 @@ export const experimental_ppr = true;
 const Page = async ({ params }: { params: Promise<{ id: string }> }) => {
 	const id = (await params).id;
 	const session = await auth();
-
+	const startups = await client.fetch(STARTUPS_BY_AUTHOR_QUERY, { id });
 	const user = await client.fetch(AUTHOR_BY_ID_QUERY, { id });
 	if (!user) return notFound();
 
@@ -20,8 +23,7 @@ const Page = async ({ params }: { params: Promise<{ id: string }> }) => {
 	const image = user.image || '/avatar-placeholder.png';
 	const bio = user.bio || 'No bio provided.';
 	const username = user.username || 'user';
-	const startupsCount = user.startupsCount ?? 0;
-	const followers = user.followers ?? 0;
+	const startupsCount = startups ?? 0;
 
 	return (
 		<main className="min-h-screen bg-gradient-to-b from-white to-gray-50 py-10">

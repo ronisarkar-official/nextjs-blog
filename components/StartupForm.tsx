@@ -457,7 +457,7 @@ const StartupForm: React.FC = () => {
 								<div className="px-6 py-5">
 									<label
 										htmlFor="title"
-										className="sr-only">
+										className=" text-gray-600 text-md font-medium">
 										Post title
 									</label>
 									<Input
@@ -483,8 +483,8 @@ const StartupForm: React.FC = () => {
 											<span>{(pitch?.length ?? 0).toLocaleString()} chars</span>
 										</div>
 
-										<div className="text-xs text-gray-400">
-											Tip: use headings and bullets for clarity
+										<div className="text-xs text-gray-500">
+											Tip: use "WYSIWYG" mode at the bottom for better writing
 										</div>
 									</div>
 									<div
@@ -570,7 +570,7 @@ const StartupForm: React.FC = () => {
 												</p>
 											)}
 											<div className="mt-2 text-xs text-gray-400">
-												Choose the most relevant category
+												Choose the one most relevant category
 											</div>
 										</div>
 
@@ -595,7 +595,7 @@ const StartupForm: React.FC = () => {
 												</p>
 											)}
 											<div className="mt-2 text-xs text-gray-400">
-												Choose the most relevant slug
+												Make the slug shorter for better SEO
 											</div>
 										</div>
 
@@ -624,7 +624,7 @@ const StartupForm: React.FC = () => {
 											<label
 												htmlFor="description"
 												className="text-xs text-gray-500 dark:text-gray-400 mb-1 block">
-												Description
+												Post Meta Description
 											</label>
 											<Textarea
 												aria-label="Post description"
@@ -640,6 +640,9 @@ const StartupForm: React.FC = () => {
 													{errors.description}
 												</p>
 											)}
+											<div className="mt-2 text-xs text-gray-400">
+												Make the description under 150 character
+											</div>
 										</div>
 									</div>
 								</div>

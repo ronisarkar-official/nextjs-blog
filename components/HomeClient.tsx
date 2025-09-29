@@ -8,6 +8,7 @@ import {
 	CheckCircle,
 	ChevronRight,
 	Users,
+	BarChart3,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -18,16 +19,9 @@ import {
 	CardTitle,
 } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import {
-	features,
-	platformTabs,
-	socialProofStats,
-	testimonials,
-} from '@/lib/data';
+import { features, platformTabs, socialProofStats } from '@/lib/data';
 import Image from 'next/image';
 import Link from 'next/link';
-
-
 
 export default function HomeClient() {
 	const [activeTab, setActiveTab] = useState(0);
@@ -70,8 +64,6 @@ export default function HomeClient() {
 									<ArrowRight className="w-4 h-4" />
 								</Button>
 							</Link>
-
-							
 						</div>
 
 						{/* Compact trust strip */}
@@ -155,7 +147,7 @@ export default function HomeClient() {
 						{features.map((f, idx) => (
 							<div
 								key={idx}
-								className="min-w-[260px] bg-white border border-gray-100 rounded-2xl p-5 shadow-sm hover:shadow-md transition">
+								className="min-w-[260px] bg-gray-100 border border-gray-100 rounded-2xl p-5 shadow-sm hover:shadow-md transition">
 								<div
 									className={`w-12 h-12 ${f.color} rounded-xl flex items-center justify-center mb-3`}>
 									<f.icon className="w-5 h-5 text-white" />
@@ -251,36 +243,23 @@ export default function HomeClient() {
 			</section>
 
 			{/* Testimonials — speech bubble cards */}
-			<section
-				id="testimonials"
-				className="px-6 sm:px-12 py-12">
-				<div className="max-w-7xl mx-auto">
-					<h3 className="text-xl font-bold mb-6">Creators say</h3>
-					<div className="grid md:grid-cols-3 gap-6">
-						{testimonials.map((t, i) => (
-							<div
-								key={i}
-								className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
-								<div className="text-sm text-gray-700 mb-3">“{t.content}”</div>
-								<div className="flex items-center gap-3 mt-4">
-									<div className="w-12 h-12 relative">
-										<Image
-											src={`https://images.unsplash.com/photo-${t.imageId}?w=200&h=200&fit=crop&crop=face`}
-											alt={t.name}
-											fill
-											className="rounded-full object-cover border border-gray-100"
-											sizes="48px"
-										/>
-									</div>
-									<div>
-										<div className="font-semibold text-gray-900">{t.name}</div>
-										<div className="text-xs text-gray-500">
-											{t.role} · {t.company}
-										</div>
-									</div>
-								</div>
+
+			<section className="relative z-10 py-16 sm:py-24 px-4 sm:px-6 bg-gradient-to-r ">
+				<div className="max-w-4xl mx-auto text-center">
+					<h2 className="text-4xl sm:text-5xl md:text-6xl font-black mb-6 sm:mb-8">
+						<span className="gradient-text-primary">Ready to create?</span>
+					</h2>
+					<p className="text-xl text-gray-400 mb-8 sm:mb-12 max-w-2xl mx-auto">
+						Join thousands of creators who are already building their audience
+						and growing their business with our AI-powered platform.
+					</p>
+
+					<div className="flex flex-col sm:flex-row gap-6 justify-center">
+						<Link href="/feed">
+							<div className="rounded-full w-full bg-gray-900 px-4 py-2 text-white hover:bg-gray-700">
+								Explore the Feed
 							</div>
-						))}
+						</Link>
 					</div>
 				</div>
 			</section>
