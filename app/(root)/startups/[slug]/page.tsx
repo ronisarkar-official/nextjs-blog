@@ -26,6 +26,7 @@ import {
 } from '@/components/ui/breadcrumb';
 import ShareButton from '@/components/ShareButton';
 import { Facebook, Mail, Twitter } from 'lucide-react';
+import ArticleRenderer from '@/components/ArticleRender';
 
 // Server rendering policy: change to `force-dynamic` if you need always-fresh data.
 export const experimental_ppr = true;
@@ -203,20 +204,9 @@ export default async function Page({ params }: { params: { slug: string } }) {
 
 					<section className="max-w-none">
 						{safeHtml ?
-							<article
-								className={
-									'mx-auto max-w-4xl font-work-sans text-gray-800 dark:text-gray-100 prose prose-neutral dark:prose-invert lg:prose-lg ' +
-									'[&_h1]:mt-8 [&_h1]:mb-4 [&_h1]:text-3xl [&_h1]:leading-tight ' +
-									'[&_h2]:mt-7 [&_h2]:mb-3 [&_h2]:text-2xl [&_h2]:leading-tight ' +
-									'[&_h3]:mt-6 [&_h3]:mb-2 [&_h3]:text-xl ' +
-									'[&_h4]:mt-5 [&_h4]:mb-2 [&_h4]:text-lg ' +
-									'[&_p]:mb-5 [&_p]:leading-relaxed [&_ul]:mb-5 [&_ol]:mb-5 [&_li]:mb-2 ' +
-									'[&_blockquote]:my-6 [&_blockquote]:px-4 [&_blockquote]:py-3 [&_blockquote]:border-l-2 [&_blockquote]:border-gray-200 dark:[&_blockquote]:border-gray-700 ' +
-									'[&_img]:mx-auto [&_img]:rounded-lg [&_img]:shadow-sm [&_img]:max-w-full ' +
-									'[&_pre]:rounded-lg [&_pre]:bg-gray-50 dark:[&_pre]:bg-gray-800 [&_code]:rounded [&_code]:px-1.5 [&_code]:py-0.5 '
-								}
-								dangerouslySetInnerHTML={{ __html: safeHtml }}
-							/>
+							<article>
+								<ArticleRenderer html={safeHtml} />
+							</article>
 						:	<div className="mx-auto max-w-4xl py-8 text-center">
 								<p className="text-sm text-gray-500">No content available.</p>
 							</div>
