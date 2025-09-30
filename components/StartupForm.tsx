@@ -632,6 +632,7 @@ const StartupForm: React.FC = () => {
 												name="description"
 												required
 												defaultValue=""
+												maxLength={150}
 												placeholder="Short summary that appears in previews"
 												className="w-full text-sm placeholder:text-gray-400 dark:placeholder:text-gray-500 bg-transparent outline-none"
 											/>

@@ -4,10 +4,6 @@ import type { Metadata } from 'next';
 import { client } from '@/sanity/lib/client';
 import { STARTUP_BY_SLUG_QUERY } from '@/sanity/lib/queries';
 
-// Remove force-dynamic if not absolutely necessary
-// export const dynamic = 'force-dynamic';
-
-// Consider adding revalidation for better performance
 export const revalidate = 3600; // 1 hour
 
 interface StartupData {
@@ -33,133 +29,18 @@ function resolveImageUrl(img: any): string | null {
 	return img.url || img.asset?.url || null;
 }
 
-function truncateDescription(
-	text: string = '',
-	maxLength: number = 160,
-): string {
-	const cleaned = text.replace(/\s+/g, ' ').trim();
-	return (
-		cleaned.slice(0, maxLength) + (cleaned.length > maxLength ? '...' : '')
-	);
+function stripHtml(html = ''): string {
+	return html
+		.replace(/<[^>]*>/g, '')
+		.replace(/\s+/g, ' ')
+		.trim();
 }
 
-export async function generateMetadata({
-	params,
-}: {
-	params: ResolvedParams | Promise<ResolvedParams>;
-}): Promise<Metadata> {
-	const paramsResolved = await params;
-	const slug =
-		Array.isArray(paramsResolved.slug ?? paramsResolved.id) ?
-			(paramsResolved.slug ?? paramsResolved.id)[0]
-		:	((paramsResolved.slug ?? paramsResolved.id) as string);
-
-	let post: StartupData | null = null;
-
-	try {
-		post = await client.fetch(STARTUP_BY_SLUG_QUERY, { slug });
-	} catch (err) {
-		console.error('Sanity fetch error for metadata:', err);
-		// Return basic metadata without throwing error
-		return getFallbackMetadata();
-	}
-
-	if (!post) {
-		return getFallbackMetadata();
-	}
-
-	return generatePostMetadata(post, slug);
-}
-
-function getFallbackMetadata(): Metadata {
-	const siteName = 'Startup Hub';
-	const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://example.com';
-
-	return {
-		title: `${siteName} - Discover Innovative Startups`,
-		description:
-			'A platform for startup enthusiasts to discover and share innovative businesses',
-		keywords: 'startups, innovation, entrepreneurship, business ideas',
-		openGraph: {
-			title: siteName,
-			description: 'A platform for startup enthusiasts',
-			url: baseUrl,
-			siteName,
-			type: 'website',
-			images: [`${baseUrl}/images/og-default.jpg`],
-		},
-		twitter: {
-			card: 'summary_large_image',
-			title: siteName,
-			description: 'A platform for startup enthusiasts',
-			images: [`${baseUrl}/images/og-default.jpg`],
-		},
-		metadataBase: new URL(baseUrl),
-		robots: {
-			index: true,
-			follow: true,
-		},
-	};
-}
-
-function generatePostMetadata(post: StartupData, slug: string): Metadata {
-	const siteName = 'SpecHype';
-	const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://example.com';
-	const url = new URL(`/startups/${slug}`, baseUrl).toString();
-
-	const title = post.title ?? siteName;
-
-	const description = post.description ?? post.pitch ?? post.excerpt ?? '';
-
-	const imageUrl =
-		resolveImageUrl(post.image) || `${baseUrl}/images/og-default.jpg`;
-	const authorName = post.author?.name;
-
-	return {
-		title,
-		description,
-		keywords: generateKeywords(post.title, post.pitch),
-		authors: authorName ? [{ name: authorName }] : undefined,
-		openGraph: {
-			title,
-			description,
-			url,
-			siteName,
-			type: 'article',
-			publishedTime: post._createdAt,
-			images: [
-				{
-					url: imageUrl,
-					width: 1200,
-					height: 630,
-					alt: title,
-				},
-			],
-			...(authorName && { authors: [authorName] }),
-		},
-		twitter: {
-			card: 'summary_large_image',
-			title,
-			description,
-			images: [imageUrl],
-		},
-		metadataBase: new URL(baseUrl),
-		alternates: {
-			canonical: url,
-		},
-		robots: {
-			index: true,
-			follow: true,
-			googleBot: {
-				index: true,
-				follow: true,
-				'max-video-preview': -1,
-				'max-image-preview': 'large',
-				'max-snippet': -1,
-			},
-		},
-		...(post._createdAt && { publishTime: post._createdAt }),
-	};
+function truncate(text = '', maxLength = 160): string {
+	const cleaned = stripHtml(text);
+	return cleaned.length > maxLength ?
+			cleaned.slice(0, maxLength).trim() + '...'
+		:	cleaned;
 }
 
 function generateKeywords(title?: string, pitch?: string): string {
@@ -176,10 +57,153 @@ function generateKeywords(title?: string, pitch?: string): string {
 	const titleKeywords = title
 		.toLowerCase()
 		.split(/\s+/)
-		.filter((word) => word.length > 3);
-	const uniqueKeywords = [...new Set([...titleKeywords, ...baseKeywords])];
+		.filter((w) => w.length > 3)
+		.map((w) => w.replace(/[^a-z0-9]/g, ''))
+		.filter(Boolean);
 
-	return uniqueKeywords.slice(0, 10).join(', ');
+	const unique = Array.from(new Set([...titleKeywords, ...baseKeywords]));
+	return unique.slice(0, 12).join(', ');
+}
+
+function isGameArticle(title?: string): boolean {
+	if (!title) return false;
+	const keywords = [
+		'pc specs',
+		'system requirements',
+		'requirements',
+		'battlefield',
+		'game',
+		'gpu',
+		'fps',
+	];
+	const t = title.toLowerCase();
+	return keywords.some((k) => t.includes(k));
+}
+
+function getSiteConfig() {
+	const siteName = process.env.NEXT_PUBLIC_SITE_NAME || 'SpecHype';
+	const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://example.com';
+	const siteTag = process.env.NEXT_PUBLIC_SITE_TAGLINE || '';
+	const twitterHandle = process.env.NEXT_PUBLIC_SOCIAL_TWITTER || '';
+	return { siteName, baseUrl, siteTag, twitterHandle };
+}
+
+export async function generateMetadata({
+	params,
+}: {
+	params: ResolvedParams | Promise<ResolvedParams>;
+}): Promise<Metadata> {
+	const paramsResolved = await params;
+	const raw = (paramsResolved.slug ?? paramsResolved.id) as
+		| string
+		| string[]
+		| undefined;
+	const slug = Array.isArray(raw) ? raw[0] : raw;
+
+	if (!slug) return getFallbackMetadata();
+
+	let post: StartupData | null = null;
+	try {
+		post = await client.fetch(STARTUP_BY_SLUG_QUERY, { slug });
+	} catch (err) {
+		console.error('Sanity fetch error for metadata:', err);
+		return getFallbackMetadata();
+	}
+
+	if (!post) return getFallbackMetadata();
+
+	return generatePostMetadata(post, slug);
+}
+
+function getFallbackMetadata(): Metadata {
+	const { siteName, baseUrl, siteTag } = getSiteConfig();
+
+	return {
+		title: siteName,
+		description:
+			siteTag ||
+			'A platform for startup enthusiasts to discover and share innovative businesses',
+		keywords: 'startups, innovation, entrepreneurship',
+		openGraph: {
+			title: siteName,
+			description: siteTag,
+			url: baseUrl,
+			siteName,
+			type: 'website',
+			images: [`${baseUrl}/og-default.png`],
+		},
+		twitter: {
+			card: 'summary_large_image',
+			title: siteName,
+			description: siteTag,
+			images: [`${baseUrl}/og-default.png`],
+		},
+		metadataBase: new URL(baseUrl),
+		robots: { index: true, follow: true },
+	};
+}
+
+function generatePostMetadata(post: StartupData, slug: string): Metadata {
+	const { siteName, baseUrl, twitterHandle } = getSiteConfig();
+	const url = new URL(`/startups/${slug}`, baseUrl).toString();
+
+	// Use exact post title as the canonical title. Do NOT append site name here.
+	const title = (post.title || siteName).trim();
+	const description = truncate(
+		post.description ?? post.pitch ?? post.excerpt ?? '',
+	);
+	const imageUrl =
+		resolveImageUrl(post.image) || `${baseUrl}/images/og-default.jpg`;
+	const authorName = post.author?.name;
+
+	// OpenGraph and twitter explicitly use the same title to reduce the chances of search engines appending a site suffix.
+	const metadata: Metadata = {
+		title,
+		description,
+		keywords: generateKeywords(post.title, post.pitch),
+		authors: authorName ? [{ name: authorName }] : undefined,
+		openGraph: {
+			title,
+			description,
+			url,
+			siteName, // siteName can still exist in OG but keep title exact
+			type: 'article',
+			publishedTime: post._createdAt,
+			images: [
+				{
+					url: imageUrl,
+					width: 1200,
+					height: 630,
+					alt: title,
+				},
+			],
+			...(authorName ? { authors: [authorName] } : {}),
+		},
+		twitter: {
+			card: 'summary_large_image',
+			title,
+			description,
+			images: [imageUrl],
+			site: twitterHandle || undefined,
+		},
+		metadataBase: new URL(baseUrl),
+		alternates: { canonical: url },
+		robots: {
+			index: true,
+			follow: true,
+			googleBot: {
+				index: true,
+				follow: true,
+				'max-video-preview': -1,
+				'max-image-preview': 'large',
+				'max-snippet': -1,
+			},
+		},
+		// Keep publishTime only when available
+		...(post._createdAt ? { publishTime: post._createdAt } : {}),
+	};
+
+	return metadata;
 }
 
 export default async function StartupLayout({
@@ -189,7 +213,6 @@ export default async function StartupLayout({
 	children: React.ReactNode;
 	params: { id?: string | string[]; slug?: string | string[] };
 }) {
-	// allow both /startup/[slug] and /startup/[id] style params
 	const rawParam = params?.slug ?? params?.id;
 	const slug = Array.isArray(rawParam) ? rawParam[0] : rawParam;
 
@@ -202,42 +225,73 @@ export default async function StartupLayout({
 		console.error('Sanity fetch error in layout:', err);
 	}
 
-	const siteName = 'SpecHype';
-	const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://example.com';
+	const { siteName, baseUrl } = getSiteConfig();
 	const pageUrl =
 		slug ? new URL(`/startups/${slug}`, baseUrl).toString() : baseUrl;
 	const imageUrl =
-		resolveImageUrl(post?.image) || `${baseUrl}/images/og-default.jpg`;
+		resolveImageUrl(post?.image) || `${baseUrl}/images/og-default.png`;
 	const authorName = post?.author?.name ?? siteName;
 	const datePublished = post?._createdAt;
 	const dateModified = post?._updatedAt ?? post?._createdAt;
 
-	const jsonLd = {
+	// Use TechArticle (better for technical / long-form guides). If it's not technical, Article is fine.
+	const jsonLd: any = {
 		'@context': 'https://schema.org',
-		'@type': 'NewsArticle',
+		'@type': 'TechArticle',
 		mainEntityOfPage: { '@type': 'WebPage', '@id': pageUrl },
-		headline: post?.title ?? `${siteName} - Startup`,
+		headline: post?.title || siteName,
 		image: [imageUrl],
-		datePublished: datePublished,
-		dateModified: dateModified,
+		datePublished,
+		dateModified,
 		author: { '@type': 'Person', name: authorName },
 		publisher: {
 			'@type': 'Organization',
 			name: siteName,
 			logo: { '@type': 'ImageObject', url: `${baseUrl}/logo.png` },
 		},
-		description: truncateDescription(
+		description: truncate(
 			post?.description ?? post?.pitch ?? post?.excerpt ?? '',
-			200,
 		),
 		keywords: generateKeywords(post?.title, post?.pitch),
 		isAccessibleForFree: true,
 		articleSection: 'Feed',
 	};
 
+	// If this looks like a game/system-requirements article, attach a VideoGame object.
+	if (isGameArticle(post?.title)) {
+		jsonLd.about = {
+			'@type': 'VideoGame',
+			name: post?.title,
+			url: pageUrl,
+			gamePlatform: 'PC',
+			// These are optional placeholders — if you have the exact fields in Sanity, replace them.
+			operatingSystem: 'Windows 10/11',
+		};
+	}
+
+	// BreadcrumbList (helpful for SERP breadcrumbs)
+	jsonLd.mainEntity = {
+		'@type': 'BreadcrumbList',
+		itemListElement: [
+			{ '@type': 'ListItem', position: 1, name: 'Home', item: baseUrl },
+			{
+				'@type': 'ListItem',
+				position: 2,
+				name: 'Startups',
+				item: new URL('/startups', baseUrl).toString(),
+			},
+			{
+				'@type': 'ListItem',
+				position: 3,
+				name: post?.title || 'Post',
+				item: pageUrl,
+			},
+		],
+	};
+
 	return (
 		<div className="min-h-screen bg-white text-gray-900">
-			{/* JSON-LD for NewsArticle */}
+			{/* JSON-LD renders server-side only */}
 			{typeof window === 'undefined' && (
 				<script
 					type="application/ld+json"
