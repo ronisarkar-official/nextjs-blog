@@ -1,14 +1,10 @@
 // app/sitemap.ts
 import { MetadataRoute } from 'next';
-import { client } from '@/sanity/lib/client'; // Ensure this path is correct
-// Only import the necessary query for Startups
-import { ALL_STARTUP_ROUTES_QUERY } from '@/sanity/lib/queries'; // Ensure this path is correct
+import { client } from '@/sanity/lib/client';
+import { ALL_STARTUP_ROUTES_QUERY } from '@/sanity/lib/queries';
 
-// 🛑 FIX APPLIED HERE: Set a revalidation time (e.g., 1 hour = 3600 seconds)
-// This ensures Next.js fetches fresh data after the cache expires.
-export const revalidate = 60;
+export const revalidate = 60; // keep or adjust as needed
 
-// Define the common structure for the fetched slug/date data
 interface SanityRoute {
 	slug: string;
 	lastModified: string;
@@ -16,19 +12,19 @@ interface SanityRoute {
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 	const baseUrl =
-		process.env.NEXT_PUBLIC_SITE_URL || 'https://www.xxxxxxxxx.com'; // CRITICAL: Set your production domain
+		process.env.NEXT_PUBLIC_SITE_URL || 'https://www.spechype.com';
 
-	// 1. Fetch Dynamic Routes from Sanity (ONLY STARTUPS)
-	// A. Startups (e.g., /startup/my-first-idea)
+	// fetch should return { "slug": slug.current, "lastModified": _updatedAt } (see GROQ below)
 	const startups: SanityRoute[] = await client.fetch(ALL_STARTUP_ROUTES_QUERY);
+
 	const startupRoutes: MetadataRoute.Sitemap = startups.map((item) => ({
-		url: `${baseUrl}/startup/${item.slug}`,
+		// ---- FIXED: use plural "startups" to match your real URLs ----
+		url: `${baseUrl}/startups/${item.slug}`,
 		lastModified: new Date(item.lastModified).toISOString(),
 		changeFrequency: 'weekly',
 		priority: 0.8,
 	}));
 
-	// 2. Define Static Routes
 	const staticRoutes: MetadataRoute.Sitemap = [
 		{
 			url: `${baseUrl}`,
@@ -37,7 +33,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 			priority: 1.0,
 		},
 		{
-			url: `${baseUrl}/feed`, // List page for all startups
+			url: `${baseUrl}/feed`,
 			lastModified: new Date().toISOString(),
 			changeFrequency: 'weekly',
 			priority: 0.9,
@@ -48,9 +44,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 			changeFrequency: 'yearly',
 			priority: 0.5,
 		},
-		// Add all other static pages like /contact, /faq, etc.
 	];
 
-	// 3. Combine and Return (ONLY Startups and Static Routes)
 	return [...staticRoutes, ...startupRoutes];
 }

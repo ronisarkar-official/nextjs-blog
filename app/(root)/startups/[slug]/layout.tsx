@@ -43,7 +43,7 @@ function truncate(text = '', maxLength = 160): string {
 		:	cleaned;
 }
 
-function generateKeywords(title?: string, pitch?: string): string {
+function generateKeywords(title?: string, pitch?: string, description?: string | undefined): string {
 	const baseKeywords = [
 		'startup',
 		'innovation',
@@ -252,7 +252,7 @@ export default async function StartupLayout({
 		description: truncate(
 			post?.description ?? post?.pitch ?? post?.excerpt ?? '',
 		),
-		keywords: generateKeywords(post?.title, post?.pitch),
+		keywords: generateKeywords(post?.title, post?.pitch, post?.description,),
 		isAccessibleForFree: true,
 		articleSection: 'Feed',
 	};

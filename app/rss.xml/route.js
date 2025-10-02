@@ -4,7 +4,7 @@ import { RSS_STARTUPS_QUERY } from '@/sanity/lib/queries';
 import { NextResponse } from 'next/server';
 
 const baseUrl = (
-	process.env.NEXT_PUBLIC_SITE_URL || 'https://www.xxxxxxxxx.com'
+	process.env.NEXT_PUBLIC_SITE_URL || 'https://www.spechype.com'
 ).replace(/\/$/, '');
 const currentYear = new Date().getFullYear();
 
@@ -79,13 +79,18 @@ export async function GET(_request) {
 			.map((r) => {
 				const slug = getSlug(r.slug);
 				if (!slug) return null;
+
 				const pubIso =
 					r.pubDate || r._createdAt || r._updatedAt || new Date().toISOString();
-				const url = `${baseUrl}/startup/${encodeURIComponent(slug)}`;
+
+				// ---- FIXED: use plural "startups" to match your public URL path ----
+				const url = `${baseUrl}/startups/${encodeURIComponent(slug)}`;
+
 				const authorName =
 					typeof r.author === 'string' ?
 						r.author
 					:	(r.author && r.author.name) || 'SpecHype';
+
 				return {
 					id: r._id,
 					title: r.title || 'Untitled',
@@ -110,7 +115,9 @@ export async function GET(_request) {
 			status: 200,
 			headers: {
 				'Content-Type': 'application/rss+xml; charset=utf-8',
-				'Cache-Control': 'public, max-age=600, stale-while-revalidate=3600',
+				// ---- RECOMMENDATION: control edge freshness with s-maxage ----
+				// balanced: edge caches for 60s but will serve stale while revalidating for an hour
+				'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=3600',
 			},
 		});
 	} catch (err) {
