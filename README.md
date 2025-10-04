@@ -10,8 +10,17 @@
 
 ## Project Overview
 
-A polished, SEO-first Next.js blog template tailored for publishing high-quality long-form articles, system requirement guides, performance testing write-ups, and general technology content. The project prioritizes fast page loads, a streamlined editor experience, and structured content management via Sanity.
+A polished, SEO-first Next.js blog template tailored for publishing high-quality long-form articles, system requirement guides, performance testing write-ups, and general technology content. The project prioritizes fast page loads, a streamlined editor experience, and structured content management via Sanity. 
 
+<p align="center">
+  <img 
+    src="https://ik.imagekit.io/2zeqzsn1n/image_2025-10-04_134448863.png?updatedAt=1759565612989" 
+    alt="Event Storming Big Picture" 
+    style="border-radius: 16px; max-width: 100%; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);" 
+  />
+</p>
+
+  
 ---
 
 ## Tech Stack
@@ -56,25 +65,38 @@ Open `http://localhost:3000` to view the app.
 Create a `.env` file in project root. Minimum recommended variables:
 
 ```env
-# Authentication
-AUTH_SECRET="your-auth-secret"
-
-# GitHub OAuth
+# -- Auth (NextAuth) ----------------------------------------------------
+AUTH_SECRET="change-me-to-a-secure-random-value"
+NEXTAUTH_URL="http://localhost:3000"
 AUTH_GITHUB_ID="your-github-client-id"
 AUTH_GITHUB_SECRET="your-github-client-secret"
 
-# Sanity CMS
+# -- Sanity CMS ---------------------------------------------------------
 NEXT_PUBLIC_SANITY_PROJECT_ID="your-sanity-project-id"
 NEXT_PUBLIC_SANITY_DATASET="production"
 NEXT_PUBLIC_SANITY_API_VERSION="2025-01-01"
 SANITY_WRITE_TOKEN="your-sanity-write-token"
 
-# App URL
+# -- Site metadata (public) --------------------------------------------
 NEXT_PUBLIC_SITE_URL="http://localhost:3000"
+NEXT_PUBLIC_SITE_NAME="Spechype"
+NEXT_PUBLIC_SITE_TAGLINE="Explore game system requirements and tech insights"
+NEXT_PUBLIC_SOCIAL_GITHUB="https://github.com/username"
+NEXT_PUBLIC_SOCIAL_TWITTER="https://twitter.com/username"
+NEXT_PUBLIC_SOCIAL_LINKEDIN="https://www.linkedin.com/in/username/"
+NEXT_PUBLIC_SOCIAL_INSTAGRAM="https://www.instagram.com/username/"
+NEXT_PUBLIC_SOCIAL_YOUTUBE="https://www.youtube.com/@username"
+NEXT_PUBLIC_CONTACT_EMAIL="contact@yoursite.com"
 
 ```
 
-> Add only values you use. Never commit secrets to the repository.
+
+✅ **Notes:**
+- Uses fenced code block with `env` syntax highlighting (GitHub supports it).  
+- Each field has a realistic placeholder you can later replace.  
+- Safe for public README — no sensitive info included.
+
+
 
 ---
 
@@ -144,10 +166,3 @@ This project is provided under the **MIT License**.
 
 ---
 
-If you'd like, I can now:
-
-* create a `CONTRIBUTING.md` and `LICENSE` (MIT) file ready to commit,
-* generate a `.env.example` with placeholders,
-* produce a minimal GitHub Actions workflow to run lint and build on PRs.
-
-Which one should I do next?
