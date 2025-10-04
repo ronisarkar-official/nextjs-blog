@@ -61,11 +61,9 @@ async function fetchStartup(idOrSlug: string, signal?: AbortSignal) {
 }
 
 /**
- * Startup card (client) — optimized
- * - Uses a lightweight in-memory cache with 60s TTL
- * - Automatically revalidates every 60s
- * - Deduplicates concurrent fetches
- * - Keeps realtime listener but only updates when payload changes
+ * Startup card (client) — optimized for dark mode
+ * - Adds dark: variants across backgrounds, borders, text, hover/focus states
+ * - Keeps original perf/cache/realtime features
  */
 const Startupposts = ({
 	post,
@@ -227,17 +225,19 @@ const Startupposts = ({
 		:	'/feed';
 
 	return (
-		<article className="rounded-2xl overflow-hidden relative">
+		<article className="rounded-2xl overflow-hidden relative bg-transparent">
 			<div className="relative">
 				<div className="relative h-52 sm:h-60 md:h-48 lg:h-60 2xl:h-72">
 					<Link
 						href={startupHref}
-						className="absolute inset-0 z-10">
+						className="absolute inset-0 z-10"
+						aria-label={`Open ${title}`}>
 						<span className="sr-only">Open {title}</span>
 					</Link>
 
-					<div className="absolute inset-2 rounded-xl overflow-hidden z-0 bg-black/10">
-						<div className="relative w-full h-full border border-white/10 rounded-xl overflow-hidden bg-gray-300 flex items-center justify-center">
+					{/* Image + overlay */}
+					<div className="absolute inset-2 rounded-xl overflow-hidden z-0 bg-black/10 dark:bg-black/30">
+						<div className="relative w-full h-full border border-white/10 dark:border-gray-700 rounded-xl overflow-hidden bg-gray-300 dark:bg-gray-700 flex items-center justify-center">
 							{/* Next/Image with fill for better layout and performance */}
 							<div className="relative w-full h-full">
 								<Image
@@ -252,8 +252,9 @@ const Startupposts = ({
 							</div>
 						</div>
 
+						{/* Views badge */}
 						<div
-							className="absolute top-2 right-2 z-10 flex items-center gap-1 px-2 py-0.5 text-xs rounded-full bg-white text-black border border-gray-300 backdrop-blur"
+							className="absolute top-2 right-2 z-10 flex items-center gap-1 px-2 py-0.5 text-xs rounded-full bg-white text-black border border-gray-300 backdrop-blur dark:bg-gray-900/80 dark:text-gray-100 dark:border-gray-700"
 							aria-label="views">
 							<svg
 								xmlns="http://www.w3.org/2000/svg"
@@ -275,10 +276,16 @@ const Startupposts = ({
 						</div>
 					</div>
 
+					{/* Author chip */}
 					<Link
 						href={authorHref}
-						className="absolute left-5 bottom-5 z-20 flex items-center gap-3 bg-white rounded-sm px-2 py-1 border border-gray-300">
-						<div className="w-5 h-5 rounded-full overflow-hidden ring-0 bg-white/10 flex-shrink-0">
+						className="absolute left-5 bottom-5 z-20 flex items-center gap-3 rounded-sm px-2 py-1 border border-gray-300 bg-white/95 dark:bg-gray-900/70 dark:border-gray-700 shadow-sm"
+						aria-label={
+							author?.name ?
+								`Open ${author.name} profile`
+							:	'Open author profile'
+						}>
+						<div className="w-5 h-5 rounded-full overflow-hidden ring-0 bg-gray-100 dark:bg-gray-800 flex-shrink-0">
 							{authorImageUrl ?
 								<Image
 									src={authorImageUrl}
@@ -289,7 +296,7 @@ const Startupposts = ({
 									loading="lazy"
 									placeholder="empty"
 								/>
-							:	<div className="w-full h-full flex items-center justify-center text-xs text-white">
+							:	<div className="w-full h-full flex items-center justify-center text-xs text-gray-800 dark:text-gray-100">
 									{authorInitial}
 								</div>
 							}
@@ -297,7 +304,7 @@ const Startupposts = ({
 
 						<div className="text-sm">
 							<div className="flex items-center gap-2">
-								<span className="font-medium text-black text-sm">
+								<span className="font-medium text-black dark:text-gray-100 text-sm">
 									{author?.name}
 								</span>
 							</div>
@@ -306,29 +313,34 @@ const Startupposts = ({
 				</div>
 			</div>
 
-			<div className="px-4 bg-transparent">
+			{/* Content */}
+			<div className="px-4 pt-4 pb-2 bg-transparent">
 				<Link
 					href={feedHref}
-					className="inline-block">
-					<p className="text-sm text-gray-500 font-medium">in {category}</p>
+					className="inline-block focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 rounded">
+					<p className="text-sm text-gray-500 dark:text-gray-400 font-medium">
+						in {category}
+					</p>
 				</Link>
 
-				<h2 className="text-black text-lg font-semibold leading-tight mb-2 hover:text-indigo-600">
+				<h2 className="text-black dark:text-gray-100 text-lg font-semibold leading-tight mb-2 transition-colors hover:text-indigo-600 dark:hover:text-indigo-400">
 					<Link
 						href={startupHref}
-						className="inline-block">
+						className="inline-block focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 rounded">
 						{title}
 					</Link>
 				</h2>
 
-				<p className="text-gray-600 text-sm mb-4 line-clamp-3">{displayText}</p>
+				<p className="text-gray-600 dark:text-gray-300 text-sm mb-4 line-clamp-3">
+					{displayText}
+				</p>
 
 				<div className="flex items-center justify-between">
 					<div className="flex items-center gap-3">
 						<span className="text-xs bg-indigo-600 text-white px-2 py-1 rounded-md">
 							Published
 						</span>
-						<span className="text-xs text-gray-600">
+						<span className="text-xs text-gray-600 dark:text-gray-400">
 							{formatDate(_createdAt)}
 						</span>
 					</div>

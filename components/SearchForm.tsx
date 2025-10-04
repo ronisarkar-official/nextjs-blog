@@ -1,3 +1,5 @@
+'use client';
+
 import React from 'react';
 import Form from 'next/form';
 import { Search } from 'lucide-react';
@@ -5,12 +7,12 @@ import SearchFormReset from '../components/SearchFormReset';
 
 const SearchForm = ({ query }: { query?: string }) => {
 	return (
-		<div className=" mt-8 flex items-center justify-center px-4">
+		<div className="mt-8 flex items-center justify-center px-4">
 			<Form
 				action="/feed"
 				role="search"
 				aria-label="Site search"
-				className="search-form   w-full max-w-xl">
+				className="search-form w-full max-w-xl">
 				<label
 					htmlFor="site-search"
 					className="sr-only">
@@ -18,32 +20,23 @@ const SearchForm = ({ query }: { query?: string }) => {
 				</label>
 
 				<div
-					className="relative flex items-center w-full bg-white/80 dark:bg-black/40 backdrop-blur-md border border-black/12 
-                   shadow-sm dark:shadow-none rounded-full px-3 py-2 transition-shadow duration-200 ">
+					className="
+            relative flex items-center w-full
+            bg-white/80 dark:bg-gray-900/60
+            backdrop-blur-md
+            border border-gray-200 dark:border-gray-700
+            rounded-full px-3 py-2
+            shadow-sm dark:shadow-none
+            transition-colors duration-150
+            focus-within:ring-2 focus-within:ring-indigo-500 focus-within:ring-offset-2
+            focus-within:dark:ring-offset-gray-900
+          ">
 					{/* Left icon */}
 					<div className="flex items-center pointer-events-none pl-1 pr-3">
-						<svg
+						<Search
 							className="w-5 h-5 text-zinc-500 dark:text-zinc-400"
-							viewBox="0 0 24 24"
-							fill="none"
-							aria-hidden>
-							<path
-								d="M21 21l-4.35-4.35"
-								stroke="currentColor"
-								strokeWidth="2"
-								strokeLinecap="round"
-								strokeLinejoin="round"
-							/>
-							<circle
-								cx="11"
-								cy="11"
-								r="6"
-								stroke="currentColor"
-								strokeWidth="2"
-								strokeLinecap="round"
-								strokeLinejoin="round"
-							/>
-						</svg>
+							aria-hidden="true"
+						/>
 					</div>
 
 					{/* Input */}
@@ -54,12 +47,28 @@ const SearchForm = ({ query }: { query?: string }) => {
 						type="search"
 						placeholder="Search components, articles, people..."
 						autoComplete="off"
-						className="flex-1 min-w-0 bg-transparent text-sm sm:text-base placeholder:text-zinc-500 dark:placeholder:text-zinc-400
-                     text-zinc-900 dark:text-white outline-none px-1 py-2 rounded-full transition-colors duration-150
-                     focus:placeholder-transparent"
 						aria-label="Search"
+						className="
+              flex-1 min-w-0 bg-transparent text-sm sm:text-base
+              placeholder:text-zinc-500 dark:placeholder:text-zinc-400
+              text-zinc-900 dark:text-gray-100
+              outline-none px-1 py-2 rounded-full
+              transition-colors duration-150
+              focus:placeholder-transparent
+            "
 					/>
-					<div className="flex gap-2">{query && <SearchFormReset />}</div>
+
+					{/* Actions (reset/submit) */}
+					<div className="flex items-center gap-2">
+						{query && <SearchFormReset />}
+						{/* Optional submit button (hidden, accessible) */}
+						<button
+							type="submit"
+							className="sr-only"
+							aria-hidden>
+							Search
+						</button>
+					</div>
 				</div>
 			</Form>
 		</div>

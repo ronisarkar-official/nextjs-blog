@@ -1,4 +1,4 @@
-// app/(root)/startups/page.tsx
+// File: app/(root)/startups/page.tsx
 import { auth } from '@/auth';
 import { client } from '@/sanity/lib/client';
 import {
@@ -48,6 +48,17 @@ const formatDate = (iso?: string) => {
 	}
 };
 
+const CARD_BASE = 'rounded p-4 flex items-center gap-4 transition-colors';
+const CARD_BORDER = 'border border-gray-200 dark:border-gray-700';
+const CARD_BG = 'bg-white dark:bg-gray-800';
+const TITLE = 'text-sm font-medium text-gray-900 dark:text-gray-100';
+const META =
+	'mt-1 text-xs text-gray-500 dark:text-gray-300 flex items-center gap-2';
+const BADGE =
+	'px-2 py-0.5 rounded-full text-xs ml-2 bg-gray-100 dark:bg-gray-700';
+const THUMB_BG =
+	'flex-shrink-0 w-20 h-14 rounded overflow-hidden bg-gray-100 dark:bg-gray-700';
+
 const Page = async ({ params }: { params: { id: string } }) => {
 	const { id } = params;
 
@@ -72,7 +83,7 @@ const Page = async ({ params }: { params: { id: string } }) => {
 	const startupsCount = startups.length;
 
 	return (
-		<div className="min-h-screen flex bg-gray-50 text-gray-800">
+		<div className="min-h-screen flex bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-100 transition-colors duration-200">
 			{/* Main content area */}
 			<main className="flex-1 p-8">
 				<div className="max-w-5xl mx-auto">
@@ -80,7 +91,10 @@ const Page = async ({ params }: { params: { id: string } }) => {
 					<div className="flex items-center justify-between mb-6">
 						<div className="flex items-center gap-4">
 							<h2 className="text-lg font-semibold">
-								All <span className="text-gray-400">({startupsCount})</span>
+								All{' '}
+								<span className="text-gray-400 dark:text-gray-500">
+									({startupsCount})
+								</span>
 							</h2>
 						</div>
 					</div>
@@ -105,11 +119,13 @@ const Page = async ({ params }: { params: { id: string } }) => {
 							return (
 								<article
 									key={startup._id}
-									className="bg-white border border-gray-200 rounded p-4 flex items-center gap-4">
+									className={`${CARD_BASE} ${CARD_BG} ${CARD_BORDER}`}>
 									<Link
 										href={posturl}
 										className="flex items-center gap-4 w-full">
-										<div className="flex-shrink-0 w-20 h-14 rounded overflow-hidden bg-gray-100">
+										<div
+											className={THUMB_BG}
+											aria-hidden>
 											<img
 												src={thumb}
 												alt={title}
@@ -120,23 +136,19 @@ const Page = async ({ params }: { params: { id: string } }) => {
 										<div className="flex-1">
 											<div className="flex items-start justify-between gap-4">
 												<div>
-													<h3 className="text-sm font-medium text-gray-900">
-														{title}
-													</h3>
+													<h3 className={TITLE}>{title}</h3>
 
-													<div className="mt-1 text-xs text-gray-500 flex items-center gap-2">
+													<div className={META}>
 														<span>{createdAt}</span>
 														{category && (
-															<span className="px-2 py-0.5 bg-gray-100 rounded-full text-xs ml-2">
-																{category}
-															</span>
+															<span className={BADGE}>{category}</span>
 														)}
 													</div>
 												</div>
 
-												<div className="flex items-center gap-4 text-sm text-gray-500">
+												<div className="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-300">
 													<div className="flex items-center gap-2">
-														<ChartNoAxesColumnIncreasing />
+														<ChartNoAxesColumnIncreasing aria-hidden />
 														<span>{views}</span>
 													</div>
 
@@ -156,8 +168,9 @@ const Page = async ({ params }: { params: { id: string } }) => {
 								</article>
 							);
 						})}
+
 						{startups.length === 0 && (
-							<div className="text-center text-gray-500 py-8">
+							<div className="text-center text-gray-500 dark:text-gray-400 py-8">
 								No startups found for this author.
 							</div>
 						)}

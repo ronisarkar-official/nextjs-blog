@@ -7,6 +7,8 @@ import { Toaster } from 'react-hot-toast';
 import '@toast-ui/editor/dist/toastui-editor.css';
 import PwaInstall from '@/components/PwaInstall';
 import IosAddToHome from '@/components/IosAddToHome';
+import Navbar from '@/components/Navbar';
+import { ThemeProvider } from '@/components/theme-provider';
 
 const workSans = localFont({
 	src: [
@@ -65,7 +67,9 @@ export default function RootLayout({
 	children: React.ReactNode;
 }>) {
 	return (
-		<html lang="en">
+		<html
+			lang="en"
+			suppressHydrationWarning>
 			<head>
 				<link
 					rel="manifest"
@@ -94,11 +98,18 @@ export default function RootLayout({
 					href={`${process.env.NEXT_PUBLIC_SITE_URL}/rss.xml`}
 				/>
 			</head>
-			<body className={`${workSans.variable}`}>
+			<body >
+				<ThemeProvider
+					attribute="class"
+					defaultTheme="system"
+					enableSystem
+					disableTransitionOnChange>
+				<Navbar />
 				{children}
 				<PwaInstall />
 				<IosAddToHome />
 				<Toaster position="top-right" />
+				</ThemeProvider>
 			</body>
 		</html>
 	);

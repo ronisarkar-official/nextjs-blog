@@ -29,13 +29,20 @@ const View = async ({ id }: { id: string }) => {
 	const displayCount = totalViews + 1;
 
 	return (
-		<div className="relative inline-flex items-center gap-2 px-2 py-2 rounded-xs bg-gray-100 shadow-sm ">
+		<div className="relative inline-flex items-center gap-2 px-2 py-2 rounded-xs bg-gray-100 dark:bg-gray-800 shadow-sm dark:shadow-lg transition-colors">
 			<div className="absolute -top-1 -right-1">
-				<Ping />
+				{/* make the ping icon adapt to theme */}
+				<Ping
+					 
+					aria-hidden
+				/>
 			</div>
 
-			<p className="text-xs bg-gray-100 rounded">
-				<span className="font-bold text-gray-900">{displayCount}</span> views
+			<p className="text-xs">
+				<span className="font-bold text-gray-900 dark:text-gray-100">
+					{displayCount}
+				</span>
+				<span className="ml-1 text-gray-600 dark:text-gray-300">views</span>
 			</p>
 		</div>
 	);

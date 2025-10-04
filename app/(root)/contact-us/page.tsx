@@ -1,12 +1,10 @@
-// File: app/(root)/contact/page.tsx
-
+// File: app/(root)/contact-us/page.tsx
 import React from 'react';
 import Link from 'next/link';
 import {
 	Twitter,
 	Linkedin,
 	Instagram,
-	Facebook,
 	Youtube,
 	Github,
 	Mail,
@@ -31,122 +29,113 @@ export const metadata = {
 	description: `Get in touch with ${sitename} — social links`,
 };
 
+const ITEM_BASE =
+	'group flex items-center gap-4 p-4 rounded-lg border hover:shadow-md transition-transform transform hover:-translate-y-1';
+const ITEM_BORDER = 'border-gray-100 dark:border-gray-700';
+const CONTAINER =
+	'p-3 rounded-md bg-indigo-50 group-hover:bg-indigo-100 dark:bg-indigo-900/25 dark:group-hover:bg-indigo-900/30';
+const ICON = 'w-6 h-6 text-indigo-600 dark:text-indigo-300';
+const TEXT_MUTED = 'text-sm text-gray-500 dark:text-gray-300';
+
+const socials = [
+	{
+		key: 'twitter',
+		label: 'Twitter',
+		href: SOCIAL.twitter,
+		desc: 'Every Time Updated',
+		Icon: Twitter,
+	},
+	{
+		key: 'linkedin',
+		label: 'LinkedIn',
+		href: SOCIAL.linkedin,
+		desc: 'Company profile',
+		Icon: Linkedin,
+	},
+	{
+		key: 'instagram',
+		label: 'Instagram',
+		href: SOCIAL.instagram,
+		desc: 'Follow Us',
+		Icon: Instagram,
+	},
+	{
+		key: 'youtube',
+		label: 'YouTube',
+		href: SOCIAL.youtube,
+		desc: 'Subscribe for updates',
+		Icon: Youtube,
+	},
+	{
+		key: 'github',
+		label: 'GitHub',
+		href: SOCIAL.github,
+		desc: 'Open-source projects',
+		Icon: Github,
+	},
+	{
+		key: 'email',
+		label: 'Email',
+		href: SOCIAL.email,
+		desc: 'Contact us directly',
+		Icon: Mail,
+	},
+];
+
 export default function ContactPage() {
 	return (
-		<main className="min-h-screen bg-white text-black antialiased">
+		<main className="min-h-screen bg-white dark:bg-gray-900 text-black dark:text-gray-100 antialiased transition-colors duration-200">
 			<div className="max-w-3xl mx-auto px-6 py-20">
 				<header className="text-center mb-10">
 					<h1 className="text-4xl font-extrabold tracking-tight">
 						Get in touch
 					</h1>
-					<p className="mt-3 text-gray-600">
+					<p className="mt-3 text-gray-600 dark:text-gray-300">
 						Follow {sitename} on social media — we&apos;d love to connect.
 					</p>
 				</header>
 
-				<section className="bg-white rounded-2xl border border-gray-100 shadow-sm p-8">
+				<section className="bg-white dark:bg-gray-800 rounded-2xl border shadow-sm p-8 border-gray-100 dark:border-gray-700">
 					<div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-						<a
-							href={SOCIAL.twitter}
-							target="_blank"
-							rel="noopener noreferrer"
-							className="group flex items-center gap-4 p-4 rounded-lg border border-gray-100 hover:shadow-md transition-transform transform hover:-translate-y-1"
-							aria-label="Twitter">
-							<div className="p-3 rounded-md bg-indigo-50 group-hover:bg-indigo-100">
-								<Twitter className="w-6 h-6 text-indigo-600" />
-							</div>
-							<div>
-								<div className="font-semibold">Twitter</div>
-								<div className="text-sm text-gray-500">Every Time Updated</div>
-							</div>
-						</a>
+						{socials.map((s) => {
+							const Icon = s.Icon;
+							const isEmail = s.key === 'email';
+							const target =
+								isEmail ?
+									s.href === '#' ?
+										'_self'
+									:	'_blank'
+								:	'_blank';
 
-						<a
-							href={SOCIAL.linkedin}
-							target="_blank"
-							rel="noopener noreferrer"
-							className="group flex items-center gap-4 p-4 rounded-lg border border-gray-100 hover:shadow-md transition-transform transform hover:-translate-y-1"
-							aria-label="LinkedIn">
-							<div className="p-3 rounded-md bg-indigo-50 group-hover:bg-indigo-100">
-								<Linkedin className="w-6 h-6 text-indigo-600" />
-							</div>
-							<div>
-								<div className="font-semibold">LinkedIn</div>
-								<div className="text-sm text-gray-500">Company profile</div>
-							</div>
-						</a>
+							return (
+								<a
+									key={s.key}
+									href={s.href}
+									target={target}
+									rel="noopener noreferrer"
+									aria-label={s.label}
+									className={`${ITEM_BASE} ${ITEM_BORDER}`}>
+									<div className={`${CONTAINER}`}>
+										<Icon className={ICON} />
+									</div>
 
-						<a
-							href={SOCIAL.instagram}
-							target="_blank"
-							rel="noopener noreferrer"
-							className="group flex items-center gap-4 p-4 rounded-lg border border-gray-100 hover:shadow-md transition-transform transform hover:-translate-y-1"
-							aria-label="Instagram">
-							<div className="p-3 rounded-md bg-indigo-50 group-hover:bg-indigo-100">
-								<Instagram className="w-6 h-6 text-indigo-600" />
-							</div>
-							<div>
-								<div className="font-semibold">Instagram</div>
-								<div className="text-sm text-gray-500">Follow Us</div>
-							</div>
-						</a>
-
-						<a
-							href={SOCIAL.youtube}
-							target="_blank"
-							rel="noopener noreferrer"
-							className="group flex items-center gap-4 p-4 rounded-lg border border-gray-100 hover:shadow-md transition-transform transform hover:-translate-y-1"
-							aria-label="YouTube">
-							<div className="p-3 rounded-md bg-indigo-50 group-hover:bg-indigo-100">
-								<Youtube className="w-6 h-6 text-indigo-600" />
-							</div>
-							<div>
-								<div className="font-semibold">YouTube</div>
-								<div className="text-sm text-gray-500">
-									Subscribe for updates
-								</div>
-							</div>
-						</a>
-
-						<a
-							href={SOCIAL.github}
-							target="_blank"
-							rel="noopener noreferrer"
-							className="group flex items-center gap-4 p-4 rounded-lg border border-gray-100 hover:shadow-md transition-transform transform hover:-translate-y-1"
-							aria-label="GitHub">
-							<div className="p-3 rounded-md bg-indigo-50 group-hover:bg-indigo-100">
-								<Github className="w-6 h-6 text-indigo-600" />
-							</div>
-							<div>
-								<div className="font-semibold">GitHub</div>
-								<div className="text-sm text-gray-500">
-									Open-source projects
-								</div>
-							</div>
-						</a>
-
-						<a
-							href={SOCIAL.email}
-							target={SOCIAL.email === '#' ? '_self' : '_blank'}
-							rel="noopener noreferrer"
-							className="group flex items-center gap-4 p-4 rounded-lg border border-gray-100 hover:shadow-md transition-transform transform hover:-translate-y-1"
-							aria-label="Email">
-							<div className="p-3 rounded-md bg-indigo-50 group-hover:bg-indigo-100">
-								<Mail className="w-6 h-6 text-indigo-600" />
-							</div>
-							<div>
-								<div className="font-semibold">Email</div>
-								<div className="text-sm text-gray-500">Contact us directly</div>
-							</div>
-						</a>
+									<div>
+										<div className="font-semibold text-black dark:text-white">
+											{s.label}
+										</div>
+										<div className={TEXT_MUTED}>{s.desc}</div>
+									</div>
+								</a>
+							);
+						})}
 					</div>
 
-					<div className="mt-8 text-center text-sm text-gray-500">
+					<div className="mt-8 text-center text-sm text-gray-500 dark:text-gray-300">
 						<p>
 							Prefer something else?{' '}
 							<Link
 								href="/"
-								className="underline decoration-indigo-600">
+								className="underline decoration-indigo-600 dark:decoration-indigo-400">
 								Visit {sitename}
 							</Link>
 						</p>

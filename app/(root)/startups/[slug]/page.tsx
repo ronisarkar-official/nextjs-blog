@@ -121,20 +121,27 @@ export default async function Page({ params }: { params: { slug: string } }) {
 	const postUrl = `${siteBase}/startups/${post.slug?.current}`;
 
 	return (
-		<main className="min-h-screen bg-white text-gray-900">
+		<main className="min-h-screen bg-white text-gray-900 dark:bg-gray-900 dark:text-gray-100">
 			<div className="max-w-6xl mx-auto px-6 py-12 grid md:grid-cols-3 gap-8">
 				<article className="md:col-span-2">
+					{/* Breadcrumbs */}
 					<Breadcrumb className="mb-4">
 						<BreadcrumbList>
 							<BreadcrumbItem>
 								<BreadcrumbLink asChild>
-									<Link href="/feed">Home</Link>
+									<Link
+										href="/feed"
+										className="text-sm text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200">
+										Home
+									</Link>
 								</BreadcrumbLink>
 							</BreadcrumbItem>
 							<BreadcrumbSeparator />
 
 							<BreadcrumbItem>
-								<Link href={`/feed?query=${post.category?.toLowerCase()}`}>
+								<Link
+									href={`/feed?query=${post.category?.toLowerCase()}`}
+									className="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200">
 									<BreadcrumbPage>{post.category}</BreadcrumbPage>
 								</Link>
 							</BreadcrumbItem>
@@ -142,19 +149,19 @@ export default async function Page({ params }: { params: { slug: string } }) {
 					</Breadcrumb>
 
 					<header className="mb-8">
-						<Greeting className="inline-block text-xs px-3 py-2 rounded-full mb-3" />
+						<Greeting className="inline-block text-xs px-3 py-2 rounded-full mb-3 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200" />
 
-						<h1 className="text-3xl md:text-4xl font-bold leading-tight mb-3">
+						<h1 className="text-3xl md:text-4xl font-bold leading-tight mb-3 dark:text-gray-100">
 							{post.title}
 						</h1>
 
-						<div className="flex items-center justify-between gap-4 text-sm text-gray-600">
+						<div className="flex items-center justify-between gap-4 text-sm text-gray-600 dark:text-gray-400">
 							<Link
 								href={`/user/${post.author?._id}`}
 								className="group inline-block"
 								prefetch>
 								<div className="flex items-center gap-3">
-									<div className="relative w-8 h-8 rounded-full overflow-hidden bg-gray-300">
+									<div className="relative w-8 h-8 rounded-full overflow-hidden bg-gray-300 dark:bg-gray-700">
 										<Image
 											src={authorImage || '/logo.png'}
 											alt={post.author?.name || 'Author'}
@@ -164,11 +171,11 @@ export default async function Page({ params }: { params: { slug: string } }) {
 										/>
 									</div>
 									<div>
-										<div className="font-medium">
+										<div className="font-medium text-gray-900 dark:text-gray-100">
 											{post.author?.name || 'Unknown author'}
 										</div>
 
-										<div className="text-xs text-gray-500 flex items-center gap-3">
+										<div className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-3">
 											<div className="text-xs">
 												Published: {formatDate(post._createdAt)}
 											</div>
@@ -177,22 +184,21 @@ export default async function Page({ params }: { params: { slug: string } }) {
 								</div>
 							</Link>
 
-							<div className="text-xs text-gray-500 flex items-center gap-3">
+							<div className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-3">
 								<Suspense fallback={<Skeleton className="view-skeleton" />}>
 									{/* View component expects id; keep that contract */}
 									<View id={post._id} />
 								</Suspense>
 
-								<div className="hidden sm:inline text-xs bg-gray-100 px-2 py-2 shadow-sm rounded">
+								<div className="hidden sm:inline text-xs bg-gray-100 dark:bg-gray-800 px-2 py-2 shadow-sm dark:shadow-none rounded text-gray-700 dark:text-gray-200">
 									{post.category}
 								</div>
 							</div>
 						</div>
 					</header>
 
-					<div
-						className="relative w-full aspect-video rounded-lg overflow-hidden bg-gray-100 
-					 mb-4">
+					{/* Hero / Cover */}
+					<div className="relative w-full aspect-video rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-800 mb-4">
 						<Image
 							src={heroImage || '/logo.png'}
 							alt={post.title || 'Cover image'}
@@ -200,15 +206,24 @@ export default async function Page({ params }: { params: { slug: string } }) {
 							className="object-cover object-center"
 							priority
 						/>
+						{/* subtle overlay for legibility in dark mode */}
+						<div
+							className="absolute inset-0 pointer-events-none bg-black/0 dark:bg-black/20"
+							aria-hidden
+						/>
 					</div>
 
+					{/* Article content or placeholder */}
 					<section className="max-w-none">
 						{safeHtml ?
-							<article>
+							<article className="prose prose-lg max-w-none dark:prose-invert">
+								{/* ArticleRenderer should render sanitized HTML server-side */}
 								<ArticleRenderer html={safeHtml} />
 							</article>
 						:	<div className="mx-auto max-w-4xl py-8 text-center">
-								<p className="text-sm text-gray-500">No content available.</p>
+								<p className="text-sm text-gray-500 dark:text-gray-400">
+									No content available.
+								</p>
 							</div>
 						}
 
@@ -227,10 +242,9 @@ export default async function Page({ params }: { params: { slug: string } }) {
 								target="_blank"
 								rel="noreferrer"
 								aria-label="Share on Twitter"
-								className="flex items-center space-x-1 text-blue-500 hover:text-blue-700 transition-colors cursor-pointer">
+								className="flex items-center space-x-1 text-blue-500 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 transition-colors cursor-pointer">
 								<Twitter className="w-5 h-5" />
-								<span className="hidden sm:inline">Twitter</span>{' '}
-								{/* Keep text for accessibility, hide on smaller screens if desired */}
+								<span className="hidden sm:inline">Twitter</span>
 							</a>
 
 							{/* Share on Facebook */}
@@ -239,8 +253,7 @@ export default async function Page({ params }: { params: { slug: string } }) {
 								target="_blank"
 								rel="noreferrer"
 								aria-label="Share on Facebook"
-								// Consider changing the className to a custom utility class
-								className="flex items-center space-x-1 text-blue-800 hover:text-blue-900 transition-colors cursor-pointer">
+								className="flex items-center space-x-1 text-blue-800 hover:text-blue-900 dark:text-blue-300 dark:hover:text-blue-200 transition-colors cursor-pointer">
 								<Facebook className="w-5 h-5" />
 								<span className="hidden sm:inline">Facebook</span>
 							</a>
@@ -251,16 +264,17 @@ export default async function Page({ params }: { params: { slug: string } }) {
 									post.title,
 								)}&body=${encodeURIComponent((post.description || '') + '\n\n' + postUrl)}`}
 								aria-label="Share via Email"
-								className="flex items-center space-x-1 text-gray-600 hover:text-gray-900 transition-colors cursor-pointer">
+								className="flex items-center space-x-1 text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-gray-100 transition-colors cursor-pointer">
 								<Mail className="w-5 h-5" />
 								<span className="hidden sm:inline">Email</span>
 							</a>
 						</div>
 					</section>
 
+					{/* Editor picks */}
 					{editorPosts?.length > 0 && (
-						<section className="max-w-none mt-4">
-							<p className="text-80-semibold text-2xl border-b-2 border-gray-400">
+						<section className="max-w-none mt-8">
+							<p className="text-2xl font-semibold text-gray-900 dark:text-gray-100 border-b-2 border-gray-200 dark:border-gray-800 pb-3">
 								You Might Like
 							</p>
 							<ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 mt-4 gap-4">
@@ -275,10 +289,11 @@ export default async function Page({ params }: { params: { slug: string } }) {
 					)}
 				</article>
 
+				{/* Sidebar */}
 				<aside className="md:col-span-1">
 					<div className="sticky top-6 space-y-6">
 						<div>
-							<div className="text-sm font-semibold text-gray-700 mb-3">
+							<div className="text-sm font-semibold text-gray-700 dark:text-gray-200 mb-3">
 								Popular Posts
 							</div>
 
@@ -289,23 +304,23 @@ export default async function Page({ params }: { params: { slug: string } }) {
 										href={`/startups/${p.slug}`}
 										className="block group"
 										prefetch>
-										<div className="flex items-start gap-2 bg-white border border-gray-300 rounded-xl p-4 shadow-sm hover:shadow-md hover:border-gray-300 transition-all duration-200">
-											<div className="w-24 h-16 relative rounded-lg overflow-hidden flex-shrink-0 bg-gray-100 border-gray-300">
+										<div className="flex items-start gap-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-xl p-4 shadow-sm hover:shadow-md dark:shadow-none hover:border-gray-300 transition-all duration-200">
+											<div className="w-24 h-16 relative rounded-lg overflow-hidden flex-shrink-0 bg-gray-100 dark:bg-gray-700 border border-transparent">
 												<Image
 													src={p.image || '/images/cover-placeholder.jpg'}
 													alt={p.title}
 													fill
-													className="object-cover group-hover:scale-107 transition-transform duration-300 border-gray-300"
+													className="object-cover group-hover:scale-105 transition-transform duration-300"
 													sizes="96px"
 												/>
 											</div>
 
 											<div className="flex-1">
-												<div className="text-xs text-gray-500 mb-1">
+												<div className="text-xs text-gray-500 dark:text-gray-400 mb-1">
 													{formatDate(p._createdAt)}{' '}
 													<span className="mx-1">•</span> {p.category}
 												</div>
-												<div className="text-sm font-semibold text-gray-900 leading-snug group-hover:text-blue-600 transition-colors">
+												<div className="text-sm font-semibold text-gray-900 dark:text-gray-100 leading-snug group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
 													{p.title}
 												</div>
 											</div>
@@ -316,17 +331,17 @@ export default async function Page({ params }: { params: { slug: string } }) {
 						</div>
 
 						<div>
-							<div className="text-sm font-semibold text-gray-700 mb-3">
+							<div className="text-sm font-semibold text-gray-700 dark:text-gray-200 mb-3">
 								Labels
 							</div>
 							<div className="flex flex-wrap gap-2">
-								<span className="text-xs bg-gray-100 px-2 py-1 rounded">
+								<span className="text-xs bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded text-gray-800 dark:text-gray-200">
 									games
 								</span>
-								<span className="text-xs bg-gray-100 px-2 py-1 rounded">
+								<span className="text-xs bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded text-gray-800 dark:text-gray-200">
 									reviews
 								</span>
-								<span className="text-xs bg-gray-100 px-2 py-1 rounded">
+								<span className="text-xs bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded text-gray-800 dark:text-gray-200">
 									news
 								</span>
 							</div>

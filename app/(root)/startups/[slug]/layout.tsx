@@ -290,7 +290,7 @@ export default async function StartupLayout({
 	};
 
 	return (
-		<div className="min-h-screen bg-white text-gray-900">
+		<div className="">
 			{/* JSON-LD renders server-side only */}
 			{typeof window === 'undefined' && (
 				<script

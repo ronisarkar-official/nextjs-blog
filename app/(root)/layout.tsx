@@ -1,5 +1,5 @@
 import { Metadata } from 'next';
-import Navbar from '../../components/Navbar';
+
 import { Footer } from '@/components/footer';
 import { Hexagon, Twitter, Github } from 'lucide-react';
 const sitename = process.env.NEXT_PUBLIC_SITE_NAME;
@@ -26,7 +26,7 @@ export default function Layout({
 }: Readonly<{ children: React.ReactNode }>) {
 	return (
 		<main className="font-work-sans">
-			<Navbar />
+			
 
 			{children}
 			<div className="w-full">

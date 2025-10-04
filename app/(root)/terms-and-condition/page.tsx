@@ -15,18 +15,20 @@ export const metadata = {
 
 export default function TermsPage() {
 	return (
-		<main className="min-h-screen bg-white text-black antialiased">
+		<main className="min-h-screen bg-white dark:bg-gray-900 text-black dark:text-gray-100 antialiased transition-colors">
 			<div className="max-w-6xl mx-auto px-6 py-16">
 				<header className="mb-10 text-center">
-					<h1 className="text-4xl font-extrabold center">
+					<h1 className="text-4xl font-extrabold center text-black dark:text-white">
 						Terms And Condition
 					</h1>
 				</header>
 
-				<article className="prose prose-lg max-w-none">
+				<article className="prose prose-lg max-w-none dark:prose-invert">
 					<section>
-						<h2 className="text-indigo-600">Welcome to {siteName}!</h2>
-						<p>
+						<h2 className="text-indigo-600 dark:text-indigo-400">
+							Welcome to {siteName}!
+						</h2>
+						<p className="text-gray-800 dark:text-gray-200">
 							By accessing this website we assume you accept these terms and
 							conditions. Do not continue to use {siteName} if you do not agree
 							to take all of the terms and conditions stated on this page.
@@ -34,8 +36,10 @@ export default function TermsPage() {
 					</section>
 
 					<section className="mb-2 mt-2">
-						<h3 className="text-2xl font-extrabold center mb-2">Terminology</h3>
-						<p>
+						<h3 className="text-2xl font-extrabold center mb-2 text-black dark:text-white">
+							Terminology
+						</h3>
+						<p className="text-gray-800 dark:text-gray-200">
 							The following terminology applies to these Terms and Conditions,
 							Privacy Statement and Disclaimer Notice and all Agreements:
 							"Client", "You" and "Your" refers to you, the person log on this
@@ -55,12 +59,14 @@ export default function TermsPage() {
 					</section>
 
 					<section className="mb-2 mt-2">
-						<h3 className="text-2xl font-extrabold mb-2">Cookies</h3>
-						<p>
+						<h3 className="text-2xl font-extrabold mb-2 text-black dark:text-white">
+							Cookies
+						</h3>
+						<p className="text-gray-800 dark:text-gray-200">
 							We employ the use of cookies. By accessing {siteName}, you agreed
 							to use cookies in agreement with the privacy policy of {siteName}.
 						</p>
-						<p>
+						<p className="text-gray-800 dark:text-gray-200">
 							Most interactive websites use cookies to let us retrieve the
 							user's details for each visit. Cookies are used by our website to
 							enable the functionality of certain areas to make it easier for
@@ -70,22 +76,24 @@ export default function TermsPage() {
 					</section>
 
 					<section className="mb-2 mt-2">
-						<h3 className="text-2xl font-extrabold mb-2">License</h3>
-						<p>
+						<h3 className="text-2xl font-extrabold mb-2 text-black dark:text-white">
+							License
+						</h3>
+						<p className="text-gray-800 dark:text-gray-200">
 							Unless otherwise stated, {siteNameUpper} and/or its licensors own
 							the intellectual property rights for all material on {siteName}.
 							All intellectual property rights are reserved. You may access this
 							from {siteName} for your own personal use subjected to
 							restrictions set in these terms and conditions.
 						</p>
-						<p>You must not:</p>
-						<ul>
+						<p className="text-gray-800 dark:text-gray-200">You must not:</p>
+						<ul className="list-disc pl-6 space-y-1 text-gray-800 dark:text-gray-200">
 							<li>Republish material from {siteName}</li>
 							<li>Sell, rent or sub-license material from {siteName}</li>
 							<li>Reproduce, duplicate or copy material from {siteName}</li>
 							<li>Redistribute content from {siteName}</li>
 						</ul>
-						<p>
+						<p className="text-gray-800 dark:text-gray-200">
 							This Agreement shall begin on the date hereof. Our Terms and
 							Conditions were created with the help of the ToolsPrince Terms And
 							Conditions Generator.
@@ -93,10 +101,10 @@ export default function TermsPage() {
 					</section>
 
 					<section className="mb-2 mt-2">
-						<h3 className="text-2xl font-extrabold center mb-2">
+						<h3 className="text-2xl font-extrabold center mb-2 text-black dark:text-white">
 							User Comments
 						</h3>
-						<p>
+						<p className="text-gray-800 dark:text-gray-200">
 							Parts of this website offer an opportunity for users to post and
 							exchange opinions and information in certain areas of the website.{' '}
 							{siteName} does not filter, edit, publish or review Comments prior
@@ -109,13 +117,15 @@ export default function TermsPage() {
 							of any use of and/or posting of and/or appearance of the Comments
 							on this website.
 						</p>
-						<p>
+						<p className="text-gray-800 dark:text-gray-200">
 							{siteName} reserves the right to monitor all Comments and to
 							remove any Comments which can be considered inappropriate,
 							offensive or causes breach of these Terms and Conditions.
 						</p>
-						<p>You warrant and represent that:</p>
-						<ul>
+						<p className="text-gray-800 dark:text-gray-200">
+							You warrant and represent that:
+						</p>
+						<ul className="list-disc pl-6 space-y-1 text-gray-800 dark:text-gray-200">
 							<li>
 								You are entitled to post the Comments on our website and have
 								all necessary licenses and consents to do so;
@@ -135,7 +145,7 @@ export default function TermsPage() {
 								custom or present commercial activities or unlawful activity.
 							</li>
 						</ul>
-						<p>
+						<p className="text-gray-800 dark:text-gray-200">
 							You hereby grant {siteName} a non-exclusive license to use,
 							reproduce, edit and authorize others to use, reproduce and edit
 							any of your Comments in any and all forms, formats or media.
@@ -143,14 +153,14 @@ export default function TermsPage() {
 					</section>
 
 					<section className="mb-2 mt-2">
-						<h3 className="text-2xl font-extrabold center mb-2">
+						<h3 className="text-2xl font-extrabold center mb-2 text-black dark:text-white">
 							Hyperlinking to our Content
 						</h3>
-						<p>
+						<p className="text-gray-800 dark:text-gray-200">
 							The following organizations may link to our Website without prior
 							written approval:
 						</p>
-						<ul>
+						<ul className="list-disc pl-6 space-y-1 text-gray-800 dark:text-gray-200">
 							<li>Government agencies;</li>
 							<li>Search engines;</li>
 							<li>News organizations;</li>
@@ -165,7 +175,7 @@ export default function TermsPage() {
 								groups which may not hyperlink to our Web site.
 							</li>
 						</ul>
-						<p>
+						<p className="text-gray-800 dark:text-gray-200">
 							These organizations may link to our home page, to publications or
 							to other Website information so long as the link: (a) is not in
 							any way deceptive; (b) does not falsely imply sponsorship,
@@ -176,13 +186,15 @@ export default function TermsPage() {
 					</section>
 
 					<section className="mb-2 mt-2">
-						<h3 className="text-2xl font-extrabold center mb-2">Disclaimer</h3>
-						<p>
+						<h3 className="text-2xl font-extrabold center mb-2 text-black dark:text-white">
+							Disclaimer
+						</h3>
+						<p className="text-gray-800 dark:text-gray-200">
 							To the maximum extent permitted by applicable law, we exclude all
 							representations, warranties and conditions relating to our website
 							and the use of this website. Nothing in this disclaimer will:
 						</p>
-						<ul>
+						<ul className="list-disc pl-6 space-y-1 text-gray-800 dark:text-gray-200">
 							<li>
 								limit or exclude our or your liability for death or personal
 								injury;
@@ -200,14 +212,14 @@ export default function TermsPage() {
 								under applicable law.
 							</li>
 						</ul>
-						<p>
+						<p className="text-gray-800 dark:text-gray-200">
 							The limitations and prohibitions of liability set in this Section
 							and elsewhere in this disclaimer: (a) are subject to the preceding
 							paragraph; and (b) govern all liabilities arising under the
 							disclaimer, including liabilities arising in contract, in tort and
 							for breach of statutory duty.
 						</p>
-						<p>
+						<p className="text-gray-800 dark:text-gray-200">
 							As long as the website and the information and services on the
 							website are provided free of charge, we will not be liable for any
 							loss or damage of any nature.

@@ -208,14 +208,16 @@ const ImageUrlPreviewInput = React.memo(function ImageUrlPreviewInput({
 				<div
 					className={`rounded-md overflow-hidden border border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 flex items-center justify-center ${previewHeightClassName}`}>
 					{status === 'idle' && (
-						<span className="text-xs text-gray-400">{statusText}</span>
+						<span className="text-xs text-gray-400 dark:text-gray-400">
+							{statusText}
+						</span>
 					)}
 
 					{status === 'loading' && (
 						<div
 							role="status"
 							aria-live="polite"
-							className="flex items-center gap-2 text-sm text-gray-500">
+							className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-300">
 							<svg
 								className="animate-spin h-4 w-4"
 								viewBox="0 0 24 24"
@@ -250,10 +252,10 @@ const ImageUrlPreviewInput = React.memo(function ImageUrlPreviewInput({
 
 					{status === 'error' && (
 						<div className="text-center px-4">
-							<div className="text-sm font-medium text-red-600 mb-1">
+							<div className="text-sm font-medium text-red-600 dark:text-red-400 mb-1">
 								Can't preview image
 							</div>
-							<div className="text-xs text-gray-500">
+							<div className="text-xs text-gray-500 dark:text-gray-400">
 								Make sure the URL points to a public image (jpg/png/webp)
 							</div>
 						</div>
@@ -264,7 +266,11 @@ const ImageUrlPreviewInput = React.memo(function ImageUrlPreviewInput({
 					className="mt-2 text-xs"
 					aria-live="polite">
 					<span
-						className={status === 'error' ? 'text-red-500' : 'text-gray-400'}>
+						className={
+							status === 'error' ?
+								'text-red-500 dark:text-red-400'
+							:	'text-gray-400 dark:text-gray-400'
+						}>
 						{statusText}
 					</span>
 				</div>
@@ -446,18 +452,18 @@ const StartupForm: React.FC = () => {
 			<form
 				ref={formRef}
 				onSubmit={handleSubmit}
-				className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8 px-4"
+				className="min-h-screen bg-gray-50 dark:bg-gray-900 dark:text-gray-100 py-8 px-4"
 				aria-busy={isSubmitting}>
 				<div className="max-w-6xl ml-4">
 					<div className="relative flex flex-col lg:flex-row gap-6">
 						{/* Main editor column */}
 						<main className="flex-1">
-							<div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm overflow-hidden">
+							<div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm dark:shadow-none overflow-hidden">
 								{/* Title area */}
 								<div className="px-6 py-5">
 									<label
 										htmlFor="title"
-										className=" text-gray-600 text-md font-medium">
+										className=" text-gray-600 dark:text-gray-300 text-md font-medium">
 										Post title
 									</label>
 									<Input
@@ -467,7 +473,7 @@ const StartupForm: React.FC = () => {
 										required
 										defaultValue=""
 										placeholder="Give your pitch a clear, catchy title"
-										className="w-full text-xl sm:text-2xl font-semibold placeholder:text-gray-400 dark:placeholder:text-gray-500 bg-transparent outline-none pb-1"
+										className="w-full text-xl sm:text-2xl font-semibold placeholder:text-gray-400 dark:placeholder:text-gray-500 bg-transparent outline-none pb-1 text-gray-900 dark:text-gray-100"
 									/>
 									{errors.title && (
 										<p className="text-sm text-red-500 mt-2">{errors.title}</p>
@@ -479,11 +485,11 @@ const StartupForm: React.FC = () => {
 								{/* Editor */}
 								<div className="px-6 py-4 max-w-4xl">
 									<div className="mb-3 flex items-center justify-between gap-4">
-										<div className="flex items-center gap-3 text-xs text-gray-500">
+										<div className="flex items-center gap-3 text-xs text-gray-500 dark:text-gray-400">
 											<span>{(pitch?.length ?? 0).toLocaleString()} chars</span>
 										</div>
 
-										<div className="text-xs text-gray-500">
+										<div className="text-xs text-gray-500 dark:text-gray-400">
 											Tip: use "WYSIWYG" mode at the bottom for better writing
 										</div>
 									</div>
@@ -517,7 +523,7 @@ const StartupForm: React.FC = () => {
 								<div className="max-w-3xl mx-auto ml-4">
 									<Button
 										type="submit"
-										className="w-full py-3 rounded-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium shadow-lg disabled:opacity-60"
+										className="w-full py-3 rounded-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium shadow-lg disabled:opacity-60 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
 										disabled={isSubmitting}
 										aria-disabled={isSubmitting}>
 										{isSubmitting ? 'Posting...' : 'Post'}
@@ -540,7 +546,7 @@ const StartupForm: React.FC = () => {
 									<div className="mb-4">
 										<Button
 											type="submit"
-											className="w-full py-2 rounded-md bg-indigo-600 hover:bg-indigo-700 text-white font-medium disabled:opacity-60"
+											className="w-full py-2 rounded-md bg-indigo-600 hover:bg-indigo-700 text-white font-medium disabled:opacity-60 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
 											disabled={isSubmitting}
 											aria-disabled={isSubmitting}>
 											{isSubmitting ? 'Posting...' : 'Post'}
@@ -562,14 +568,14 @@ const StartupForm: React.FC = () => {
 												required
 												defaultValue=""
 												placeholder="Category (Tech, Health, Finance...)"
-												className="w-full text-sm placeholder:text-gray-400 dark:placeholder:text-gray-500 bg-transparent outline-none"
+												className="w-full text-sm placeholder:text-gray-400 dark:placeholder:text-gray-500 bg-transparent outline-none text-gray-900 dark:text-gray-100"
 											/>
 											{errors.category && (
 												<p className="text-sm text-red-500 mt-1">
 													{errors.category}
 												</p>
 											)}
-											<div className="mt-2 text-xs text-gray-400">
+											<div className="mt-2 text-xs text-gray-400 dark:text-gray-400">
 												Choose the one most relevant category
 											</div>
 										</div>
@@ -587,14 +593,14 @@ const StartupForm: React.FC = () => {
 												required
 												defaultValue=""
 												placeholder="slug-slug-slug"
-												className="w-full text-sm placeholder:text-gray-400 dark:placeholder:text-gray-500 bg-transparent outline-none"
+												className="w-full text-sm placeholder:text-gray-400 dark:placeholder:text-gray-500 bg-transparent outline-none text-gray-900 dark:text-gray-100"
 											/>
 											{errors.slug && (
 												<p className="text-sm text-red-500 mt-1">
 													{errors.slug}
 												</p>
 											)}
-											<div className="mt-2 text-xs text-gray-400">
+											<div className="mt-2 text-xs text-gray-400 dark:text-gray-400">
 												Make the slug shorter for better SEO
 											</div>
 										</div>
@@ -611,7 +617,7 @@ const StartupForm: React.FC = () => {
 												required
 												defaultValue=""
 												placeholder="https://example.com/image.jpg"
-												className="w-full text-sm placeholder:text-gray-400 dark:placeholder:text-gray-500 bg-transparent outline-none"
+												className="w-full text-sm placeholder:text-gray-400 dark:placeholder:text-gray-500 bg-transparent outline-none text-gray-900 dark:text-gray-100"
 											/>
 											{errors.link && (
 												<p className="text-sm text-red-500 mt-1">
@@ -634,14 +640,14 @@ const StartupForm: React.FC = () => {
 												defaultValue=""
 												maxLength={150}
 												placeholder="Short summary that appears in previews"
-												className="w-full text-sm placeholder:text-gray-400 dark:placeholder:text-gray-500 bg-transparent outline-none"
+												className="w-full text-sm placeholder:text-gray-400 dark:placeholder:text-gray-500 bg-transparent outline-none text-gray-900 dark:text-gray-100"
 											/>
 											{errors.description && (
 												<p className="text-sm text-red-500 mt-1">
 													{errors.description}
 												</p>
 											)}
-											<div className="mt-2 text-xs text-gray-400">
+											<div className="mt-2 text-xs text-gray-400 dark:text-gray-400">
 												Make the description under 150 character
 											</div>
 										</div>
