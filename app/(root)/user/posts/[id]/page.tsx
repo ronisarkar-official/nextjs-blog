@@ -1,12 +1,10 @@
-// File: app/(root)/startups/page.tsx
+// app/(root)/user/posts/[id]/page.tsx
 import { auth } from '@/auth';
 import { client } from '@/sanity/lib/client';
 import {
 	AUTHOR_BY_ID_QUERY,
 	STARTUPS_BY_AUTHOR_QUERY,
 } from '@/sanity/lib/queries';
-import { ChartNoAxesColumnIncreasing } from 'lucide-react';
-import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import React from 'react';
 import UserPostsList from '@/components/UserPostsList';
@@ -23,6 +21,8 @@ type StartupFromSanity = {
 	description?: string;
 	category?: string;
 	image?: any;
+	// new: preformatted date string (server-side)
+	createdAtFormatted?: string;
 };
 
 const DEFAULT_AVATAR = '/avatar-placeholder.png';
@@ -56,41 +56,38 @@ const safeImageUrl = (img: any): string => {
 	return DEFAULT_AVATAR;
 };
 
-const formatDate = (iso?: string) => {
+/** Deterministic date formatting on the server.
+ *  Use an explicit format so server and client don't differ.
+ *  This runs on the server (Page is a server component), so it guarantees the HTML text is fixed.
+ */
+const formatDateServer = (iso?: string) => {
 	if (!iso) return '';
 	try {
-		return new Intl.DateTimeFormat('default', {
+		// Use an explicit locale + options for deterministic output.
+		// Change 'en-GB' to 'en-US' if you prefer 'Oct 3, 2025' instead of '3 Oct 2025'.
+		return new Intl.DateTimeFormat('en-GB', {
 			year: 'numeric',
 			month: 'short',
 			day: 'numeric',
 		}).format(new Date(iso));
 	} catch {
-		return iso;
+		return iso || '';
 	}
 };
 
-const CARD_BASE = 'rounded p-4 flex items-center gap-4 transition-colors';
-const CARD_BORDER = 'border border-gray-200 dark:border-gray-700';
-const CARD_BG = 'bg-white dark:bg-gray-800';
-const TITLE = 'text-sm font-medium text-gray-900 dark:text-gray-100';
-const META =
-	'mt-1 text-xs text-gray-500 dark:text-gray-300 flex items-center gap-2';
-const BADGE =
-	'px-2 py-0.5 rounded-full text-xs ml-2 bg-gray-100 dark:bg-gray-700';
-const THUMB_BG =
-	'flex-shrink-0 w-20 h-14 rounded overflow-hidden bg-gray-100 dark:bg-gray-700';
+export default async function Page({
+	params,
+}: {
+	params: Promise<{ id: string }> | { id: string };
+}) {
+	const { id } = await params;
 
-const Page = async ({ params }: { params: { id: string } }) => {
-	const { id } = params;
-
-	// try to ensure session but don't block on auth errors
 	try {
 		await auth();
 	} catch {
 		// ignore
 	}
 
-	// fetch both user and startups in parallel
 	const [startupsDataRaw, user] = (await Promise.all([
 		client.fetch(STARTUPS_BY_AUTHOR_QUERY, { id }),
 		client.fetch(AUTHOR_BY_ID_QUERY, { id }),
@@ -99,16 +96,21 @@ const Page = async ({ params }: { params: { id: string } }) => {
 	if (!user) return notFound();
 
 	const startups = Array.isArray(startupsDataRaw) ? startupsDataRaw : [];
+
+	// **Important**: create a new array with deterministic server-side formatted date
+	const startupsWithFormattedDates: StartupFromSanity[] = startups.map((s) => ({
+		...s,
+		createdAtFormatted: formatDateServer(s._createdAt),
+	}));
+
 	const image = safeImageUrl(user.image);
 	const username = user.username || user.name || 'user';
-	const startupsCount = startups.length;
+	const startupsCount = startupsWithFormattedDates.length;
 
 	return (
 		<div className="min-h-screen flex bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-100 transition-colors duration-200">
-			{/* Main content area */}
 			<main className="flex-1 p-8">
 				<div className="max-w-5xl mx-auto">
-					{/* Header */}
 					<div className="flex items-center justify-between mb-6">
 						<div className="flex items-center gap-4">
 							<h2 className="text-lg font-semibold">
@@ -120,12 +122,10 @@ const Page = async ({ params }: { params: { id: string } }) => {
 						</div>
 					</div>
 
-					{/* Posts / Startups list with search */}
-					<UserPostsList startups={startups} />
+					{/* Pass the preformatted date strings to the client component */}
+					<UserPostsList startups={startupsWithFormattedDates} />
 				</div>
 			</main>
 		</div>
 	);
-};
-
-export default Page;
+}

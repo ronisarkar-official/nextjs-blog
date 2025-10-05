@@ -27,7 +27,7 @@ function safeImageUrl(img) {
 			return DEFAULT_AVATAR;
 		}
 	}
-	if (img.url) {
+	if (img?.url) {
 		try {
 			new URL(img.url);
 			return img.url;
@@ -35,7 +35,7 @@ function safeImageUrl(img) {
 			return DEFAULT_AVATAR;
 		}
 	}
-	if (img.asset && typeof img.asset === 'object' && img.asset.url) {
+	if (img?.asset && typeof img.asset === 'object' && img.asset.url) {
 		try {
 			new URL(img.asset.url);
 			return img.asset.url;
@@ -46,31 +46,36 @@ function safeImageUrl(img) {
 	return DEFAULT_AVATAR;
 }
 
-function formatDate(iso) {
-	if (!iso) return '';
-	try {
-		return new Intl.DateTimeFormat('default', {
-			year: 'numeric',
-			month: 'short',
-			day: 'numeric',
-		}).format(new Date(iso));
-	} catch {
-		return iso;
-	}
-}
+/**
+ * NOTE:
+ * This component expects the server page to pass `createdAtFormatted` on each startup:
+ *   { ...startup, createdAtFormatted: formatDateServer(startup._createdAt) }
+ *
+ * If your server page does NOT provide createdAtFormatted, this component falls back
+ * to showing the raw ISO string (startup._createdAt) to avoid client-side Intl formatting
+ * which causes hydration mismatches.
+ */
 
 export default function UserPostsList({ startups }) {
 	const [query, setQuery] = useState('');
 	const filtered = useMemo(() => {
-		if (!query.trim()) return startups;
+		if (!query.trim()) return startups || [];
 		const q = query.toLowerCase();
-		return startups.filter(
+		return (startups || []).filter(
 			(s) =>
 				s.title?.toLowerCase().includes(q) ||
 				s.description?.toLowerCase().includes(q) ||
 				s.category?.toLowerCase().includes(q),
 		);
 	}, [startups, query]);
+
+	if (!Array.isArray(startups) || startups.length === 0) {
+		return (
+			<div className="text-center text-gray-500 dark:text-gray-400 py-8">
+				No startups found for this author.
+			</div>
+		);
+	}
 
 	return (
 		<div>
@@ -113,72 +118,74 @@ export default function UserPostsList({ startups }) {
 					)}
 				</div>
 			</div>
+
 			<div className="space-y-4">
-				{filtered.length > 0 ?
-					filtered.map((startup) => {
-						const thumb = safeImageUrl(startup.image);
-						const title = startup.title || 'Untitled';
-						const createdAt = formatDate(startup._createdAt);
-						const category = startup.category || '';
-						const views = startup.views ?? 0;
-						const authorAvatar = safeImageUrl(startup.author?.image);
-						const slugStr =
-							typeof startup.slug === 'string' ?
-								startup.slug
-							:	(startup.slug?.current ?? startup._id);
-						const posturl = `/startups/${encodeURIComponent(slugStr)}/edit`;
-						return (
-							<article
-								key={startup._id}
-								className={`${CARD_BASE} ${CARD_BG} ${CARD_BORDER}`}>
-								<Link
-									href={posturl}
-									className="flex items-center gap-4 w-full">
-									<div
-										className={THUMB_BG}
-										aria-hidden>
-										<img
-											src={thumb}
-											alt={title}
-											className="w-full h-full object-cover"
-										/>
-									</div>
-									<div className="flex-1">
-										<div className="flex items-start justify-between gap-4">
-											<div>
-												<h3 className={TITLE}>{title}</h3>
-												<div className={META}>
-													<span>{createdAt}</span>
-													{category && (
-														<span className={BADGE}>{category}</span>
-													)}
-												</div>
+				{filtered.map((startup) => {
+					const thumb = safeImageUrl(startup.image);
+					const title = startup.title || 'Untitled';
+
+					// <--- USE SERVER-PROVIDED FORMATTED STRING IF AVAILABLE
+					// createdAtFormatted should be a string like "3 Oct 2025" prepared on the server.
+					const createdAt =
+						startup.createdAtFormatted ?? startup._createdAt ?? '';
+
+					const category = startup.category || '';
+					const views = startup.views ?? 0;
+					const authorAvatar = safeImageUrl(startup.author?.image);
+					const slugStr =
+						typeof startup.slug === 'string' ?
+							startup.slug
+						:	(startup.slug?.current ?? startup._id);
+					const posturl = `/startups/${encodeURIComponent(slugStr)}/edit`;
+
+					return (
+						<article
+							key={startup._id}
+							className={`${CARD_BASE} ${CARD_BG} ${CARD_BORDER}`}>
+							<Link
+								href={posturl}
+								className="flex items-center gap-4 w-full">
+								<div
+									className={THUMB_BG}
+									aria-hidden>
+									<img
+										src={thumb}
+										alt={title}
+										className="w-full h-full object-cover"
+									/>
+								</div>
+
+								<div className="flex-1">
+									<div className="flex items-start justify-between gap-4">
+										<div>
+											<h3 className={TITLE}>{title}</h3>
+											<div className={META}>
+												<span>{createdAt}</span>
+												{category && <span className={BADGE}>{category}</span>}
 											</div>
-											<div className="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-300">
-												<div className="flex items-center gap-2">
-													<ChartNoAxesColumnIncreasing aria-hidden />
-													<span>{views}</span>
-												</div>
-												<div className="flex items-center gap-2">
-													<div className="h-7 w-7 rounded-full overflow-hidden">
-														<img
-															src={authorAvatar}
-															alt={startup.author?.name || 'author'}
-															className="h-full w-full object-cover"
-														/>
-													</div>
+										</div>
+
+										<div className="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-300">
+											<div className="flex items-center gap-2">
+												<ChartNoAxesColumnIncreasing aria-hidden />
+												<span>{views}</span>
+											</div>
+											<div className="flex items-center gap-2">
+												<div className="h-7 w-7 rounded-full overflow-hidden">
+													<img
+														src={authorAvatar}
+														alt={startup.author?.name || 'author'}
+														className="h-full w-full object-cover"
+													/>
 												</div>
 											</div>
 										</div>
 									</div>
-								</Link>
-							</article>
-						);
-					})
-				:	<div className="text-center text-gray-500 dark:text-gray-400 py-8">
-						No startups found for this author.
-					</div>
-				}
+								</div>
+							</Link>
+						</article>
+					);
+				})}
 			</div>
 		</div>
 	);

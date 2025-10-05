@@ -3,57 +3,63 @@ import { client } from '@/sanity/lib/client';
 
 // GET /api/startups?q=search&cursor=ISO_DATE&limit=12
 export async function GET(req: NextRequest) {
-\ttry {
-\t\tconst { searchParams } = new URL(req.url);
-\t\tconst q = (searchParams.get('q') || '').trim();
-\t\tconst cursor = (searchParams.get('cursor') || '').trim();
-\t\tconst limitParam = Number(searchParams.get('limit') || '12');
-\t\tconst limit = Math.min(Math.max(limitParam || 12, 1), 50);
+	try {
+		const { searchParams } = new URL(req.url);
+		const q = (searchParams.get('q') || '').trim();
+		const cursor = (searchParams.get('cursor') || '').trim();
+		const limitParam = Number(searchParams.get('limit') || '12');
+		const limit = Math.min(
+			Math.max(Number.isNaN(limitParam) ? 12 : limitParam, 1),
+			50,
+		);
 
-\t\t// Build GROQ filter with optional search and cursor conditions
-\t\tconst hasSearch = q.length > 0;
-\t\tconst hasCursor = cursor.length > 0;
+		const hasSearch = q.length > 0;
+		const hasCursor = cursor.length > 0;
 
-\t\t// We use createdAt seek pagination: fetch items older than cursor
-\t\tconst filterParts: string[] = [
-\t\t\t`_type == "startup" && defined(slug.current)`,
-\t\t];
-\t\tif (hasSearch) {
-\t\t\tconst searchExpr = `title match $search || category match $search || author->name match $search`;
-\t\t\tfilterParts.push(`(${searchExpr})`);
-\t\t}
-\t\tif (hasCursor) {
-\t\t\tfilterParts.push(`_createdAt < datetime($cursor)`);
-\t\t}
+		// Build filter parts (these are safe because $search and $cursor are used as GROQ values)
+		const filterParts: string[] = [
+			'_type == "startup" && defined(slug.current)',
+		];
+		if (hasSearch) {
+			filterParts.push(
+				'(title match $search || category match $search || author->name match $search)',
+			);
+		}
+		if (hasCursor) {
+			filterParts.push('_createdAt < datetime($cursor)');
+		}
+		const filter = filterParts.join(' && ');
 
-\t\tconst filter = filterParts.join(' && ');
+		// Insert the filter string into the query (GROQ does not accept query fragments as params)
+		const query = `*[${filter}] | order(_createdAt desc)[0...$limit]{
+      _id,
+      title,
+      slug,
+      _createdAt,
+      author->{ _id, name, image, bio },
+      views,
+      description,
+      category,
+      image
+    }`;
 
-\t\tconst query = `*[$filter] | order(_createdAt desc)[0...$limit]{
-\t\t\t_id,
-\t\t\ttitle,
-\t\t\tslug,
-\t\t\t_createdAt,
-\t\t\tauthor->{ _id, name, image, bio },
-\t\t\tviews,
-\t\t\tdescription,
-\t\t\tcategory,
-\t\t\timage
-\t\t}`;
+		// Only pass values as params (prevents injection and uses GROQ paramization)
+		const params: Record<string, any> = { limit };
+		if (hasSearch) params.search = `*${q}*`; // match operator supports wildcard patterns
+		if (hasCursor) params.cursor = cursor; // must be ISO date string, e.g. 2025-10-05T12:34:56Z
 
-\t\tconst params: Record<string, any> = {
-\t\t\tfilter,
-\t\t\tlimit,
-\t\t};
-\t\tif (hasSearch) params.search = `*${q}*`;
-\t\tif (hasCursor) params.cursor = cursor;
+		const posts = await client
+			.withConfig({ useCdn: false })
+			.fetch(query, params);
 
-\t\tconst posts = await client.withConfig({ useCdn: false }).fetch(query, params);
-
-\t\tconst nextCursor = posts?.length === limit ? posts[posts.length - 1]?._createdAt : null;
-\t\treturn NextResponse.json({ posts, nextCursor });
-\t} catch (err: any) {
-\t\treturn NextResponse.json({ error: 'Failed to load startups' }, { status: 500 });
-\t}
+		const nextCursor =
+			posts?.length === limit ? posts[posts.length - 1]._createdAt : null;
+		return NextResponse.json({ posts, nextCursor });
+	} catch (err: any) {
+		console.error('GET /api/startups error:', err);
+		return NextResponse.json(
+			{ error: 'Failed to load startups' },
+			{ status: 500 },
+		);
+	}
 }
-
-
