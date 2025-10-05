@@ -629,7 +629,7 @@ export default function EditStartupForm({
 										<label
 											htmlFor="description"
 											className="text-xs text-gray-500 dark:text-gray-400 mb-1 block">
-											Description
+											Post Meta Description
 										</label>
 										<Textarea
 											aria-label="Post description"
@@ -645,6 +645,9 @@ export default function EditStartupForm({
 												{errors.description}
 											</p>
 										)}
+										<div className="mt-2 text-xs text-gray-400 dark:text-gray-400">
+											Make the description under 150 characters
+										</div>
 									</div>
 								</div>
 							</div>

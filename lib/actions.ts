@@ -46,6 +46,26 @@ export const createPitch = async (
 			pitch,
 		};
 		const result = await writeClient.create({ _type: 'startup', ...startup });
+
+		// Trigger sitemap revalidation after successful creation
+		try {
+			const baseUrl =
+				process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
+			const revalidateUrl = `${baseUrl}/api/sitemap/revalidate`;
+
+			// Make internal request to revalidate sitemap (fire and forget)
+			fetch(revalidateUrl, {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+				},
+			}).catch((err) => {
+				console.warn('Failed to trigger sitemap revalidation:', err);
+			});
+		} catch (revalidateError) {
+			console.warn('Sitemap revalidation setup failed:', revalidateError);
+		}
+
 		return parseServerActionResponse({
 			data: result,
 			error: '',

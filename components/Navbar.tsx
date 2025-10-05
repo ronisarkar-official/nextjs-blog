@@ -18,6 +18,14 @@ import {
 	ChartNoAxesColumnIncreasing,
 } from 'lucide-react';
 import { ModeToggle } from './DarkmodeButton';
+import {
+	DropdownMenu,
+	DropdownMenuTrigger,
+	DropdownMenuContent,
+	DropdownMenuItem,
+	DropdownMenuSeparator,
+	DropdownMenuLabel,
+} from './ui/dropdown-menu';
 
 type Session = any;
 
@@ -150,75 +158,79 @@ export default async function Navbar() {
 
 						{/* Profile / Auth */}
 						{session?.user ?
-							<details className="relative">
-								<summary
-									className="flex items-center gap-2 cursor-pointer rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 transition-colors"
-									aria-haspopup="true"
-									aria-expanded="false">
-									<img
-										src={session.user.image ?? '/images/default-avatar.png'}
-										alt={session.user.name ?? 'User'}
-										className="h-9 w-9 rounded-full object-cover ring-1 ring-gray-200 dark:ring-gray-700"
-									/>
-								</summary>
-
-								<div className="absolute right-0 mt-2 w-56 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-lg py-2">
-									<div className="px-3 py-2 border-b border-gray-100 dark:border-gray-700">
-										<p className="text-sm font-medium text-gray-900 dark:text-gray-100">
-											{session.user.name}
-										</p>
-										<p className="text-xs text-gray-500 dark:text-gray-400 break-words">
-											{session.user.email}
-										</p>
-									</div>
-
-									<Link
-										href={`/user/${encodeURIComponent(userId)}`}
-										className="flex items-center gap-2 px-3 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200">
-										<User className="h-4 w-4 text-gray-500 dark:text-gray-300" />
-										Profile
+							<DropdownMenu>
+								<DropdownMenuTrigger asChild>
+									<button
+										className="flex items-center gap-2 cursor-pointer rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 transition-colors"
+										aria-haspopup="true">
+										<img
+											src={session.user.image ?? '/images/default-avatar.png'}
+											alt={session.user.name ?? 'User'}
+											className="h-9 w-9 rounded-full object-cover ring-1 ring-gray-200 dark:ring-gray-700"
+										/>
+									</button>
+								</DropdownMenuTrigger>
+								<DropdownMenuContent
+									align="end"
+									className="w-56">
+									<DropdownMenuLabel>
+										<div className="flex flex-col">
+											<span className="text-sm font-medium text-gray-900 dark:text-gray-100">
+												{session.user.name}
+											</span>
+											<span className="text-xs text-gray-500 dark:text-gray-400 break-words">
+												{session.user.email}
+											</span>
+										</div>
+									</DropdownMenuLabel>
+									<DropdownMenuSeparator />
+									<Link href={`/user/${encodeURIComponent(userId)}`}>
+										<DropdownMenuItem>
+											<User className="h-4 w-4 text-gray-500 dark:text-gray-300" />
+											Profile
+										</DropdownMenuItem>
 									</Link>
-
 									<Link
 										href="/startups/create"
-										className="flex items-center gap-2 px-3 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-700 md:hidden text-gray-700 dark:text-gray-200">
-										<PlusCircle className="h-4 w-4 text-gray-500 dark:text-gray-300" />
-										Create
+										className="md:hidden">
+										<DropdownMenuItem>
+											<PlusCircle className="h-4 w-4 text-gray-500 dark:text-gray-300" />
+											Create
+										</DropdownMenuItem>
 									</Link>
-
-									<Link
-										href={`/user/posts/${encodeURIComponent(userId)}`}
-										className="flex items-center gap-2 px-3 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200">
-										<Files className="h-4 w-4 text-gray-500 dark:text-gray-300" />
-										Posts
+									<Link href={`/user/posts/${encodeURIComponent(userId)}`}>
+										<DropdownMenuItem>
+											<Files className="h-4 w-4 text-gray-500 dark:text-gray-300" />
+											Posts
+										</DropdownMenuItem>
 									</Link>
-
-									<Link
-										href="/views"
-										className="flex items-center gap-2 px-3 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200">
-										<ChartNoAxesColumnIncreasing className="h-4 w-4 text-gray-500 dark:text-gray-300" />
-										Analytics
+									<Link href="/views">
+										<DropdownMenuItem>
+											<ChartNoAxesColumnIncreasing className="h-4 w-4 text-gray-500 dark:text-gray-300" />
+											Analytics
+										</DropdownMenuItem>
 									</Link>
-
-									<Link
-										href="/settings"
-										className="flex items-center gap-2 px-3 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200">
-										<Settings className="h-4 w-4 text-gray-500 dark:text-gray-300" />
-										Settings
+									<Link href="/settings">
+										<DropdownMenuItem>
+											<Settings className="h-4 w-4 text-gray-500 dark:text-gray-300" />
+											Settings
+										</DropdownMenuItem>
 									</Link>
-
+									<DropdownMenuSeparator />
 									<form
 										action={handleSignOut}
-										className="m-0 border-t border-gray-100 dark:border-gray-700">
-										<button
-											type="submit"
-											className="w-full text-left flex items-center gap-2 text-red-600 dark:text-red-400 px-3 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-700">
-											<LogOut className="h-4 w-4" />
-											Logout
-										</button>
+										className="m-0">
+										<DropdownMenuItem asChild>
+											<button
+												type="submit"
+												className="w-full text-left flex items-center gap-2 text-red-600 dark:text-red-400 text-sm">
+												<LogOut className="h-4 w-4" />
+												Logout
+											</button>
+										</DropdownMenuItem>
 									</form>
-								</div>
-							</details>
+								</DropdownMenuContent>
+							</DropdownMenu>
 						:	<form
 								action={handleSignIn}
 								className="m-0">

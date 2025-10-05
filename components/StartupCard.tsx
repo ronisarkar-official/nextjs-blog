@@ -9,6 +9,7 @@ import { Author, Startup } from '@/sanity/types';
 import { Skeleton } from './ui/skeleton';
 import { cn } from '@/lib/utils';
 import { client as sanityClient } from '@/sanity/lib/client';
+import DotWaveLoader from './Loaders/DotWaveLoader';
 
 export type StartupTypeCard = Omit<Startup, 'author'> & { author?: Author };
 

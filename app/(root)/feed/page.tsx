@@ -1,11 +1,11 @@
 export const dynamic = 'force-dynamic';
 export const fetchCache = 'force-no-store';
 
-import StartupCard, { StartupTypeCard } from '@/components/StartupCard';
+import type { StartupTypeCard } from '@/components/StartupCard';
 import SearchForm from '@/components/SearchForm';
-import { STARTUPS_QUERY } from '@/sanity/lib/queries';
 import { client } from '@/sanity/lib/client'; // use client directly to control useCdn
 import { SanityLive } from '@/sanity/lib/live';
+import FeedClient from '@/components/FeedClient';
 
 export default async function Home({
 	searchParams,
@@ -16,10 +16,27 @@ export default async function Home({
 	const query = (rawQuery || '').trim();
 	const searchParam = query ? `*${query}*` : null;
 
-	// fetch fresh data (client configured with useCdn: false)
-	const posts: StartupTypeCard[] = await client.fetch(STARTUPS_QUERY, {
-		search: searchParam,
-	});
+	// fetch initial page (SSR) — limit to page size for faster TTFB
+	const PAGE_SIZE = 12;
+	const INITIAL_QUERY = `*[_type == "startup" && defined(slug.current) && (!defined($search) || title match $search || category match $search || author->name match $search)] | order(_createdAt desc)[0...$limit] {
+  _id,
+  title,
+  slug,
+  _createdAt,
+  author -> { _id, name, image, bio },
+  views,
+  description,
+  category,
+  image,
+}`;
+	const posts: StartupTypeCard[] = await client
+		.withConfig({ useCdn: false })
+		.fetch(INITIAL_QUERY, {
+			search: searchParam,
+			limit: PAGE_SIZE,
+		});
+	const nextCursor =
+		posts?.length === PAGE_SIZE ? posts[posts.length - 1]?._createdAt : null;
 
 	return (
 		<main className="pt-16 pb-5 max-w-screen-xl mx-auto min-h-screen px-2 sm:px-6 lg:px-14">
@@ -28,16 +45,12 @@ export default async function Home({
 				{query ? `Showing results for "${query}"` : 'All Posts'}
 			</p>
 
-			<section className="grid md:grid-cols-3 sm:grid-cols-2 grid-cols-1 gap-6 pt-6">
-				{posts?.length > 0 ?
-					posts.map((post) => (
-						<StartupCard
-							key={post._id}
-							post={post}
-						/>
-					))
-				:	<p className="no-results">No startups found</p>}
-			</section>
+			<FeedClient
+				initialPosts={posts}
+				initialNextCursor={nextCursor}
+				query={query}
+				pageSize={PAGE_SIZE}
+			/>
 
 			<SanityLive />
 		</main>

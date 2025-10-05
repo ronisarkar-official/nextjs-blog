@@ -156,6 +156,25 @@ export async function POST(request: NextRequest) {
 			.set(patchObject)
 			.commit({ autoGenerateArrayKeys: true });
 
+		// Trigger sitemap revalidation after successful update
+		try {
+			const baseUrl =
+				process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
+			const revalidateUrl = `${baseUrl}/api/sitemap/revalidate`;
+
+			// Make internal request to revalidate sitemap (fire and forget)
+			fetch(revalidateUrl, {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+				},
+			}).catch((err) => {
+				console.warn('Failed to trigger sitemap revalidation:', err);
+			});
+		} catch (revalidateError) {
+			console.warn('Sitemap revalidation setup failed:', revalidateError);
+		}
+
 		return NextResponse.json({ success: true, data: patched }, { status: 200 });
 	} catch (err: any) {
 		console.error('/api/sanity/update error', err?.message ?? err);

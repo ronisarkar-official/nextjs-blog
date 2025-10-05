@@ -4,7 +4,6 @@ import { Footer } from '@/components/footer';
 import { Hexagon, Twitter, Github } from 'lucide-react';
 const sitename = process.env.NEXT_PUBLIC_SITE_NAME;
 const sitetag = process.env.NEXT_PUBLIC_SITE_TAGLINE;
-const currentYear = new Date().getFullYear();
 const SOCIAL = {
 	twitter: process.env.NEXT_PUBLIC_SOCIAL_TWITTER ?? '#',
 	linkedin: process.env.NEXT_PUBLIC_SOCIAL_LINKEDIN ?? '#',
@@ -24,10 +23,9 @@ export const metadata: Metadata = {
 export default function Layout({
 	children,
 }: Readonly<{ children: React.ReactNode }>) {
+	const currentYear = new Date().getFullYear();
 	return (
 		<main className="font-work-sans">
-			
-
 			{children}
 			<div className="w-full">
 				<Footer

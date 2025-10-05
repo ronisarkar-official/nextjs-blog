@@ -139,8 +139,7 @@ export default function Greeting({
 		);
 	}
 
-	const Container: React.ComponentType<any> =
-		shouldReduceMotion ? 'div' : motion.button;
+	const Container = shouldReduceMotion ? 'div' : motion.button;
 
 	return (
 		<Container

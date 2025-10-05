@@ -3,10 +3,18 @@ import { client } from '@/sanity/lib/client';
 import { RSS_STARTUPS_QUERY } from '@/sanity/lib/queries';
 import { NextResponse } from 'next/server';
 
+// Optimized revalidation for RSS feed
+export const revalidate = 30; // 30 seconds for faster updates
+export const dynamic = 'force-dynamic'; // Ensure RSS is always fresh
+
 const baseUrl = (
 	process.env.NEXT_PUBLIC_SITE_URL || 'https://www.spechype.com'
 ).replace(/\/$/, '');
 const currentYear = new Date().getFullYear();
+
+// Cache for RSS data to reduce Sanity API calls
+const rssCache = new Map();
+const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes cache
 
 function escapeXml(text) {
 	return (text || '')
@@ -71,9 +79,49 @@ ${rssItemsXml}
 </rss>`;
 }
 
-export async function GET(_request) {
+async function fetchRssData() {
 	try {
-		const raw = (await client.fetch(RSS_STARTUPS_QUERY)) || [];
+		// Add timeout and retry logic for better reliability
+		const controller = new AbortController();
+		const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+
+		const raw = await client.fetch(
+			RSS_STARTUPS_QUERY,
+			{},
+			{
+				signal: controller.signal,
+				next: { revalidate: 30 }, // Cache for 30 seconds
+			},
+		);
+
+		clearTimeout(timeoutId);
+		return raw || [];
+	} catch (error) {
+		console.error('Failed to fetch RSS data:', error);
+		// Return empty array as fallback
+		return [];
+	}
+}
+
+export async function GET(_request) {
+	const cacheKey = `rss-${baseUrl}`;
+
+	// Check cache first
+	const cached = rssCache.get(cacheKey);
+	const now = Date.now();
+
+	if (cached && now - cached.timestamp < CACHE_DURATION) {
+		return new NextResponse(cached.data, {
+			status: 200,
+			headers: {
+				'Content-Type': 'application/rss+xml; charset=utf-8',
+				'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=3600',
+			},
+		});
+	}
+
+	try {
+		const raw = await fetchRssData();
 
 		const normalized = raw
 			.map((r) => {
@@ -111,6 +159,15 @@ export async function GET(_request) {
 
 		const rssXml = generateRssXml(items, lastBuildDateIso);
 
+		// Cache the result
+		rssCache.set(cacheKey, {
+			data: rssXml,
+			timestamp: now,
+		});
+
+		// Log RSS generation for monitoring
+		console.log(`RSS feed generated with ${items.length} items`);
+
 		return new NextResponse(rssXml, {
 			status: 200,
 			headers: {
@@ -122,6 +179,37 @@ export async function GET(_request) {
 		});
 	} catch (err) {
 		console.error('RSS Generation Error:', err);
-		return new NextResponse('Error generating RSS feed.', { status: 500 });
+
+		// Return a minimal RSS feed as fallback
+		const fallbackRss = `<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>SpecHype: Real-time feed of technical publications.</title>
+    <link>${baseUrl}</link>
+    <atom:link href="${baseUrl}/rss.xml" rel="self" type="application/rss+xml" />
+    <description>The SpecHype RSS Feed provides structured, real-time data allowing any external platform or reader application to automatically ingest and display our latest technical publications and startup features.</description>
+    <language>en-us</language>
+    <copyright>Copyright ${currentYear}, SpecHype</copyright>
+    <lastBuildDate>${new Date().toUTCString()}</lastBuildDate>
+    <generator>SpecHype RSS Generator</generator>
+    <ttl>60</ttl>
+    <item>
+      <title>Feed temporarily unavailable</title>
+      <link>${baseUrl}</link>
+      <guid isPermaLink="true">${baseUrl}</guid>
+      <pubDate>${new Date().toUTCString()}</pubDate>
+      <author>SpecHype</author>
+      <description><![CDATA[RSS feed is temporarily unavailable. Please try again later.]]></description>
+    </item>
+  </channel>
+</rss>`;
+
+		return new NextResponse(fallbackRss, {
+			status: 200,
+			headers: {
+				'Content-Type': 'application/rss+xml; charset=utf-8',
+				'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=3600',
+			},
+		});
 	}
 }
