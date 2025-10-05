@@ -20,6 +20,7 @@
 	},
 	"dependencies": {
 		"@radix-ui/react-dropdown-menu": "^2.1.16",
+		"@radix-ui/react-select": "^2.2.6",
 		"@radix-ui/react-slot": "^1.2.3",
 		"@radix-ui/react-toast": "^1.2.15",
 		"@sanity/icons": "^3.7.4",
@@ -37,6 +38,8 @@
 		"codemirror": "^6.0.2",
 		"dompurify": "^3.2.7",
 		"framer-motion": "^12.23.19",
+		"imagekit": "^6.0.0",
+		"imagekitio-react": "^4.3.0",
 		"isomorphic-dompurify": "^2.28.0",
 		"lucide-react": "^0.544.0",
 		"markdown-it": "^14.1.0",

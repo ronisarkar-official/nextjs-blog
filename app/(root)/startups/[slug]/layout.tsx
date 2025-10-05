@@ -25,8 +25,25 @@ interface ResolvedParams {
 
 function resolveImageUrl(img: any): string | null {
 	if (!img) return null;
-	if (typeof img === 'string') return img;
-	return img.url || img.asset?.url || null;
+	if (typeof img === 'string') {
+		// Validate URL format before returning
+		try {
+			new URL(img);
+			return img;
+		} catch {
+			return null;
+		}
+	}
+	const url = img.url || img.asset?.url || null;
+	if (url && typeof url === 'string') {
+		try {
+			new URL(url);
+			return url;
+		} catch {
+			return null;
+		}
+	}
+	return null;
 }
 
 function stripHtml(html = ''): string {
@@ -43,7 +60,11 @@ function truncate(text = '', maxLength = 160): string {
 		:	cleaned;
 }
 
-function generateKeywords(title?: string, pitch?: string, description?: string | undefined): string {
+function generateKeywords(
+	title?: string,
+	pitch?: string,
+	description?: string | undefined,
+): string {
 	const baseKeywords = [
 		'startup',
 		'innovation',
@@ -252,7 +273,7 @@ export default async function StartupLayout({
 		description: truncate(
 			post?.description ?? post?.pitch ?? post?.excerpt ?? '',
 		),
-		keywords: generateKeywords(post?.title, post?.pitch, post?.description,),
+		keywords: generateKeywords(post?.title, post?.pitch, post?.description),
 		isAccessibleForFree: true,
 		articleSection: 'Feed',
 	};

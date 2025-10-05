@@ -16,6 +16,7 @@ import { Send, Trash } from 'lucide-react';
 import { formSchema } from '@/lib/validation';
 import { z } from 'zod';
 import toast, { Toaster } from 'react-hot-toast';
+import { Category } from '@/components/Category';
 
 // NEW: sanity client + slugs query
 import { client } from '@/sanity/lib/client';
@@ -41,12 +42,23 @@ function loadImagePreview(
 	timeoutMs = 5000,
 ): Promise<PreviewStatus> {
 	if (!url) return Promise.resolve('idle');
+
+	// Validate URL format before proceeding
+	try {
+		new URL(url);
+	} catch {
+		previewCache.set(url, 'error');
+		return Promise.resolve('error');
+	}
+
 	const cached = previewCache.get(url);
 	if (cached) return Promise.resolve(cached);
 
 	return new Promise((resolve) => {
 		let finished = false;
-		const img = new Image();
+
+		// Use document.createElement instead of new Image() to avoid potential issues
+		const img = document.createElement('img');
 		const timer = window.setTimeout(() => {
 			if (!finished) {
 				finished = true;
@@ -271,12 +283,15 @@ export default function EditStartupForm({
 		String(initialData?.pitch ?? ''),
 	);
 	const [isSubmitting, setIsSubmitting] = useState(false);
+	const [category, setCategory] = useState<string>(() =>
+		String(initialData?.category ?? ''),
+	);
 	const formRef = useRef<HTMLFormElement | null>(null);
 	const editorRef = useRef<any>(null);
 	const docIdRef = useRef<string | null>(initialData?._id ?? null);
 
 	// Normalize initial slug so inputs receive a string instead of [object Object]
-	const initialSlug = useMemo(() => { 
+	const initialSlug = useMemo(() => {
 		const s = initialData?.slug;
 		if (!s) return '';
 		if (typeof s === 'string') return s;
@@ -288,6 +303,7 @@ export default function EditStartupForm({
 		if (initialData) {
 			if (initialData._id) docIdRef.current = initialData._id;
 			setPitch(String(initialData.pitch ?? ''));
+			setCategory(String(initialData.category ?? ''));
 			if (editorRef.current?.getInstance?.()?.setMarkdown) {
 				try {
 					editorRef.current
@@ -548,14 +564,10 @@ export default function EditStartupForm({
 											className="text-xs text-gray-500 dark:text-gray-400 mb-1 block">
 											Category
 										</label>
-										<Input
-											aria-label="Post category"
-											id="category"
-											name="category"
-											required
-											defaultValue={initialData?.category ?? ''}
-											placeholder="Category (Tech, Health, Finance...)"
-											className="w-full text-sm placeholder:text-gray-400 dark:placeholder:text-gray-500 bg-transparent outline-none"
+										<Category
+											value={category}
+											onValueChange={setCategory}
+											disabled={isSubmitting}
 										/>
 										{errors.category && (
 											<p className="text-sm text-red-500 mt-1">
@@ -646,6 +658,13 @@ export default function EditStartupForm({
 				<textarea
 					name="pitch"
 					value={pitch}
+					readOnly
+					hidden
+				/>
+				{/* Hidden input for category */}
+				<input
+					name="category"
+					value={category}
 					readOnly
 					hidden
 				/>

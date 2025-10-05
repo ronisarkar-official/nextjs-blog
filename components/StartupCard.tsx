@@ -37,7 +37,7 @@ async function fetchStartup(idOrSlug: string, signal?: AbortSignal) {
 	if (cached && cached.promise) return cached.promise; // fetch in progress
 
 	const promise = sanityClient
-		.withConfig({ useCdn: false, requestTag: 'startup-card-client-refresh' })
+		.withConfig({ useCdn: false })
 		.fetch(STARTUP_QUERY, { idOrSlug }, { signal } as any)
 		.then((res: any) => {
 			if (res) {
@@ -185,14 +185,13 @@ const Startupposts = ({
 		category,
 		_createdAt,
 		author,
-		excerpt,
 		_updatedAt,
 	} = (freshPost ?? post) as StartupTypeCard;
 
 	// memoized derived values
 	const displayText = useMemo(
-		() => excerpt ?? description ?? 'No description available.',
-		[excerpt, description],
+		() => description ?? 'No description available.',
+		[description],
 	);
 	const authorName = author?.name ?? '';
 	const authorInitial = useMemo(() => authorName.charAt(0) || '', [authorName]);
@@ -205,14 +204,30 @@ const Startupposts = ({
 
 	const postImageUrl: string = useMemo(() => {
 		if (!postImage) return `/fallback-image.jpg?v=${stamp}`;
-		if (typeof postImage === 'string') return `${postImage}?v=${stamp}`;
+		if (typeof postImage === 'string') {
+			// Validate URL format before using it
+			try {
+				new URL(postImage);
+				return `${postImage}?v=${stamp}`;
+			} catch {
+				return `/fallback-image.jpg?v=${stamp}`;
+			}
+		}
 		const url = urlFor(postImage)?.width(1200).quality(80).url();
 		return url ? `${url}&v=${stamp}` : `/fallback-image.jpg?v=${stamp}`;
 	}, [postImage, stamp]);
 
 	const authorImageUrl: string | null = useMemo(() => {
 		if (!author?.image) return null;
-		if (typeof author.image === 'string') return `${author.image}?v=${stamp}`;
+		if (typeof author.image === 'string') {
+			// Validate URL format before using it
+			try {
+				new URL(author.image);
+				return `${author.image}?v=${stamp}`;
+			} catch {
+				return null;
+			}
+		}
 		const url = urlFor(author.image)?.width(200).quality(80).url();
 		return url ? `${url}&v=${stamp}` : null;
 	}, [author?.image, stamp]);

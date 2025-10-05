@@ -12,11 +12,12 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Send } from 'lucide-react';
+import ImageUploadButton from '@/components/ImageUploadButton';
 import { formSchema } from '@/lib/validation';
 import { z } from 'zod';
 import toast, { Toaster } from 'react-hot-toast';
 import { createPitch } from '@/lib/actions';
-
+import { Category } from '@/components/Category';
 // sanity client + query to check slug uniqueness
 import { client } from '@/sanity/lib/client';
 import { ALL_STARTUP_SLUG_STRINGS } from '@/sanity/lib/queries';
@@ -71,12 +72,23 @@ function loadImagePreview(
 	timeoutMs = 5000,
 ): Promise<PreviewStatus> {
 	if (!url) return Promise.resolve('idle');
+
+	// Validate URL format before proceeding
+	try {
+		new URL(url);
+	} catch {
+		previewCache.set(url, 'error');
+		return Promise.resolve('error');
+	}
+
 	const cached = previewCache.get(url);
 	if (cached) return Promise.resolve(cached);
 
 	return new Promise((resolve) => {
 		let finished = false;
-		const img = new Image();
+
+		// Use document.createElement instead of new Image() to avoid potential issues
+		const img = document.createElement('img');
 		const timer = window.setTimeout(() => {
 			if (!finished) {
 				finished = true;
@@ -303,6 +315,8 @@ const StartupForm: React.FC = () => {
 	const [errors, setErrors] = useState<ErrorsMap>({});
 	const [pitch, setPitch] = useState<string>('');
 	const [isSubmitting, setIsSubmitting] = useState(false);
+	const [uploadedImageUrl, setUploadedImageUrl] = useState<string>('');
+	const [category, setCategory] = useState<string>('');
 	const formRef = useRef<HTMLFormElement | null>(null);
 	const editorRef = useRef<any>(null); // ToastUI editor ref
 
@@ -310,6 +324,19 @@ const StartupForm: React.FC = () => {
 	const onEditorChange = useCallback(() => {
 		const md = editorRef.current?.getInstance?.()?.getMarkdown?.() ?? '';
 		setPitch(String(md ?? ''));
+	}, []);
+
+	// Handle image upload
+	const handleImageUploaded = useCallback((url: string) => {
+		setUploadedImageUrl(url);
+		setErrors((prev) => ({ ...prev, link: undefined })); // Clear any existing link errors
+		console.log('Image uploaded successfully, URL:', url);
+	}, []);
+
+	const handleImageRemoved = useCallback(() => {
+		setUploadedImageUrl('');
+		setErrors((prev) => ({ ...prev, link: undefined })); // Clear any existing link errors
+		console.log('Image removed');
 	}, []);
 
 	// seed pitch state once editor instance is ready (client)
@@ -333,6 +360,11 @@ const StartupForm: React.FC = () => {
 			const editorMarkdown =
 				editorRef.current?.getInstance?.()?.getMarkdown?.() ?? pitch ?? '';
 			fd.set('pitch', editorMarkdown.trim());
+
+			// If we have an uploaded image, set it in FormData first
+			if (uploadedImageUrl) {
+				fd.set('link', uploadedImageUrl);
+			}
 
 			// Build trimmed payload from FormData (handles File values safely)
 			const payload: Record<string, any> = {};
@@ -381,13 +413,27 @@ const StartupForm: React.FC = () => {
 			else delete payload.slug;
 
 			// copy image link to image.url so Sanity route can use whichever you prefer
-			if (payload.link) {
-				payload.image = { url: payload.link };
+			// Prioritize uploaded image URL over manual link input
+			const imageUrl = uploadedImageUrl || payload.link;
+			if (imageUrl) {
+				payload.image = { url: imageUrl };
 			}
 
 			const toastId = toast.loading('Posting your startup pitch...');
 
 			try {
+				console.log('Validating payload:', payload);
+				console.log('Uploaded image URL:', uploadedImageUrl);
+				console.log('Link field value:', payload.link);
+
+				// Custom validation: ensure either link or uploaded image is provided
+				if (!payload.link && !uploadedImageUrl) {
+					setErrors({ link: 'Please provide an image URL or upload an image' });
+					toast.error('Please provide an image URL or upload an image');
+					setIsSubmitting(false);
+					return { error: 'Image required', status: 'ERROR' };
+				}
+
 				await formSchema.parseAsync(payload);
 
 				let result: any = null;
@@ -561,14 +607,10 @@ const StartupForm: React.FC = () => {
 												className="text-xs text-gray-500 dark:text-gray-400 mb-1 block">
 												Category
 											</label>
-											<Input
-												aria-label="Post category"
-												id="category"
-												name="category"
-												required
-												defaultValue=""
-												placeholder="Category (Tech, Health, Finance...)"
-												className="w-full text-sm placeholder:text-gray-400 dark:placeholder:text-gray-500 bg-transparent outline-none text-gray-900 dark:text-gray-100"
+											<Category
+												value={category}
+												onValueChange={setCategory}
+												disabled={isSubmitting}
 											/>
 											{errors.category && (
 												<p className="text-sm text-red-500 mt-1">
@@ -606,19 +648,45 @@ const StartupForm: React.FC = () => {
 										</div>
 
 										<div className="border-t border-gray-100 dark:border-gray-700 pt-3">
+											<label className="text-xs text-gray-500 dark:text-gray-400 mb-1 block">
+												Image Upload
+											</label>
+											<ImageUploadButton
+												onImageUploaded={handleImageUploaded}
+												onImageRemoved={handleImageRemoved}
+												disabled={isSubmitting}
+												className="w-full"
+											/>
+											{errors.link && (
+												<p className="text-sm text-red-500 mt-1">
+													{errors.link}
+												</p>
+											)}
+											<div className="mt-2 text-xs text-gray-400 dark:text-gray-400">
+												Upload an image or paste a URL below
+											</div>
+										</div>
+
+										<div className="border-t border-gray-100 dark:border-gray-700 pt-3">
 											<label
 												htmlFor="link"
 												className="text-xs text-gray-500 dark:text-gray-400 mb-1 block">
-												Image URL
+												Or Image URL
 											</label>
-											<ImageUrlPreviewInput
-												id="link"
-												name="link"
-												required
-												defaultValue=""
-												placeholder="https://example.com/image.jpg"
-												className="w-full text-sm placeholder:text-gray-400 dark:placeholder:text-gray-500 bg-transparent outline-none text-gray-900 dark:text-gray-100"
-											/>
+											{uploadedImageUrl ?
+												<div className="space-y-2">
+													<div className="text-xs text-green-600 dark:text-green-400">
+														✓ Using uploaded image
+													</div>
+												</div>
+											:	<ImageUrlPreviewInput
+													id="link"
+													name="link"
+													defaultValue=""
+													placeholder="https://example.com/image.jpg"
+													className="w-full text-sm placeholder:text-gray-400 dark:placeholder:text-gray-500 bg-transparent outline-none text-gray-900 dark:text-gray-100"
+												/>
+											}
 											{errors.link && (
 												<p className="text-sm text-red-500 mt-1">
 													{errors.link}
@@ -664,6 +732,13 @@ const StartupForm: React.FC = () => {
 				<textarea
 					name="pitch"
 					value={pitch}
+					readOnly
+					hidden
+				/>
+				{/* Hidden input for category */}
+				<input
+					name="category"
+					value={category}
 					readOnly
 					hidden
 				/>

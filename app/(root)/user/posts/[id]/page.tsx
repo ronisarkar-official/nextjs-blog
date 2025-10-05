@@ -28,10 +28,30 @@ const DEFAULT_AVATAR = '/avatar-placeholder.png';
 
 const safeImageUrl = (img: any): string => {
 	if (!img) return DEFAULT_AVATAR;
-	if (typeof img === 'string') return img;
-	if (img.url) return img.url;
-	if (img.asset && typeof img.asset === 'object' && img.asset.url)
-		return img.asset.url;
+	if (typeof img === 'string') {
+		try {
+			new URL(img);
+			return img;
+		} catch {
+			return DEFAULT_AVATAR;
+		}
+	}
+	if (img.url) {
+		try {
+			new URL(img.url);
+			return img.url;
+		} catch {
+			return DEFAULT_AVATAR;
+		}
+	}
+	if (img.asset && typeof img.asset === 'object' && img.asset.url) {
+		try {
+			new URL(img.asset.url);
+			return img.asset.url;
+		} catch {
+			return DEFAULT_AVATAR;
+		}
+	}
 	return DEFAULT_AVATAR;
 };
 

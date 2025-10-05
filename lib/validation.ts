@@ -65,11 +65,18 @@ export const formSchema = z.object({
 	description: trimmedString(20, 500),
 	category: trimmedString(3, 20),
 	link: z
-		.preprocess((v) => (typeof v === 'string' ? v.trim() : v), z.string().url())
+		.preprocess(
+			(v) => (typeof v === 'string' ? v.trim() : v),
+			z.string().url().optional(),
+		)
 		.refine(
 			async (url) => {
 				// zod passes the *preprocessed value* (still typed as unknown) — cast to string
-				return await isImageUrl(String(url));
+				const urlString = String(url || '');
+				console.log('Validating image URL:', urlString);
+				// If URL is empty, that's okay - user might have uploaded an image
+				if (!urlString || urlString === '') return true;
+				return await isImageUrl(urlString);
 			},
 			{ message: 'Link must be a reachable URL that points to an image' },
 		),

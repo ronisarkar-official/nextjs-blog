@@ -72,7 +72,7 @@ export default async function Page({ params }: Props) {
 	// user is author — render edit form (client component)
 	return (
 		<div className="max-w-xl px-4 ml-4 m-auto">
-			<h1 className="text-2xl font-semibold mb-6">Edit startup</h1>
+			<h1 className="text-2xl font-semibold mb-6">Edit Post</h1>
 			<EditStartupForm
 				initialData={data}
 				slug={slug}

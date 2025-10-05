@@ -2,7 +2,7 @@
 'use client';
 
 import React, { useCallback, useEffect, useState } from 'react';
-import { motion, useReducedMotion } from 'framer-motion';
+import { motion, useReducedMotion, type HTMLMotionProps } from 'framer-motion';
 
 type Part = 'morning' | 'afternoon' | 'evening' | 'night';
 
@@ -139,7 +139,8 @@ export default function Greeting({
 		);
 	}
 
-	const Container: any = shouldReduceMotion ? 'div' : motion.button;
+	const Container: React.ComponentType<any> =
+		shouldReduceMotion ? 'div' : motion.button;
 
 	return (
 		<Container
