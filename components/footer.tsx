@@ -1,4 +1,7 @@
+'use client';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import React, { useState } from 'react';
 import Image from 'next/image';
 
 interface FooterProps {
@@ -31,10 +34,45 @@ export function Footer({
 	legalLinks,
 	copyright,
 }: FooterProps) {
+	const [email, setEmail] = useState('');
+	const [status, setStatus] = useState<
+		'idle' | 'loading' | 'success' | 'error'
+	>('idle');
+	const [message, setMessage] = useState('');
+
+	async function handleSubscribe(e: React.FormEvent) {
+		e.preventDefault();
+		if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+			setStatus('error');
+			setMessage('Enter a valid email');
+			return;
+		}
+		try {
+			setStatus('loading');
+			setMessage('');
+			const res = await fetch('/api/newsletter', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({ email }),
+			});
+			if (res.ok) {
+				setStatus('success');
+				setMessage('Subscribed! Please check your inbox.');
+				setEmail('');
+			} else {
+				const data = await res.json().catch(() => ({}));
+				setStatus('error');
+				setMessage(data?.error || 'Subscription failed');
+			}
+		} catch (err) {
+			setStatus('error');
+			setMessage('Network error');
+		}
+	}
 	return (
 		<footer className="pb-6 pt-16 lg:pb-8 lg:pt-24">
 			<div className="px-4 lg:px-8">
-				<div className="md:flex md:items-start md:justify-between">
+				<div className="md:flex md:items-start md:justify-between gap-6">
 					<a
 						href="/"
 						className="flex items-center gap-x-2"
@@ -45,6 +83,44 @@ export function Footer({
 							className="h-9 w-auto"
 						/>
 					</a>
+					{/* Subscribe compact form */}
+					<div className="mt-6 md:mt-0 w-full md:max-w-md">
+						<h3 className="text-sm font-semibold tracking-wide">Subscribe</h3>
+						<p className="text-sm text-muted-foreground mt-1">
+							Get updates in your inbox.
+						</p>
+						<form
+							onSubmit={handleSubscribe}
+							className="mt-3 flex gap-2">
+							<label
+								htmlFor="footer-subscribe"
+								className="sr-only">
+								Email
+							</label>
+							<Input
+								id="footer-subscribe"
+								type="email"
+								placeholder="you@example.com"
+								value={email}
+								onChange={(e) => setEmail(e.target.value)}
+								aria-invalid={status === 'error' ? 'true' : 'false'}
+								className="h-10 rounded-full"
+							/>
+							<Button
+								type="submit"
+								size="sm"
+								disabled={status === 'loading'}
+								className="h-10 rounded-full px-4">
+								{status === 'loading' ? 'Subscribing…' : 'Subscribe'}
+							</Button>
+						</form>
+						{message && (
+							<p
+								className={`mt-2 text-xs ${status === 'error' ? 'text-red-600' : 'text-emerald-700'}`}>
+								{message}
+							</p>
+						)}
+					</div>
 					<ul className="flex list-none mt-6 md:mt-0 space-x-3">
 						{socialLinks.map((link, i) => (
 							<li key={i}>

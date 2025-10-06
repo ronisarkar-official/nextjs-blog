@@ -22,19 +22,43 @@ import { Badge } from '@/components/ui/badge';
 import { features, platformTabs, socialProofStats } from '@/lib/data';
 import Image from 'next/image';
 import Link from 'next/link';
+import NewsletterSubscribe from '@/components/NewsletterSubscribe';
+import { motion, AnimatePresence } from 'framer-motion';
 
 export default function HomeClient() {
 	const [activeTab, setActiveTab] = useState(0);
 
+	const containerVariants = {
+		hidden: { opacity: 0, y: 16 },
+		show: {
+			opacity: 1,
+			y: 0,
+			transition: { staggerChildren: 0.08, when: 'beforeChildren' },
+		},
+	};
+
+	const itemVariants = {
+		hidden: { opacity: 0, y: 12 },
+		show: { opacity: 1, y: 0 },
+	};
+
 	return (
-		<div className="min-h-screen bg-white text-gray-900 dark:bg-gray-900 dark:text-gray-100 relative">
+		<motion.div
+			className="min-h-screen bg-white text-gray-900 dark:bg-gray-900 dark:text-gray-100 relative"
+			initial="hidden"
+			animate="show"
+			variants={containerVariants}>
 			{/* Hero — asymmetrical split with angled card */}
-			<header
+			<motion.header
 				className="relative z-10 pt-16 pb-6 px-4 sm:px-6 lg:pt-24 lg:pb-8"
-				id="Home">
+				id="Home"
+				variants={itemVariants}
+				transition={{ type: 'spring', stiffness: 60, damping: 14 }}>
 				<div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
 					{/* Left copy (stacked on mobile) */}
-					<div className="lg:col-span-6 space-y-5">
+					<motion.div
+						className="lg:col-span-6 space-y-5"
+						variants={itemVariants}>
 						<div
 							className="inline-flex items-center gap-3 px-3 py-1 rounded-full w-max
 										bg-emerald-50/70 dark:bg-emerald-900/30">
@@ -57,7 +81,10 @@ export default function HomeClient() {
 							and clarity. Minimal controls, maximum output.
 						</p>
 
-						<div className="flex flex-col sm:flex-row gap-3 mt-3 sm:mt-4">
+						<motion.div
+							className="flex flex-col sm:flex-row gap-3 mt-3 sm:mt-4"
+							variants={itemVariants}
+							transition={{ type: 'spring', stiffness: 80, damping: 12 }}>
 							<Link
 								href="/feed"
 								className="w-full sm:w-auto">
@@ -69,7 +96,7 @@ export default function HomeClient() {
 									<ArrowRight className="w-4 h-4" />
 								</Button>
 							</Link>
-						</div>
+						</motion.div>
 
 						{/* Compact trust strip */}
 						<div className="flex flex-wrap items-center gap-3 mt-4 text-sm text-gray-600 dark:text-gray-300">
@@ -86,10 +113,13 @@ export default function HomeClient() {
 								<span className="ml-1">4.9</span>
 							</div>
 						</div>
-					</div>
+					</motion.div>
 
 					{/* Right angled illustration (responsive) */}
-					<div className="lg:col-span-6 relative flex justify-center lg:justify-end px-0 sm:px-6">
+					<motion.div
+						className="lg:col-span-6 relative flex justify-center lg:justify-end px-0 sm:px-6"
+						variants={itemVariants}
+						transition={{ type: 'spring', stiffness: 60, damping: 14 }}>
 						<div className="w-full max-w-xs sm:max-w-sm md:max-w-md lg:max-w-md transform lg:rotate-2 rotate-0 shadow-2xl dark:shadow-none rounded-3xl overflow-hidden mx-auto">
 							{/* Image wrapper - fixed aspect / responsive height */}
 							<div className="bg-gradient-to-br from-indigo-50 to-emerald-50 dark:from-indigo-900 dark:to-emerald-900 p-5 sm:p-8">
@@ -134,14 +164,18 @@ export default function HomeClient() {
 								</div>
 							</div>
 						</div>
-					</div>
+					</motion.div>
 				</div>
-			</header>
+			</motion.header>
 
 			{/* Features — horizontal scroll + card peeking */}
-			<section
+			<motion.section
 				id="features"
-				className="relative z-10 px-6 sm:px-12 py-12">
+				className="relative z-10 px-6 sm:px-12 py-12"
+				initial="hidden"
+				whileInView="show"
+				viewport={{ once: true, amount: 0.2 }}
+				variants={containerVariants}>
 				<div className="max-w-7xl mx-auto">
 					<h3 className="text-xl font-bold mb-4 dark:text-gray-100">
 						Key features
@@ -150,11 +184,16 @@ export default function HomeClient() {
 						A compact set of tools designed so you don't get lost in menus.
 					</p>
 
-					<div className="flex gap-4 overflow-x-auto pb-4">
+					<motion.div
+						className="flex gap-4 overflow-x-auto pb-4"
+						variants={containerVariants}>
 						{features.map((f, idx) => (
-							<div
+							<motion.div
 								key={idx}
-								className="min-w-[260px] bg-gray-100 dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-2xl p-5 shadow-sm hover:shadow-md transition">
+								className="min-w-[260px] bg-gray-100 dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-2xl p-5 shadow-sm hover:shadow-md transition"
+								variants={itemVariants}
+								whileHover={{ y: -4, scale: 1.02 }}
+								transition={{ type: 'spring', stiffness: 300, damping: 20 }}>
 								<div
 									className={`w-12 h-12 ${f.color} rounded-xl flex items-center justify-center mb-3`}>
 									<f.icon className="w-5 h-5 text-white" />
@@ -165,16 +204,19 @@ export default function HomeClient() {
 								<p className="text-sm text-gray-600 dark:text-gray-300 mt-2">
 									{f.desc}
 								</p>
-							</div>
+							</motion.div>
 						))}
-					</div>
+					</motion.div>
 				</div>
-			</section>
+			</motion.section>
 
 			{/* Platform stepper (offset card) */}
-			<section
+			<motion.section
 				className="relative z-10 px-6 sm:px-12 py-8"
-				id="How it works">
+				id="How it works"
+				initial={{ opacity: 0, y: 12 }}
+				whileInView={{ opacity: 1, y: 0 }}
+				viewport={{ once: true, amount: 0.2 }}>
 				<div className="max-w-7xl mx-auto grid lg:grid-cols-3 gap-8 items-start">
 					<div className="lg:col-span-1">
 						<div className="sticky top-28 bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-700 rounded-2xl p-6 shadow-sm">
@@ -185,9 +227,13 @@ export default function HomeClient() {
 								Follow three simple steps to go from idea to published post.
 							</p>
 
-							<div className="flex flex-col gap-3">
+							<motion.div
+								className="flex flex-col gap-3"
+								initial={{ opacity: 0 }}
+								whileInView={{ opacity: 1 }}
+								viewport={{ once: true }}>
 								{platformTabs.map((tab, i) => (
-									<button
+									<motion.button
 										key={i}
 										onClick={() => setActiveTab(i)}
 										className={`flex items-center gap-3 p-3 rounded-xl text-left w-full transition
@@ -195,7 +241,13 @@ export default function HomeClient() {
 												activeTab === i ?
 													'bg-indigo-50 dark:bg-indigo-900/40 border border-indigo-100 dark:border-indigo-800 shadow-sm'
 												:	'bg-white dark:bg-gray-800 border border-gray-50 dark:border-gray-700'
-											}`}>
+											}`}
+										whileHover={{ scale: 1.01 }}
+										transition={{
+											type: 'spring',
+											stiffness: 300,
+											damping: 24,
+										}}>
 										<div
 											className={`w-10 h-10 rounded-lg flex items-center justify-center ${
 												activeTab === i ?
@@ -212,9 +264,9 @@ export default function HomeClient() {
 												{tab.description}
 											</div>
 										</div>
-									</button>
+									</motion.button>
 								))}
-							</div>
+							</motion.div>
 						</div>
 					</div>
 
@@ -229,31 +281,50 @@ export default function HomeClient() {
 								</CardDescription>
 							</CardHeader>
 							<CardContent>
-								<div className="grid sm:grid-cols-2 gap-4">
-									{platformTabs[activeTab].features.map((f, i) => (
-										<div
-											key={i}
-											className="flex items-start gap-3">
-											<CheckCircle className="w-5 h-5 text-green-600 dark:text-green-400 mt-1" />
-											<div className="text-sm text-gray-700 dark:text-gray-200">
-												{f}
-											</div>
-										</div>
-									))}
-								</div>
+								<AnimatePresence mode="wait">
+									<motion.div
+										key={activeTab}
+										className="grid sm:grid-cols-2 gap-4"
+										initial={{ opacity: 0, y: 10 }}
+										animate={{ opacity: 1, y: 0 }}
+										exit={{ opacity: 0, y: -10 }}
+										transition={{ duration: 0.2 }}>
+										{platformTabs[activeTab].features.map((f, i) => (
+											<motion.div
+												key={i}
+												className="flex items-start gap-3"
+												initial={{ opacity: 0, y: 12 }}
+												animate={{ opacity: 1, y: 0 }}
+												transition={{ duration: 0.18, delay: i * 0.05 }}>
+												<CheckCircle className="w-5 h-5 text-green-600 dark:text-green-400 mt-1" />
+												<div className="text-sm text-gray-700 dark:text-gray-200">
+													{f}
+												</div>
+											</motion.div>
+										))}
+									</motion.div>
+								</AnimatePresence>
 							</CardContent>
 						</div>
 					</div>
 				</div>
-			</section>
+			</motion.section>
 
 			{/* Social proof compact chips */}
-			<section className="px-6 sm:px-12 py-8">
-				<div className="max-w-7xl mx-auto flex flex-wrap gap-3 items-center justify-center">
+			<motion.section
+				className="px-6 sm:px-12 py-8"
+				initial={{ opacity: 0, y: 12 }}
+				whileInView={{ opacity: 1, y: 0 }}
+				viewport={{ once: true, amount: 0.2 }}>
+				<motion.div
+					className="max-w-7xl mx-auto flex flex-wrap gap-3 items-center justify-center"
+					initial={false}>
 					{socialProofStats.map((s, i) => (
-						<div
+						<motion.div
 							key={i}
-							className="flex items-center gap-3 bg-gray-50 dark:bg-gray-800 rounded-full px-4 py-2 border border-gray-100 dark:border-gray-700 shadow-sm">
+							className="flex items-center gap-3 bg-gray-50 dark:bg-gray-800 rounded-full px-4 py-2 border border-gray-100 dark:border-gray-700 shadow-sm"
+							whileHover={{ scale: 1.03 }}
+							transition={{ type: 'spring', stiffness: 300, damping: 18 }}>
 							<div className="w-9 h-9 bg-white dark:bg-gray-900 rounded-full grid place-items-center">
 								<s.icon className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
 							</div>
@@ -265,13 +336,17 @@ export default function HomeClient() {
 									{s.label}
 								</div>
 							</div>
-						</div>
+						</motion.div>
 					))}
-				</div>
-			</section>
+				</motion.div>
+			</motion.section>
 
 			{/* Testimonials — speech bubble cards */}
-			<section className="relative z-10 py-16 sm:py-24 px-4 sm:px-6 bg-gradient-to-r from-white to-gray-50 dark:from-gray-900 dark:to-gray-800">
+			<motion.section
+				className="relative z-10 py-16 sm:py-24 px-4 sm:px-6 bg-gradient-to-r from-white to-gray-50 dark:from-gray-900 dark:to-gray-800"
+				initial={{ opacity: 0, y: 16 }}
+				whileInView={{ opacity: 1, y: 0 }}
+				viewport={{ once: true, amount: 0.2 }}>
 				<div className="max-w-4xl mx-auto text-center">
 					<h2 className="text-4xl sm:text-5xl md:text-6xl font-black mb-6 sm:mb-8">
 						<span className="gradient-text-primary">Ready to create?</span>
@@ -281,17 +356,32 @@ export default function HomeClient() {
 						and growing their business with our AI-powered platform.
 					</p>
 
-					<div className="flex flex-col sm:flex-row gap-6 justify-center">
+					<motion.div
+						className="flex flex-col sm:flex-row gap-6 justify-center"
+						initial={{ opacity: 0, y: 10 }}
+						whileInView={{ opacity: 1, y: 0 }}
+						viewport={{ once: true }}>
 						<Link href="/feed">
 							<div className="rounded-full w-full sm:w-auto bg-gray-900 dark:bg-indigo-600 px-4 py-2 text-white hover:bg-gray-700 dark:hover:bg-indigo-500 transition">
 								Explore the Feed
 							</div>
 						</Link>
-					</div>
+					</motion.div>
 				</div>
-			</section>
+			</motion.section>
+
+			{/* Newsletter */}
+			<motion.section
+				className="px-6 sm:px-12 py-10"
+				initial={{ opacity: 0, y: 12 }}
+				whileInView={{ opacity: 1, y: 0 }}
+				viewport={{ once: true, amount: 0.2 }}>
+				<div className="max-w-5xl mx-auto">
+					<NewsletterSubscribe />
+				</div>
+			</motion.section>
 
 			{/* Compact bottom action bar for mobile (optional; not present) */}
-		</div>
+		</motion.div>
 	);
 }

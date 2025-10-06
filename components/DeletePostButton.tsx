@@ -1,6 +1,4 @@
 'use client';
-
-import { TrashIcon } from 'lucide-react';
 import React, { useEffect, useRef, useState } from 'react';
 import toast from 'react-hot-toast';
 
@@ -66,7 +64,6 @@ export default function DeletePostButton({
 				aria-controls="delete-startup-dialog"
 				aria-busy={isDeleting}>
 				{isDeleting ? 'Deleting…' : (children ?? 'Delete')}
-				
 			</button>
 
 			{open && (
@@ -80,12 +77,12 @@ export default function DeletePostButton({
 					className="fixed inset-0 z-50 flex items-center justify-center p-4">
 					{/* backdrop */}
 					<div
-						className="fixed inset-0 bg-black/50"
+						className="fixed inset-0 bg-black/50 dark:bg-black/60"
 						onClick={() => !isDeleting && setOpen(false)}
 						aria-hidden="true"
 					/>
 
-					<div className="relative z-50 w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl">
+					<div className="relative z-50 w-full max-w-md rounded-2xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 p-6 shadow-2xl text-neutral-900 dark:text-neutral-100">
 						<h2
 							id="delete-startup-title"
 							className="text-lg font-semibold">
@@ -94,7 +91,7 @@ export default function DeletePostButton({
 
 						<p
 							id="delete-startup-desc"
-							className="mt-2 text-sm">
+							className="mt-2 text-sm text-neutral-600 dark:text-neutral-300">
 							Are you sure you want to delete <strong>{slug}</strong>? This
 							action cannot be undone.
 						</p>
@@ -103,7 +100,7 @@ export default function DeletePostButton({
 							<button
 								ref={cancelRef}
 								type="button"
-								className="rounded-md px-3 py-2 text-sm cursor-pointer"
+								className="rounded-md px-3 py-2 text-sm cursor-pointer bg-neutral-100 dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200 hover:bg-neutral-200 dark:hover:bg-neutral-700 focus:outline-none focus:ring-2 focus:ring-neutral-400 dark:focus:ring-neutral-600"
 								onClick={() => setOpen(false)}
 								disabled={isDeleting}>
 								Cancel
@@ -111,7 +108,7 @@ export default function DeletePostButton({
 
 							<button
 								type="button"
-								className="rounded-md bg-red-600 px-3 py-2 text-sm text-white disabled:opacity-50 cursor-pointer"
+								className="rounded-md bg-red-600 hover:bg-red-700 px-3 py-2 text-sm text-white disabled:opacity-50 cursor-pointer focus:outline-none focus:ring-2 focus:ring-red-400 dark:focus:ring-red-500"
 								onClick={confirmDelete}
 								disabled={isDeleting}
 								aria-disabled={isDeleting}>

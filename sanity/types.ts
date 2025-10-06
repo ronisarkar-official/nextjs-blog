@@ -13,6 +13,16 @@
  */
 
 // Source: schema.json
+export type Subscriber = {
+  _id: string;
+  _type: "subscriber";
+  _createdAt: string;
+  _updatedAt: string;
+  _rev: string;
+  email?: string;
+  status?: "subscribed" | "unsubscribed";
+};
+
 export type Comment = {
   _id: string;
   _type: "comment";
@@ -39,27 +49,6 @@ export type Comment = {
     [internalGroqTypeReferenceTo]?: "comment";
   };
   isApproved?: boolean;
-  createdAt?: string;
-};
-
-export type Like = {
-  _id: string;
-  _type: "like";
-  _createdAt: string;
-  _updatedAt: string;
-  _rev: string;
-  user?: {
-    _ref: string;
-    _type: "reference";
-    _weak?: boolean;
-    [internalGroqTypeReferenceTo]?: "author";
-  };
-  startup?: {
-    _ref: string;
-    _type: "reference";
-    _weak?: boolean;
-    [internalGroqTypeReferenceTo]?: "startup";
-  };
   createdAt?: string;
 };
 
@@ -235,5 +224,5 @@ export type SanityAssetSourceData = {
   url?: string;
 };
 
-export type AllSanitySchemaTypes = Comment | Like | Playlist | Startup | Author | Markdown | SanityImagePaletteSwatch | SanityImagePalette | SanityImageDimensions | SanityImageHotspot | SanityImageCrop | SanityFileAsset | SanityImageAsset | SanityImageMetadata | Geopoint | Slug | SanityAssetSourceData;
+export type AllSanitySchemaTypes = Subscriber | Comment | Playlist | Startup | Author | Markdown | SanityImagePaletteSwatch | SanityImagePalette | SanityImageDimensions | SanityImageHotspot | SanityImageCrop | SanityFileAsset | SanityImageAsset | SanityImageMetadata | Geopoint | Slug | SanityAssetSourceData;
 export declare const internalGroqTypeReferenceTo: unique symbol;
