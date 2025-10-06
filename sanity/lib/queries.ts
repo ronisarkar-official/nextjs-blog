@@ -16,7 +16,6 @@ export const STARTUPS_QUERY =
   image,
 }`);
 
-
 export const RECENT_STARTUPS_QUERY = defineQuery(`
   *[_type == "startup" && defined(slug.current)] 
   | order(_createdAt desc)[0..3] {
@@ -32,7 +31,6 @@ export const RECENT_STARTUPS_QUERY = defineQuery(`
   }
 `);
 
-
 // Query to fetch data required for the RSS feed
 export const RSS_STARTUPS_QUERY = defineQuery(`
   *[_type == "startup" && defined(slug.current)] | order(_createdAt desc) [0..49] {
@@ -45,7 +43,6 @@ export const RSS_STARTUPS_QUERY = defineQuery(`
     author->{ name },
   }
 `);
-
 
 // Returns an array of slug strings: ['hello-world', 'another-post']
 export const ALL_STARTUP_SLUG_STRINGS = defineQuery(
@@ -82,7 +79,6 @@ export const STARTUP_BY_SLUG_QUERY = defineQuery(
   }`,
 );
 
-
 export const ALL_STARTUP_SLUGS = defineQuery(
 	`*[_type == "startup" && defined(slug.current)]{ "slug": slug.current, _id }`,
 );
@@ -102,7 +98,6 @@ export const AUTHOR_BY_ID_QUERY = defineQuery(
 export const STARTUP_ID_BY_SLUG = defineQuery(
 	`*[_type == "startup" && slug.current == $slug][0]._id`,
 );
-
 
 export const ALL_STARTUP_ROUTES_QUERY =
 	defineQuery(`*[_type == "startup" && defined(slug.current)] {
@@ -148,4 +143,24 @@ export const PLAYLIST_BY_SLUG_QUERY = defineQuery(
       pitch
     }
   }`,
+);
+
+// Comment queries
+export const COMMENTS_BY_STARTUP_QUERY = defineQuery(
+	`*[_type == "comment" && startup._ref == $startupId && isApproved == true && !defined(parentComment)] {
+    _id,
+    content,
+    createdAt,
+    user->{ _id, name, image },
+    "replies": *[_type == "comment" && parentComment._ref == ^._id && isApproved == true] {
+      _id,
+      content,
+      createdAt,
+      user->{ _id, name, image }
+    }
+  } | order(createdAt asc)`,
+);
+
+export const COMMENT_COUNT_BY_STARTUP_QUERY = defineQuery(
+	`count(*[_type == "comment" && startup._ref == $startupId && isApproved == true])`,
 );

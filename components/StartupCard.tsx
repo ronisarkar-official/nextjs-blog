@@ -294,7 +294,7 @@ const Startupposts = ({
 
 					{/* Author chip */}
 					<Link
-						href={authorHref}
+						href={authorHref || '#'}
 						className="absolute left-5 bottom-5 z-20 flex items-center gap-3 rounded-sm px-2 py-1 border border-gray-300 bg-white/95 dark:bg-gray-900/70 dark:border-gray-700 shadow-sm"
 						aria-label={
 							author?.name ?
@@ -305,7 +305,7 @@ const Startupposts = ({
 							{authorImageUrl ?
 								<Image
 									src={authorImageUrl}
-									alt={'Author'}
+									alt={author?.name || 'Author'}
 									width={20}
 									height={20}
 									className="object-cover h-full w-full"
@@ -313,7 +313,7 @@ const Startupposts = ({
 									placeholder="empty"
 								/>
 							:	<div className="w-full h-full flex items-center justify-center text-xs text-gray-800 dark:text-gray-100">
-									{authorInitial}
+									{authorInitial || '?'}
 								</div>
 							}
 						</div>
@@ -321,7 +321,7 @@ const Startupposts = ({
 						<div className="text-sm">
 							<div className="flex items-center gap-2">
 								<span className="font-medium text-black dark:text-gray-100 text-sm">
-									{author?.name}
+									{author?.name || 'Unknown'}
 								</span>
 							</div>
 						</div>

@@ -10,6 +10,8 @@ import IosAddToHome from '@/components/IosAddToHome';
 import Navbar from '@/components/Navbar';
 import { ThemeProvider } from '@/components/theme-provider';
 import { Analytics } from '@vercel/analytics/next';
+import { SessionProvider } from 'next-auth/react';
+import BackToTopButton from '@/components/BackToTopButton';
 
 export const metadata: Metadata = {
 	title: 'Create Next App',
@@ -58,17 +60,20 @@ export default function RootLayout({
 				/>
 			</head>
 			<body>
-				<ThemeProvider
-					attribute="class"
-					defaultTheme="system"
-					enableSystem
-					disableTransitionOnChange>
-					<Navbar />
-					{children}
-					<PwaInstall />
-					<IosAddToHome />
-					<Toaster position="top-right" />
-				</ThemeProvider>
+				<SessionProvider>
+					<ThemeProvider
+						attribute="class"
+						defaultTheme="system"
+						enableSystem
+						disableTransitionOnChange>
+						<Navbar />
+						{children}
+						<PwaInstall />
+						<IosAddToHome />
+						<Toaster position="top-right" />
+					</ThemeProvider>
+				</SessionProvider>
+				<BackToTopButton />
 				<Analytics />
 			</body>
 		</html>

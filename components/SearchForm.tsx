@@ -45,7 +45,7 @@ const SearchForm = ({ query }: { query?: string }) => {
 						name="query"
 						defaultValue={query}
 						type="search"
-						placeholder="Search components, articles, people..."
+						placeholder="Search categories, articles, people..."
 						autoComplete="off"
 						aria-label="Search"
 						className="

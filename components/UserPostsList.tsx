@@ -91,9 +91,9 @@ export default function UserPostsList({ startups }) {
 						type="search"
 						value={query}
 						onChange={(e) => setQuery(e.target.value)}
-						placeholder="Search your startups..."
+						placeholder="Search your posts..."
 						autoComplete="off"
-						aria-label="Search your startups"
+						aria-label="Search your posts"
 						className="flex-1 min-w-0 bg-transparent text-sm sm:text-base placeholder:text-zinc-500 dark:placeholder:text-zinc-400 text-zinc-900 dark:text-gray-100 outline-none px-1 py-2 rounded-full transition-colors duration-150 focus:placeholder-transparent"
 					/>
 					{query && (

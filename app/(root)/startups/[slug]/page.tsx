@@ -27,6 +27,9 @@ import {
 import ShareButton from '@/components/ShareButton';
 import { Facebook, Mail, Twitter } from 'lucide-react';
 import ArticleRenderer from '@/components/ArticleRender';
+import { CommentSection } from '@/components/CommentSection';
+import { auth } from '@/auth';
+import { COMMENTS_BY_STARTUP_QUERY } from '@/sanity/lib/queries';
 
 // Server rendering policy: change to `force-dynamic` if you need always-fresh data.
 export const experimental_ppr = true;
@@ -115,6 +118,12 @@ export default async function Page({ params }: { params: { slug: string } }) {
 	// fetch editor picks / popular posts (done server-side)
 	const editorPosts = (await client.fetch(RECENT_STARTUPS_QUERY)) || [];
 	const popularPosts = (await client.fetch(RECENT_STARTUPS_QUERY)) || [];
+
+	// fetch comment data
+	const session = await auth();
+	const comments = await client.fetch(COMMENTS_BY_STARTUP_QUERY, {
+		startupId: post._id,
+	});
 
 	// Structured data (Article) for SEO — server-rendered JSON-LD
 	const siteBase = process.env.NEXT_PUBLIC_SITE_URL || '';
@@ -268,6 +277,15 @@ export default async function Page({ params }: { params: { slug: string } }) {
 								<Mail className="w-5 h-5" />
 								<span className="hidden sm:inline">Email</span>
 							</a>
+						</div>
+
+						{/* Comment Section */}
+						<div className="mt-8">
+							<CommentSection
+								slug={post.slug?.current || post._id}
+								initialComments={comments || []}
+								initialIsAuthenticated={!!session?.id}
+							/>
 						</div>
 					</section>
 
