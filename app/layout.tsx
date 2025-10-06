@@ -12,6 +12,7 @@ import { ThemeProvider } from '@/components/theme-provider';
 import { Analytics } from '@vercel/analytics/next';
 import { SessionProvider } from 'next-auth/react';
 import BackToTopButton from '@/components/BackToTopButton';
+import Script from 'next/script';
 
 export const metadata: Metadata = {
 	title: 'Create Next App',
@@ -58,6 +59,21 @@ export default function RootLayout({
 						:	'/rss.xml'
 					}
 				/>
+				{/* Google Analytics */}
+				<Script
+					src="https://www.googletagmanager.com/gtag/js?id=G-4W89XZZ62S"
+					strategy="afterInteractive"
+				/>
+				<Script
+					id="gtag-init"
+					strategy="afterInteractive">
+					{`
+						window.dataLayer = window.dataLayer || [];
+						function gtag(){dataLayer.push(arguments);}
+						gtag('js', new Date());
+						gtag('config', 'G-4W89XZZ62S');
+					`}
+				</Script>
 			</head>
 			<body>
 				<SessionProvider>
