@@ -18,6 +18,7 @@ import { z } from 'zod';
 import toast, { Toaster } from 'react-hot-toast';
 import { Category } from '@/components/Category';
 import { useTheme } from 'next-themes';
+import ImageUploadButton from '@/components/ImageUploadButton';
 
 // NEW: sanity client + slugs query
 import { client } from '@/sanity/lib/client';
@@ -286,6 +287,7 @@ export default function EditStartupForm({
 		String(initialData?.pitch ?? ''),
 	);
 	const [isSubmitting, setIsSubmitting] = useState(false);
+	const [uploadedImageUrl, setUploadedImageUrl] = useState<string>('');
 	const [category, setCategory] = useState<string>(() =>
 		String(initialData?.category ?? ''),
 	);
@@ -300,6 +302,19 @@ export default function EditStartupForm({
 		if (typeof s === 'string') return s;
 		return String((s as any).current ?? '') || '';
 	}, [initialData]);
+	const handleImageUploaded = useCallback((url: string) => {
+		setUploadedImageUrl(url);
+		setErrors((prev) => ({ ...prev, link: undefined }));
+		// eslint-disable-next-line no-console
+		console.log('Image uploaded successfully, URL:', url);
+	}, []);
+
+	const handleImageRemoved = useCallback(() => {
+		setUploadedImageUrl('');
+		setErrors((prev) => ({ ...prev, link: undefined }));
+		// eslint-disable-next-line no-console
+		console.log('Image removed');
+	}, []);
 
 	// Sync initial data to editor & pitch state when it changes
 	useEffect(() => {
@@ -343,9 +358,12 @@ export default function EditStartupForm({
 				payload[key] = typeof val === 'string' ? (val as string).trim() : val;
 			}
 
-			// copy image link to image.url so Sanity route can use whichever you prefer
-			if (payload.link) {
-				payload.image = { url: payload.link };
+			// Prefer uploaded image URL over manual link input
+			const imageUrl = uploadedImageUrl || payload.link;
+			if (imageUrl) {
+				payload.image = { url: imageUrl };
+				// Optionally keep link in sync for backward compatibility
+				payload.link = imageUrl;
 			}
 
 			const toastId = toast.loading('Updating startup…');
@@ -442,7 +460,7 @@ export default function EditStartupForm({
 				setIsSubmitting(false);
 			}
 		},
-		[pitch, initialSlug],
+		[pitch, initialSlug, uploadedImageUrl],
 	);
 
 	return (
@@ -607,22 +625,45 @@ export default function EditStartupForm({
 									</div>
 
 									<div className="border-t border-gray-100 dark:border-gray-700 pt-3">
+										<label className="text-xs text-gray-500 dark:text-gray-400 mb-1 block">
+											Image Upload
+										</label>
+										<ImageUploadButton
+											onImageUploaded={handleImageUploaded}
+											onImageRemoved={handleImageRemoved}
+											disabled={isSubmitting}
+											className="w-full"
+										/>
+										{errors.link && (
+											<p className="text-sm text-red-500 mt-1">{errors.link}</p>
+										)}
+										<div className="mt-2 text-xs text-gray-400 dark:text-gray-400">
+											Upload an image or paste a URL below
+										</div>
+									</div>
+
+									<div className="border-t border-gray-100 dark:border-gray-700 pt-3">
 										<label
 											htmlFor="link"
 											className="text-xs text-gray-500 dark:text-gray-400 mb-1 block">
-											Image URL
+											Or Image URL
 										</label>
-
-										<ImageUrlPreviewInput
-											id="link"
-											name="link"
-											required
-											defaultValue={
-												initialData?.link ?? initialData?.image ?? ''
-											}
-											placeholder="https://example.com/image.jpg"
-											className="w-full text-sm placeholder:text-gray-400 dark:placeholder:text-gray-500 bg-transparent outline-none "
-										/>
+										{uploadedImageUrl ?
+											<div className="space-y-2">
+												<div className="text-xs text-green-600 dark:text-green-400">
+													✓ Using uploaded image
+												</div>
+											</div>
+										:	<ImageUrlPreviewInput
+												id="link"
+												name="link"
+												defaultValue={
+													initialData?.link ?? initialData?.image ?? ''
+												}
+												placeholder="https://example.com/image.jpg"
+												className="w-full text-sm placeholder:text-gray-400 dark:placeholder:text-gray-500 bg-transparent outline-none "
+											/>
+										}
 
 										{errors.link && (
 											<p className="text-sm text-red-500 mt-1">{errors.link}</p>

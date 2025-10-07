@@ -13,32 +13,6 @@
  */
 
 // Source: schema.json
-export type Notification = {
-  _id: string;
-  _type: "notification";
-  _createdAt: string;
-  _updatedAt: string;
-  _rev: string;
-  recipient?: {
-    _ref: string;
-    _type: "reference";
-    _weak?: boolean;
-    [internalGroqTypeReferenceTo]?: "author";
-  };
-  type?: "comment" | "views_milestone" | "posts_milestone";
-  message?: string;
-  link?: string;
-  read?: boolean;
-  createdAt?: string;
-  expiresAt?: string;
-  meta?: {
-    startupId?: string;
-    startupSlug?: string;
-    commentId?: string;
-    milestone?: number;
-  };
-};
-
 export type Subscriber = {
   _id: string;
   _type: "subscriber";
@@ -251,5 +225,5 @@ export type SanityAssetSourceData = {
   url?: string;
 };
 
-export type AllSanitySchemaTypes = Notification | Subscriber | Comment | Playlist | Startup | Author | Markdown | SanityImagePaletteSwatch | SanityImagePalette | SanityImageDimensions | SanityImageHotspot | SanityImageCrop | SanityFileAsset | SanityImageAsset | SanityImageMetadata | Geopoint | Slug | SanityAssetSourceData;
+export type AllSanitySchemaTypes = Subscriber | Comment | Playlist | Startup | Author | Markdown | SanityImagePaletteSwatch | SanityImagePalette | SanityImageDimensions | SanityImageHotspot | SanityImageCrop | SanityFileAsset | SanityImageAsset | SanityImageMetadata | Geopoint | Slug | SanityAssetSourceData;
 export declare const internalGroqTypeReferenceTo: unique symbol;

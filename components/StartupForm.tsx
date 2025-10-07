@@ -475,7 +475,7 @@ const StartupForm: React.FC = () => {
 				setIsSubmitting(false);
 			}
 		},
-		[pitch],
+		[pitch, uploadedImageUrl],
 	);
 
 	return (
@@ -555,7 +555,7 @@ const StartupForm: React.FC = () => {
 						{/* Right sidebar */}
 						<aside className="w-full lg:w-80 flex-shrink-0">
 							<div className="sticky top-6">
-								<div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm p-4 max-h-[calc(110vh-3rem)] overflow-y-auto">
+								<div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm p-4 ">
 									<div className="flex items-center justify-between mb-3">
 										<h3 className="text-sm font-medium text-gray-700 dark:text-gray-200">
 											Post settings
