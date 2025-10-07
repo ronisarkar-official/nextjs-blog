@@ -305,7 +305,7 @@ const Startupposts = ({
 							{authorImageUrl ?
 								<Image
 									src={authorImageUrl}
-									alt={author?.name || 'Author'}
+									alt={`${author?.name || 'Author'} profile image`}
 									width={20}
 									height={20}
 									className="object-cover h-full w-full"

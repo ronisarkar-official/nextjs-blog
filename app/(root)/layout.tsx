@@ -29,7 +29,7 @@ export default function Layout({
 			{children}
 			<div className="w-full">
 				<Footer
-					logo="/logo.png"
+					logo="/logo.webp"
 					brandName={sitename ?? 'Default Site Name'}
 					socialLinks={[
 						{

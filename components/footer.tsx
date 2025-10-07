@@ -78,7 +78,7 @@ export function Footer({
 						className="flex items-center gap-x-2"
 						aria-label={brandName}>
 						<img
-							src="/logo.png"
+							src="/logo.webp"
 							alt="Logo"
 							className="h-9 w-auto dark:brightness-0 dark:invert"
 						/>

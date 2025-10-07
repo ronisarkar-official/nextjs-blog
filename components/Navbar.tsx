@@ -72,7 +72,7 @@ export default async function Navbar() {
 							className="flex items-center gap-3"
 							aria-label="Home">
 							<img
-								src="/logo.png"
+								src="/logo.webp"
 								alt="Logo"
 								className="h-9 w-auto dark:brightness-0 dark:invert"
 							/>

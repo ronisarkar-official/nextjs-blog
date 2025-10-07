@@ -214,6 +214,7 @@ export default async function Page({ params }: { params: { slug: string } }) {
 							fill
 							className="object-cover object-center"
 							priority
+							fetchPriority="high"
 						/>
 						{/* subtle overlay for legibility in dark mode */}
 						<div

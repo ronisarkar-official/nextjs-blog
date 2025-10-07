@@ -125,12 +125,13 @@ export default function HomeClient() {
 							<div className="bg-gradient-to-br from-indigo-50 to-emerald-50 dark:from-indigo-900 dark:to-emerald-900 p-5 sm:p-8">
 								<div className="rounded-2xl overflow-hidden w-full h-[200px] sm:h-56 md:h-64 lg:h-72 bg-gray-50 dark:bg-gray-800">
 									<Image
-										src="/banner.png"
+										src="/banner.webp"
 										alt="banner"
 										width={520}
 										height={420}
 										className="object-cover w-full h-full"
 										priority
+										fetchPriority="high"
 									/>
 								</div>
 							</div>

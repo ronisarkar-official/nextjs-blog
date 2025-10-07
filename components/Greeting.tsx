@@ -2,7 +2,7 @@
 'use client';
 
 import React, { useCallback, useEffect, useState } from 'react';
-import { motion, useReducedMotion, type HTMLMotionProps } from 'framer-motion';
+import { motion, useReducedMotion } from 'framer-motion';
 
 type Part = 'morning' | 'afternoon' | 'evening' | 'night';
 
@@ -139,16 +139,10 @@ export default function Greeting({
 		);
 	}
 
-	const Container = shouldReduceMotion ? 'div' : motion.button;
+	const baseClass = `${className} inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold ${styles[variant]}`;
 
-	return (
-		<Container
-			initial={{ opacity: 0, y: 4 }}
-			animate={{ opacity: 1, y: 0 }}
-			transition={{ duration: 0.28, ease: 'easeOut' }}
-			className={`${className} inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold ${styles[variant]} focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-gray-200  active:translate-y-0`}
-			role="status"
-			aria-live="polite">
+	const content = (
+		<>
 			<span
 				className="flex-none text-sm"
 				aria-hidden>
@@ -161,12 +155,34 @@ export default function Greeting({
 				<span className="sr-only"> — it is {timeText} local time</span>
 			</span>
 
-			{/* tiny premium accent: subtle separator and micro-text time */}
 			<span
 				className="ml-2 h-4 w-px bg-gray-400 dark:bg-gray-800"
 				aria-hidden
 			/>
 			<span className="text-xs opacity-70 ml-2">{timeText}</span>
-		</Container>
+		</>
+	);
+
+	if (shouldReduceMotion) {
+		return (
+			<div
+				className={baseClass}
+				role="status"
+				aria-live="polite">
+				{content}
+			</div>
+		);
+	}
+
+	return (
+		<motion.div
+			initial={{ opacity: 0, y: 4 }}
+			animate={{ opacity: 1, y: 0 }}
+			transition={{ duration: 0.28, ease: 'easeOut' }}
+			className={baseClass}
+			role="status"
+			aria-live="polite">
+			{content}
+		</motion.div>
 	);
 }
