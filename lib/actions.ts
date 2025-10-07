@@ -1,6 +1,9 @@
 'use server';
 
 import { auth } from '@/auth';
+import { client } from '@/sanity/lib/client';
+import { STARTUPS_BY_AUTHOR_QUERY } from '@/sanity/lib/queries';
+import { addDays } from './utils';
 import { stat } from 'fs';
 import { parseServerActionResponse } from './utils';
 import slugify from 'slugify';
@@ -46,6 +49,30 @@ export const createPitch = async (
 			pitch,
 		};
 		const result = await writeClient.create({ _type: 'startup', ...startup });
+
+		// After create: check if author has reached 50 posts and notify
+		try {
+			const posts = await client.fetch(STARTUPS_BY_AUTHOR_QUERY, {
+				id: session.id,
+			});
+			const total = Array.isArray(posts) ? posts.length : 0;
+			if (total === 50) {
+				const expires = addDays(new Date(), 4).toISOString();
+				await writeClient.create({
+					_type: 'notification',
+					recipient: { _type: 'reference', _ref: session.id },
+					type: 'posts_milestone',
+					message: 'Congrats! You reached 50 posts.',
+					link: `/user/posts/${encodeURIComponent(session.id)}`,
+					read: false,
+					createdAt: new Date().toISOString(),
+					expiresAt: expires,
+					meta: { milestone: 50 },
+				});
+			}
+		} catch (e) {
+			console.warn('Failed to notify 50-posts milestone', e);
+		}
 
 		// Trigger sitemap revalidation after successful creation
 		try {

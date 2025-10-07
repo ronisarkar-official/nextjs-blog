@@ -4,6 +4,7 @@ import type { NextConfig } from 'next';
 
 // --- added for PWA ---
 import nextPwa from 'next-pwa';
+// @ts-expect-error: No types for 'next-pwa/cache'
 import runtimeCaching from 'next-pwa/cache';
 
 const withPWA = nextPwa({

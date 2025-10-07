@@ -22,7 +22,7 @@ export async function DELETE(
 			`*[_type == "comment" && _id == $commentId][0]{
 				_id,
 				user->{ _id },
-				startup->{ _id }
+                startup->{ _id, author->{ _id } }
 			}`,
 			{ commentId },
 		);
@@ -31,8 +31,10 @@ export async function DELETE(
 			return NextResponse.json({ error: 'Comment not found' }, { status: 404 });
 		}
 
-		// Check if the user owns this comment
-		if (comment.user._id !== session.id) {
+		// Allow deletion if the requester is the comment owner OR the startup author
+		const isCommentOwner = comment.user?._id === session.id;
+		const isStartupAuthor = comment.startup?.author?._id === session.id;
+		if (!isCommentOwner && !isStartupAuthor) {
 			return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
 		}
 

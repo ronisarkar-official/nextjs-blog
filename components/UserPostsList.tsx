@@ -17,7 +17,29 @@ const THUMB_BG =
 	'flex-shrink-0 w-20 h-14 rounded overflow-hidden bg-gray-100 dark:bg-gray-700';
 const DEFAULT_AVATAR = '/avatar-placeholder.png';
 
-function safeImageUrl(img) {
+type StartupAuthor = {
+	name?: string;
+	image?: string | { url?: string } | { asset?: { url?: string } } | null;
+};
+
+type StartupItem = {
+	_id: string;
+	title?: string;
+	description?: string;
+	category?: string;
+	views?: number;
+	image?: string | { url?: string } | { asset?: { url?: string } } | null;
+	slug?: string | { current?: string };
+	_createdAt?: string;
+	createdAtFormatted?: string;
+	author?: StartupAuthor;
+};
+
+interface UserPostsListProps {
+	startups?: StartupItem[];
+}
+
+function safeImageUrl(img: any) {
 	if (!img) return DEFAULT_AVATAR;
 	if (typeof img === 'string') {
 		try {
@@ -56,7 +78,7 @@ function safeImageUrl(img) {
  * which causes hydration mismatches.
  */
 
-export default function UserPostsList({ startups }) {
+export default function UserPostsList({ startups }: UserPostsListProps) {
 	const [query, setQuery] = useState('');
 	const filtered = useMemo(() => {
 		if (!query.trim()) return startups || [];
@@ -72,7 +94,7 @@ export default function UserPostsList({ startups }) {
 	if (!Array.isArray(startups) || startups.length === 0) {
 		return (
 			<div className="text-center text-gray-500 dark:text-gray-400 py-8">
-				No startups found for this author.
+				No posts found for this author.
 			</div>
 		);
 	}
@@ -152,6 +174,11 @@ export default function UserPostsList({ startups }) {
 										src={thumb}
 										alt={title}
 										className="w-full h-full object-cover"
+										loading="lazy"
+										decoding="async"
+										width={80}
+										height={56}
+										referrerPolicy="no-referrer"
 									/>
 								</div>
 
@@ -176,6 +203,11 @@ export default function UserPostsList({ startups }) {
 														src={authorAvatar}
 														alt={startup.author?.name || 'author'}
 														className="h-full w-full object-cover"
+														loading="lazy"
+														decoding="async"
+														width={28}
+														height={28}
+														referrerPolicy="no-referrer"
 													/>
 												</div>
 											</div>

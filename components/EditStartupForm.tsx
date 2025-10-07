@@ -17,6 +17,7 @@ import { formSchema } from '@/lib/validation';
 import { z } from 'zod';
 import toast, { Toaster } from 'react-hot-toast';
 import { Category } from '@/components/Category';
+import { useTheme } from 'next-themes';
 
 // NEW: sanity client + slugs query
 import { client } from '@/sanity/lib/client';
@@ -278,6 +279,8 @@ export default function EditStartupForm({
 	initialData,
 	slug,
 }: EditStartupFormProps) {
+	const { resolvedTheme } = useTheme();
+	const editorTheme = resolvedTheme === 'dark' ? 'dark' : 'light';
 	const [errors, setErrors] = useState<ErrorsMap>({});
 	const [pitch, setPitch] = useState<string>(() =>
 		String(initialData?.pitch ?? ''),
@@ -488,7 +491,7 @@ export default function EditStartupForm({
 								</div>
 
 								<div
-									data-color-mode="light"
+									data-color-mode={editorTheme}
 									className=" h-fit bg-white dark:bg-gray-900 rounded-md border border-gray-300 dark:border-gray-800 shadow-inner overflow-auto">
 									<ToastEditor
 										ref={editorRef}
@@ -498,6 +501,7 @@ export default function EditStartupForm({
 										initialEditType="markdown"
 										useCommandShortcut={true}
 										usageStatistics={false}
+										theme={editorTheme}
 										textareaProps={{
 											placeholder:
 												'Write your startup pitch — problem, solution, traction, ask...',

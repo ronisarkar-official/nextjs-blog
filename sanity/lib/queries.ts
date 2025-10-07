@@ -95,6 +95,10 @@ export const AUTHOR_BY_ID_QUERY = defineQuery(
 	`*[_type == "author" && _id == $id][0]{ _id, id, name, username, email, image, bio }`,
 );
 
+export const AUTHOR_BY_EMAIL_QUERY = defineQuery(
+	`*[_type == "author" && email == $email][0]{ _id, id, name, username, email, image, bio }`,
+);
+
 export const STARTUP_ID_BY_SLUG = defineQuery(
 	`*[_type == "startup" && slug.current == $slug][0]._id`,
 );
@@ -151,12 +155,14 @@ export const COMMENTS_BY_STARTUP_QUERY = defineQuery(
     _id,
     content,
     createdAt,
-    user->{ _id, name, image },
+	   guestName,
+	   user->{ _id, name, image },
     "replies": *[_type == "comment" && parentComment._ref == ^._id && isApproved == true] {
       _id,
       content,
       createdAt,
-      user->{ _id, name, image }
+	     guestName,
+	     user->{ _id, name, image }
     }
   } | order(createdAt asc)`,
 );
@@ -164,3 +170,5 @@ export const COMMENTS_BY_STARTUP_QUERY = defineQuery(
 export const COMMENT_COUNT_BY_STARTUP_QUERY = defineQuery(
 	`count(*[_type == "comment" && startup._ref == $startupId && isApproved == true])`,
 );
+
+// Notifications removed

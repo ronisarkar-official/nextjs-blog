@@ -7,17 +7,18 @@ import React, {
 	useState,
 	type ChangeEvent,
 } from 'react';
-import dynamic from 'next/dynamic';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Send } from 'lucide-react';
+import { useTheme } from 'next-themes';
 import ImageUploadButton from '@/components/ImageUploadButton';
 import { formSchema } from '@/lib/validation';
 import { z } from 'zod';
 import toast, { Toaster } from 'react-hot-toast';
 import { createPitch } from '@/lib/actions';
 import { Category } from '@/components/Category';
+import OptimizedToastEditor from './optimized/OptimizedToastEditor';
 // sanity client + query to check slug uniqueness
 import { client } from '@/sanity/lib/client';
 import { ALL_STARTUP_SLUG_STRINGS } from '@/sanity/lib/queries';
@@ -291,14 +292,7 @@ const ImageUrlPreviewInput = React.memo(function ImageUrlPreviewInput({
 	);
 });
 
-/* ---------- Toast UI Editor: dynamic import (client-only) ---------- */
-const ToastEditor = dynamic(
-	() => import('@toast-ui/react-editor').then((mod) => mod.Editor),
-	{
-		ssr: false,
-		loading: () => <div className="p-4">Loading editor…</div>,
-	},
-);
+/* ---------- (Removed Toast UI Editor) Using simple Textarea for pitch ---------- */
 
 /* ---------- Utility: slugify ---------- */
 const slugify = (s: string) =>
@@ -318,13 +312,14 @@ const StartupForm: React.FC = () => {
 	const [uploadedImageUrl, setUploadedImageUrl] = useState<string>('');
 	const [category, setCategory] = useState<string>('');
 	const formRef = useRef<HTMLFormElement | null>(null);
-	const editorRef = useRef<any>(null); // ToastUI editor ref
 
-	// keep pitch synced with editor (reads from instance for accuracy)
-	const onEditorChange = useCallback(() => {
-		const md = editorRef.current?.getInstance?.()?.getMarkdown?.() ?? '';
-		setPitch(String(md ?? ''));
-	}, []);
+	// keep pitch synced with textarea
+	const onPitchChange = useCallback(
+		(e: React.ChangeEvent<HTMLTextAreaElement>) => {
+			setPitch(e.target.value);
+		},
+		[],
+	);
 
 	// Handle image upload
 	const handleImageUploaded = useCallback((url: string) => {
@@ -339,13 +334,7 @@ const StartupForm: React.FC = () => {
 		console.log('Image removed');
 	}, []);
 
-	// seed pitch state once editor instance is ready (client)
-	useEffect(() => {
-		if (!editorRef.current) return;
-		const md = editorRef.current?.getInstance?.()?.getMarkdown?.();
-		if (md && md !== pitch) setPitch(md);
-		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, []);
+	// (no editor instance to seed)
 
 	const handleSubmit = useCallback(
 		async (e: React.FormEvent<HTMLFormElement>) => {
@@ -356,9 +345,8 @@ const StartupForm: React.FC = () => {
 			const formEl = e.currentTarget;
 			const fd = new FormData(formEl);
 
-			// read latest editor markdown directly from editor instance (authoritative)
-			const editorMarkdown =
-				editorRef.current?.getInstance?.()?.getMarkdown?.() ?? pitch ?? '';
+			// read latest pitch from textarea state
+			const editorMarkdown = pitch || '';
 			fd.set('pitch', editorMarkdown.trim());
 
 			// If we have an uploaded image, set it in FormData first
@@ -539,25 +527,10 @@ const StartupForm: React.FC = () => {
 											Tip: use "WYSIWYG" mode at the bottom for better writing
 										</div>
 									</div>
-									<div
-										data-color-mode="light"
-										className="w-full h-fit bg-white dark:bg-gray-900 rounded-md border border-gray-300 dark:border-gray-800 shadow-inner overflow-auto">
-										<ToastEditor
-											ref={editorRef}
-											initialValue={pitch}
-											previewStyle="vertical"
-											height="500px"
-											initialEditType="markdown"
-											useCommandShortcut={true}
-											usageStatistics={false}
-											textareaProps={{
-												placeholder:
-													'Write your startup pitch — problem, solution, traction, ask...',
-												'aria-label': 'Startup pitch editor',
-											}}
-											onChange={onEditorChange}
-										/>
-									</div>
+									<OptimizedToastEditor
+										value={pitch}
+										onChange={setPitch}
+									/>
 									{errors.pitch && (
 										<p className="text-sm text-red-500 mt-2">{errors.pitch}</p>
 									)}

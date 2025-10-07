@@ -110,10 +110,10 @@ const Page = async ({ params }: { params: Promise<{ id: string }> }) => {
 					<section className="lg:col-span-2">
 						<div className="flex items-center justify-between mb-6">
 							<h2 className={TITLE}>
-								{session?.id === id ? 'Your' : `${user.name}'s`} Startups
+								{session?.id === id ? "Your" : `${user.name}'s`} Posts
 							</h2>
 							<div className="text-sm text-gray-500 dark:text-gray-300">
-								Showing latest projects
+								Showing latest posts
 							</div>
 						</div>
 
@@ -142,7 +142,7 @@ const Page = async ({ params }: { params: Promise<{ id: string }> }) => {
 									About {user.name}
 								</h3>
 								<p className="text-sm text-gray-600 dark:text-gray-300 leading-relaxed">
-									{user.longBio || 'No extended bio available.'}
+									{bio || 'No extended bio available.'}
 								</p>
 							</div>
 						</div>

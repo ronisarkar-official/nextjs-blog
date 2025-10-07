@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { auth, signIn, signOut } from '@/auth';
+// notifications removed
 import ScrollHideController from './ScrollHideController';
 import React from 'react';
 import {
@@ -11,8 +12,6 @@ import {
 	LogOut,
 	LogIn,
 	PlusCircle,
-	Bell,
-	BellOff,
 	Files,
 	Plus,
 	ChartNoAxesColumnIncreasing,
@@ -43,8 +42,10 @@ async function handleSignOut() {
 export default async function Navbar() {
 	const session: Session = await auth();
 
-	// robust user id (sanity/session differences)
-	const userId = session?.user?.id ?? session?.user?._id ?? session?.id ?? '';
+	// robust user id (map to Sanity author _id when possible)
+	let userId = session?.user?.id ?? session?.user?._id ?? session?.id ?? '';
+
+	// notifications removed
 
 	// nav links (rendered server-side)
 	const navLinks = [
@@ -73,7 +74,7 @@ export default async function Navbar() {
 							<img
 								src="/logo.png"
 								alt="Logo"
-								className="h-9 w-auto"
+								className="h-9 w-auto dark:brightness-0 dark:invert"
 							/>
 						</Link>
 
@@ -96,7 +97,7 @@ export default async function Navbar() {
 					</nav>
 
 					{/* Right: actions */}
-					<div className="flex items-center gap-3">
+					<div className="flex items-center gap-4">
 						{/* New post CTA - visible for signed-in users */}
 						{session?.user && (
 							<Link
@@ -107,54 +108,7 @@ export default async function Navbar() {
 							</Link>
 						)}
 
-						{/* Notifications (stub) */}
-						{session?.user && (
-							<details className="relative hidden md:block">
-								<summary
-									className="relative flex items-center gap-2 p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 transition-colors"
-									aria-haspopup="true"
-									aria-expanded="false"
-									aria-controls="notification-panel"
-									aria-label="Notifications">
-									<Bell
-										className="h-5 w-5 text-gray-600 dark:text-gray-300"
-										aria-hidden="true"
-									/>
-								</summary>
-
-								<div
-									id="notification-panel"
-									role="menu"
-									aria-label="Notifications panel"
-									className="absolute right-0 mt-2 w-80 max-w-[92vw] sm:max-w-[62vw] bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg ring-1 ring-black ring-opacity-5 py-2 z-50">
-									<div className="flex items-center justify-between px-4 py-2 border-b border-gray-100 dark:border-gray-700">
-										<h3 className="text-sm font-medium text-gray-900 dark:text-gray-100">
-											Notifications
-										</h3>
-										<span className="text-xs text-gray-500 dark:text-gray-400">
-											Recent
-										</span>
-									</div>
-
-									<div className="flex flex-col items-center gap-2 py-6 px-4 text-center">
-										<BellOff
-											className="h-6 w-6 text-gray-400 dark:text-gray-500"
-											aria-hidden="true"
-										/>
-										<p className="text-sm text-gray-600 dark:text-gray-300">
-											No notifications
-										</p>
-										<p className="text-xs text-gray-500 dark:text-gray-400">
-											You're all caught up
-										</p>
-									</div>
-
-									<div className="hidden overflow-y-auto max-h-64 divide-y divide-gray-100 dark:divide-gray-700">
-										{/* Map notifications here when available; role=\"menuitem\" for items */}
-									</div>
-								</div>
-							</details>
-						)}
+						{/* Notifications removed */}
 
 						{/* Profile / Auth */}
 						{session?.user ?
@@ -204,7 +158,7 @@ export default async function Navbar() {
 											Posts
 										</DropdownMenuItem>
 									</Link>
-									<Link href="/views">
+									<Link href={`/user/${encodeURIComponent(userId)}/analytics`}>
 										<DropdownMenuItem>
 											<ChartNoAxesColumnIncreasing className="h-4 w-4 text-gray-500 dark:text-gray-300" />
 											Analytics

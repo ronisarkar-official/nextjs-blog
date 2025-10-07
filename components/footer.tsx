@@ -80,7 +80,7 @@ export function Footer({
 						<img
 							src="/logo.png"
 							alt="Logo"
-							className="h-9 w-auto"
+							className="h-9 w-auto dark:brightness-0 dark:invert"
 						/>
 					</a>
 					{/* Subscribe compact form */}

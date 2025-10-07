@@ -11,7 +11,14 @@ export const comment = defineType({
 			type: 'reference',
 			to: [{ type: 'author' }],
 			title: 'User',
-			validation: (Rule) => Rule.required().error('User is required'),
+			// User is optional to allow anonymous comments
+		}),
+		defineField({
+			name: 'guestName',
+			type: 'string',
+			title: 'Guest Name',
+			description: 'Name provided by an anonymous commenter',
+			validation: (Rule) => Rule.max(50),
 		}),
 		defineField({
 			name: 'startup',
@@ -54,18 +61,21 @@ export const comment = defineType({
 	preview: {
 		select: {
 			userName: 'user.name',
+			guestName: 'guestName',
 			startupTitle: 'startup.title',
 			content: 'content',
 			createdAt: 'createdAt',
 		},
 		prepare(selection) {
-			const { userName, startupTitle, content, createdAt } = selection;
+			const { userName, guestName, startupTitle, content, createdAt } =
+				selection as any;
+			const displayName = userName || guestName || 'Guest';
 			const truncatedContent =
 				content && content.length > 50 ?
 					content.substring(0, 50) + '...'
 				:	content;
 			return {
-				title: `${userName} commented on ${startupTitle}`,
+				title: `${displayName} commented on ${startupTitle}`,
 				subtitle: `${truncatedContent} - ${createdAt ? new Date(createdAt).toLocaleDateString() : 'No date'}`,
 			};
 		},

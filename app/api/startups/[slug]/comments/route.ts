@@ -6,7 +6,9 @@ import { client } from '@/sanity/lib/client';
 import {
 	STARTUP_ID_BY_SLUG,
 	COMMENTS_BY_STARTUP_QUERY,
+	STARTUP_BY_SLUG_QUERY,
 } from '@/sanity/lib/queries';
+import { addDays } from '@/lib/utils';
 
 export async function GET(
 	request: NextRequest,
@@ -44,13 +46,9 @@ export async function POST(
 	try {
 		const session = await auth();
 
-		if (!session?.id) {
-			return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-		}
-
 		const { slug } = await params;
 		const body = await request.json();
-		const { content, parentCommentId } = body;
+		const { content, parentCommentId, guestName } = body;
 
 		// Validate content
 		if (!content || content.trim().length === 0) {
@@ -77,10 +75,6 @@ export async function POST(
 		// Create comment
 		const commentData: any = {
 			_type: 'comment',
-			user: {
-				_type: 'reference',
-				_ref: session.id,
-			},
 			startup: {
 				_type: 'reference',
 				_ref: startupId,
@@ -90,6 +84,20 @@ export async function POST(
 			createdAt: new Date().toISOString(),
 		};
 
+		// If logged-in, attach user reference; otherwise, attach guestName if provided
+		if (session?.id) {
+			commentData.user = {
+				_type: 'reference',
+				_ref: session.id,
+			};
+		} else if (
+			guestName &&
+			typeof guestName === 'string' &&
+			guestName.trim().length > 0
+		) {
+			commentData.guestName = guestName.trim().slice(0, 50);
+		}
+
 		// Add parent comment reference if replying to a comment
 		if (parentCommentId) {
 			commentData.parentComment = {
@@ -98,7 +106,16 @@ export async function POST(
 			};
 		}
 
-		const comment = await writeClient.create(commentData);
+		const created = await writeClient.create(commentData);
+		// Read back populated comment shape used by client list
+		const comment = await client.fetch(
+			`*[_type == "comment" && _id == $id][0]{
+			  _id, content, createdAt, guestName, user->{ _id, name, image }
+			}`,
+			{ id: created._id },
+		);
+
+		// Notifications removed per request
 
 		return NextResponse.json({ success: true, comment });
 	} catch (error) {

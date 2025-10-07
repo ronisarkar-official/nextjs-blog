@@ -285,6 +285,7 @@ export default async function Page({ params }: { params: { slug: string } }) {
 								slug={post.slug?.current || post._id}
 								initialComments={comments || []}
 								initialIsAuthenticated={!!session?.id}
+								authorId={post.author?._id}
 							/>
 						</div>
 					</section>

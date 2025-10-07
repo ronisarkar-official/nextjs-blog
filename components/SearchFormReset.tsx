@@ -16,7 +16,7 @@ const SearchFormReset = () => {
 			onClick={reset}>
 			<Link
 				href="/feed"
-				className="search-btn text-black ">
+				className="search-btn text-black dark:text-white ">
 				<X className="size-5" />
 			</Link>
 		</button>

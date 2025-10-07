@@ -5,13 +5,14 @@ import { MessageCircle, Send, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { signIn, useSession } from 'next-auth/react';
+import { useSession } from 'next-auth/react';
 
 interface Comment {
 	_id: string;
 	content: string;
 	createdAt: string;
-	user: {
+	guestName?: string;
+	user?: {
 		_id: string;
 		name: string;
 		image?: string;
@@ -23,19 +24,23 @@ interface CommentSectionProps {
 	slug: string;
 	initialComments?: Comment[];
 	initialIsAuthenticated?: boolean;
+	authorId?: string;
 }
 
 export function CommentSection({
 	slug,
 	initialComments = [],
 	initialIsAuthenticated = false,
+	authorId,
 }: CommentSectionProps) {
 	const { data: session } = useSession();
 	const [comments, setComments] = useState<Comment[]>(initialComments);
 	const [newComment, setNewComment] = useState('');
+	const [guestName, setGuestName] = useState('');
 	const [isSubmitting, setIsSubmitting] = useState(false);
 	const [replyingTo, setReplyingTo] = useState<string | null>(null);
 	const [replyContent, setReplyContent] = useState('');
+	const [replyGuestName, setReplyGuestName] = useState('');
 	const [deletingComment, setDeletingComment] = useState<string | null>(null);
 
 	const formatDate = (dateString: string) => {
@@ -51,11 +56,6 @@ export function CommentSection({
 	const handleSubmitComment = async () => {
 		if (!newComment.trim() || isSubmitting) return;
 
-		if (!(session as any)?.id) {
-			await signIn('github');
-			return;
-		}
-
 		setIsSubmitting(true);
 		try {
 			const response = await fetch(`/api/startups/${slug}/comments`, {
@@ -63,18 +63,20 @@ export function CommentSection({
 				headers: {
 					'Content-Type': 'application/json',
 				},
-				body: JSON.stringify({ content: newComment.trim() }),
+				body: JSON.stringify({
+					content: newComment.trim(),
+					guestName: (session as any)?.id ? undefined : guestName.trim(),
+				}),
 			});
 
 			if (response.ok) {
 				const data = await response.json();
-				// Refresh comments
-				const commentsResponse = await fetch(`/api/startups/${slug}/comments`);
-				if (commentsResponse.ok) {
-					const commentsData = await commentsResponse.json();
-					setComments(commentsData.comments);
+				const created: Comment | undefined = data?.comment;
+				if (created) {
+					setComments((prev) => [...prev, created]);
 				}
 				setNewComment('');
+				setGuestName('');
 			}
 		} catch (error) {
 			console.error('Comment submission error:', error);
@@ -96,17 +98,24 @@ export function CommentSection({
 				body: JSON.stringify({
 					content: replyContent.trim(),
 					parentCommentId,
+					guestName: (session as any)?.id ? undefined : replyGuestName.trim(),
 				}),
 			});
 
 			if (response.ok) {
-				// Refresh comments
-				const commentsResponse = await fetch(`/api/startups/${slug}/comments`);
-				if (commentsResponse.ok) {
-					const commentsData = await commentsResponse.json();
-					setComments(commentsData.comments);
+				const data = await response.json();
+				const created: Comment | undefined = data?.comment;
+				if (created) {
+					setComments((prev) =>
+						prev.map((c) =>
+							c._id === parentCommentId ?
+								{ ...c, replies: [...(c.replies || []), created] }
+							:	c,
+						),
+					);
 				}
 				setReplyContent('');
+				setReplyGuestName('');
 				setReplyingTo(null);
 			}
 		} catch (error) {
@@ -149,6 +158,16 @@ export function CommentSection({
 			<div className="border-t pt-6">
 				<h3 className="text-lg font-semibold mb-4">Leave a Comment</h3>
 				<div className="space-y-3">
+					{!(session as any)?.id && (
+						<input
+							type="text"
+							value={guestName}
+							onChange={(e) => setGuestName(e.target.value)}
+							placeholder="Your name (required to comment)"
+							className="w-full rounded-md border bg-background px-3 py-2 text-sm"
+							maxLength={50}
+						/>
+					)}
 					<Textarea
 						placeholder="Share your thoughts..."
 						value={newComment}
@@ -162,7 +181,11 @@ export function CommentSection({
 						</span>
 						<Button
 							onClick={handleSubmitComment}
-							disabled={!newComment.trim() || isSubmitting}
+							disabled={
+								!newComment.trim() ||
+								(!(session as any)?.id && guestName.trim().length === 0) ||
+								isSubmitting
+							}
 							className="flex items-center gap-2">
 							<Send className="w-4 h-4" />
 							{isSubmitting ? 'Posting...' : 'Post Comment'}
@@ -186,15 +209,17 @@ export function CommentSection({
 								className="border-l-2 border-gray-200 dark:border-gray-700 pl-4">
 								<div className="flex items-start gap-3">
 									<Avatar className="w-8 h-8">
-										<AvatarImage src={comment.user.image} />
+										<AvatarImage src={comment.user?.image} />
 										<AvatarFallback>
-											{comment.user.name?.charAt(0)?.toUpperCase()}
+											{(comment.user?.name || comment.guestName || 'G')
+												?.charAt(0)
+												?.toUpperCase()}
 										</AvatarFallback>
 									</Avatar>
 									<div className="flex-1 space-y-2">
 										<div className="flex items-center gap-2">
 											<span className="font-medium text-sm">
-												{comment.user.name}
+												{comment.user?.name || comment.guestName || 'Guest'}
 											</span>
 											<span className="text-xs text-gray-500">
 												{formatDate(comment.createdAt)}
@@ -212,7 +237,12 @@ export function CommentSection({
 												<MessageCircle className="w-3 h-3 mr-1" />
 												Reply
 											</Button>
-											{(session as any)?.id === comment.user._id && (
+											{(((session as any)?.id &&
+												comment.user?._id &&
+												(session as any)?.id === comment.user._id) ||
+												((session as any)?.id &&
+													authorId &&
+													(session as any)?.id === authorId)) && (
 												<Button
 													variant="ghost"
 													size="sm"
@@ -230,6 +260,16 @@ export function CommentSection({
 										{/* Reply Form */}
 										{replyingTo === comment._id && (
 											<div className="ml-4 space-y-2">
+												{!(session as any)?.id && (
+													<input
+														type="text"
+														value={replyGuestName}
+														onChange={(e) => setReplyGuestName(e.target.value)}
+														placeholder="Your name (required to reply)"
+														className="w-full rounded-md border bg-background px-3 py-2 text-sm"
+														maxLength={50}
+													/>
+												)}
 												<Textarea
 													placeholder="Write a reply..."
 													value={replyContent}
@@ -254,7 +294,12 @@ export function CommentSection({
 														<Button
 															size="sm"
 															onClick={() => handleSubmitReply(comment._id)}
-															disabled={!replyContent.trim() || isSubmitting}>
+															disabled={
+																!replyContent.trim() ||
+																(!(session as any)?.id &&
+																	replyGuestName.trim().length === 0) ||
+																isSubmitting
+															}>
 															{isSubmitting ? 'Posting...' : 'Reply'}
 														</Button>
 													</div>
@@ -270,22 +315,31 @@ export function CommentSection({
 														key={reply._id}
 														className="flex items-start gap-3">
 														<Avatar className="w-6 h-6">
-															<AvatarImage src={reply.user.image} />
+															<AvatarImage src={reply.user?.image} />
 															<AvatarFallback className="text-xs">
-																{reply.user.name?.charAt(0)?.toUpperCase()}
+																{(reply.user?.name || reply.guestName || 'G')
+																	?.charAt(0)
+																	?.toUpperCase()}
 															</AvatarFallback>
 														</Avatar>
 														<div className="flex-1">
 															<div className="flex items-center justify-between">
 																<div className="flex items-center gap-2">
 																	<span className="font-medium text-xs">
-																		{reply.user.name}
+																		{reply.user?.name ||
+																			reply.guestName ||
+																			'Guest'}
 																	</span>
 																	<span className="text-xs text-gray-500">
 																		{formatDate(reply.createdAt)}
 																	</span>
 																</div>
-																{(session as any)?.id === reply.user._id && (
+																{(((session as any)?.id &&
+																	reply.user?._id &&
+																	(session as any)?.id === reply.user._id) ||
+																	((session as any)?.id &&
+																		authorId &&
+																		(session as any)?.id === authorId)) && (
 																	<Button
 																		variant="ghost"
 																		size="sm"

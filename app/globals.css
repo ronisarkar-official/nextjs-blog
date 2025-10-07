@@ -188,5 +188,10 @@ input[type='search'] {
 	}
 }
 
-
 /* Hover effect */
+
+@layer components {
+	.startup-card_skeleton {
+		@apply block w-full h-80 sm:h-80 md:h-72 lg:h-80 2xl:h-96 rounded-2xl border bg-primary/10;
+	}
+}
