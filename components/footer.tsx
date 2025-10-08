@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import React, { useState } from 'react';
 import Image from 'next/image';
+import { Coffee } from 'lucide-react';
 
 interface FooterProps {
 	logo: string;
@@ -83,6 +84,20 @@ export function Footer({
 							className="h-9 w-auto dark:brightness-0 dark:invert"
 						/>
 					</a>
+					<div className="mt-6 md:mt-0">
+						<Button
+							className="h-10 rounded-full px-4 bg-white text-black hover:bg-neutral-100 dark:bg-white dark:text-black dark:hover:bg-neutral-200 border border-neutral-200"
+							asChild>
+							<a
+								href="https://www.buymeacoffee.com/ronisarkar"
+								target="_blank"
+								rel="noopener noreferrer"
+								aria-label="Buy me a coffee">
+								<Coffee className="w-5 h-5" />
+								Buy me a coffee
+							</a>
+						</Button>
+					</div>
 					{/* Subscribe compact form */}
 					<div className="mt-6 md:mt-0 w-full md:max-w-md">
 						<h3 className="text-sm font-semibold tracking-wide">Subscribe</h3>

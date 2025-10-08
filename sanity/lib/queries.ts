@@ -2,7 +2,7 @@
 import { defineQuery } from 'next-sanity';
 
 export const STARTUPS_QUERY =
-	defineQuery(`*[_type == "startup" && defined(slug.current) && !defined($search) || title match $search || category match $search || author->name match $search] | order(_createdAt desc) {
+	defineQuery(`*[_type == "startup" && defined(slug.current) && (!defined($search) || title match $search || category match $search || author->name match $search)] | order(_createdAt desc) {
   _id, 
   title, 
   slug,
@@ -78,6 +78,70 @@ export const STARTUP_BY_SLUG_QUERY = defineQuery(
     pitch,
   }`,
 );
+
+// Related startups by category, excluding the current slug
+export const RELATED_STARTUPS_BY_CATEGORY = defineQuery(`
+  *[_type == "startup" && defined(slug.current) && category == $category && slug.current != $slug]
+  | order(_createdAt desc)[0..3] {
+    _id,
+    title,
+    "slug": slug.current,
+    _createdAt,
+    author->{ _id, name, image, bio },
+    views,
+    description,
+    category,
+    image
+  }
+`);
+
+// Previous startup in same category by created date
+export const PREV_STARTUP_IN_CATEGORY = defineQuery(`
+  *[_type == "startup" && defined(slug.current) && category == $category && _createdAt < $createdAt]
+  | order(_createdAt desc)[0]{
+    _id,
+    title,
+    "slug": slug.current,
+    _createdAt,
+    category
+  }
+`);
+
+// Next startup in same category by created date
+export const NEXT_STARTUP_IN_CATEGORY = defineQuery(`
+  *[_type == "startup" && defined(slug.current) && category == $category && _createdAt > $createdAt]
+  | order(_createdAt asc)[0]{
+    _id,
+    title,
+    "slug": slug.current,
+    _createdAt,
+    category
+  }
+`);
+
+// Global previous (any category) by created date
+export const PREV_STARTUP_GLOBAL = defineQuery(`
+  *[_type == "startup" && defined(slug.current) && _createdAt < $createdAt]
+  | order(_createdAt desc)[0]{
+    _id,
+    title,
+    "slug": slug.current,
+    _createdAt,
+    category
+  }
+`);
+
+// Global next (any category) by created date
+export const NEXT_STARTUP_GLOBAL = defineQuery(`
+  *[_type == "startup" && defined(slug.current) && _createdAt > $createdAt]
+  | order(_createdAt asc)[0]{
+    _id,
+    title,
+    "slug": slug.current,
+    _createdAt,
+    category
+  }
+`);
 
 export const ALL_STARTUP_SLUGS = defineQuery(
 	`*[_type == "startup" && defined(slug.current)]{ "slug": slug.current, _id }`,

@@ -12,6 +12,11 @@ import {
 	STARTUP_BY_SLUG_QUERY,
 	PLAYLIST_BY_SLUG_QUERY,
 	RECENT_STARTUPS_QUERY,
+	RELATED_STARTUPS_BY_CATEGORY,
+	PREV_STARTUP_IN_CATEGORY,
+	NEXT_STARTUP_IN_CATEGORY,
+	PREV_STARTUP_GLOBAL,
+	NEXT_STARTUP_GLOBAL,
 } from '@/sanity/lib/queries';
 import { Skeleton } from '@/components/ui/skeleton';
 import View from '@/components/View';
@@ -25,11 +30,18 @@ import {
 	BreadcrumbSeparator,
 } from '@/components/ui/breadcrumb';
 import ShareButton from '@/components/ShareButton';
-import { Facebook, Mail, Twitter } from 'lucide-react';
+import {
+	Facebook,
+	Mail,
+	Twitter,
+	ChevronLeft,
+	ChevronRight,
+} from 'lucide-react';
 import ArticleRenderer from '@/components/ArticleRender';
 import { CommentSection } from '@/components/CommentSection';
 import { auth } from '@/auth';
 import { COMMENTS_BY_STARTUP_QUERY } from '@/sanity/lib/queries';
+import TableOfContents from '@/components/TableOfContents';
 
 // Server rendering policy: change to `force-dynamic` if you need always-fresh data.
 export const experimental_ppr = true;
@@ -46,14 +58,39 @@ const SANITIZE_OPTIONS = {
 		'img',
 		'figure',
 		'figcaption',
+		'iframe',
+		'table',
+		'thead',
+		'tbody',
+		'tfoot',
+		'tr',
+		'th',
+		'td',
+		'pre',
+		'code',
 	]),
 	allowedAttributes: {
 		...sanitizeHtml.defaults.allowedAttributes,
 		img: ['src', 'alt', 'width', 'height', 'loading'],
 		a: ['href', 'name', 'target', 'rel'],
+		iframe: [
+			'src',
+			'width',
+			'height',
+			'allow',
+			'allowfullscreen',
+			'frameborder',
+			'loading',
+			'referrerpolicy',
+		],
+		table: ['class'],
 		'*': ['id'],
 	},
 	allowedSchemes: ['http', 'https', 'data', 'mailto'],
+	allowIframeRelativeUrls: false,
+	transformTags: {
+		a: sanitizeHtml.simpleTransform('a', { rel: 'noopener noreferrer' }, true),
+	},
 };
 
 // small helpers
@@ -79,15 +116,24 @@ const formatDate = (dateString?: string) => {
 const renderMarkdownWithIds = (rawMd: string) => {
 	const html = md.render(rawMd || '');
 
-	const headingPattern = /<(h[1-6])>(.*?)<\/\1>/gi;
+	const headingPattern = /<(h[1-6])([^>]*)>([\s\S]*?)<\/\1>/gi;
 	const headings: { id: string; text: string; level: number }[] = [];
 
-	const htmlWithIds = html.replace(headingPattern, (match, tag, inner) => {
-		const text = inner.replace(/<[^>]*>/g, '');
-		const id = slugify(text);
-		headings.push({ id, text, level: Number(tag.replace('h', '')) });
-		return `<${tag} id="${id}">${inner}</${tag}>`;
-	});
+	const htmlWithIds = html.replace(
+		headingPattern,
+		(match, tag, attrs, inner) => {
+			const text = inner.replace(/<[^>]*>/g, '');
+			const id = slugify(text);
+			const level = Number(tag.replace('h', ''));
+			headings.push({ id, text, level });
+			const hasId = /\bid\s*=/.test(attrs || '');
+			const newAttrs =
+				hasId ?
+					attrs.replace(/\bid\s*=\s*"[^"]*"/i, `id="${id}"`)
+				:	`${attrs} id="${id}"`;
+			return `<${tag}${newAttrs}>${inner}</${tag}>`;
+		},
+	);
 
 	return { html: htmlWithIds, headings };
 };
@@ -107,6 +153,13 @@ export default async function Page({ params }: { params: { slug: string } }) {
 
 	if (!post) return notFound();
 
+	// fetch related posts (same category, exclude current)
+	const relatedPosts =
+		(await client.fetch(RELATED_STARTUPS_BY_CATEGORY, {
+			category: post.category,
+			slug: post.slug?.current,
+		})) || [];
+
 	// markdown -> html + headings
 	const rawMd = post.pitch || '';
 	const { html: htmlWithIds, headings } = renderMarkdownWithIds(rawMd);
@@ -118,6 +171,30 @@ export default async function Page({ params }: { params: { slug: string } }) {
 	// fetch editor picks / popular posts (done server-side)
 	const editorPosts = (await client.fetch(RECENT_STARTUPS_QUERY)) || [];
 	const popularPosts = (await client.fetch(RECENT_STARTUPS_QUERY)) || [];
+
+	// Prev/Next: prefer same category; fallback to global by created date
+	const [prevInCat, nextInCat] = await Promise.all([
+		client.fetch(PREV_STARTUP_IN_CATEGORY, {
+			category: post.category,
+			createdAt: post._createdAt,
+		}),
+		client.fetch(NEXT_STARTUP_IN_CATEGORY, {
+			category: post.category,
+			createdAt: post._createdAt,
+		}),
+	]);
+
+	const [prevGlobal, nextGlobal] = await Promise.all([
+		prevInCat ?
+			Promise.resolve(null)
+		:	client.fetch(PREV_STARTUP_GLOBAL, { createdAt: post._createdAt }),
+		nextInCat ?
+			Promise.resolve(null)
+		:	client.fetch(NEXT_STARTUP_GLOBAL, { createdAt: post._createdAt }),
+	]);
+
+	const prevPost = prevInCat || prevGlobal;
+	const nextPost = nextInCat || nextGlobal;
 
 	// fetch comment data
 	const session = await auth();
@@ -131,6 +208,8 @@ export default async function Page({ params }: { params: { slug: string } }) {
 
 	return (
 		<main className="min-h-screen bg-white text-gray-900 dark:bg-gray-900 dark:text-gray-100">
+			{/* Floating Table of Contents trigger (client-side); fixed so no layout shift */}
+			<TableOfContents headings={headings} />
 			<div className="max-w-6xl mx-auto px-6 py-12 grid md:grid-cols-3 gap-8">
 				<article className="md:col-span-2">
 					{/* Breadcrumbs */}
@@ -227,8 +306,11 @@ export default async function Page({ params }: { params: { slug: string } }) {
 					<section className="max-w-none">
 						{safeHtml ?
 							<article className="prose prose-lg max-w-none dark:prose-invert">
-								{/* ArticleRenderer should render sanitized HTML server-side */}
-								<ArticleRenderer html={safeHtml} />
+								{/* Pass pre-sanitized HTML; skip internal sanitize to avoid double work */}
+								<ArticleRenderer
+									html={safeHtml}
+									sanitize={false}
+								/>
 							</article>
 						:	<div className="mx-auto max-w-4xl py-8 text-center">
 								<p className="text-sm text-gray-500 dark:text-gray-400">
@@ -291,14 +373,52 @@ export default async function Page({ params }: { params: { slug: string } }) {
 						</div>
 					</section>
 
-					{/* Editor picks */}
-					{editorPosts?.length > 0 && (
+					{/* Prev/Next navigation (compact pill buttons) */}
+					{(prevPost || nextPost) && (
+						<nav className="mt-6 grid grid-cols-2 gap-3 items-center">
+							<div>
+								{prevPost && (
+									<Link
+										className="inline-flex max-w-full items-center gap-2 text-xs text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700 rounded-full px-3 py-1.5 bg-gray-50 dark:bg-gray-800/60 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors shadow-sm"
+										href={`/startups/${prevPost.slug}`}
+										prefetch>
+										<ChevronLeft
+											className="w-3.5 h-3.5"
+											aria-hidden
+										/>
+										<span className="truncate max-w-[14rem]">
+											{prevPost.title}
+										</span>
+									</Link>
+								)}
+							</div>
+							<div className="text-right">
+								{nextPost && (
+									<Link
+										className="inline-flex max-w-full items-center gap-2 text-xs text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700 rounded-full px-3 py-1.5 bg-gray-50 dark:bg-gray-800/60 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors shadow-sm"
+										href={`/startups/${nextPost.slug}`}
+										prefetch>
+										<span className="truncate max-w-[14rem]">
+											{nextPost.title}
+										</span>
+										<ChevronRight
+											className="w-3.5 h-3.5"
+											aria-hidden
+										/>
+									</Link>
+								)}
+							</div>
+						</nav>
+					)}
+
+					{/* Related posts */}
+					{relatedPosts?.length > 0 && (
 						<section className="max-w-none mt-8">
 							<p className="text-2xl font-semibold text-gray-900 dark:text-gray-100 border-b-2 border-gray-200 dark:border-gray-800 pb-3">
-								You Might Like
+								Related posts
 							</p>
 							<ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 mt-4 gap-4">
-								{editorPosts.map((p: any) => (
+								{relatedPosts.map((p: any) => (
 									<StartupCard
 										key={p._id}
 										post={p}
@@ -354,21 +474,63 @@ export default async function Page({ params }: { params: { slug: string } }) {
 							<div className="text-sm font-semibold text-gray-700 dark:text-gray-200 mb-3">
 								Labels
 							</div>
-							<div className="flex flex-wrap gap-2">
-								<span className="text-xs bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded text-gray-800 dark:text-gray-200">
-									games
-								</span>
-								<span className="text-xs bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded text-gray-800 dark:text-gray-200">
-									reviews
-								</span>
-								<span className="text-xs bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded text-gray-800 dark:text-gray-200">
-									news
-								</span>
-							</div>
+							{(() => {
+								const labels = Array.from(
+									new Set(
+										[
+											post.category,
+											...relatedPosts.map((p: any) => p.category),
+											...popularPosts.map((p: any) => p.category),
+										].filter(Boolean),
+									),
+								).slice(0, 12);
+
+								if (labels.length === 0)
+									return (
+										<div className="text-xs text-gray-500 dark:text-gray-400">
+											No labels
+										</div>
+									);
+
+								return (
+									<div className="flex flex-wrap gap-2">
+										{labels.map((label) => (
+											<Link
+												key={label}
+												href={`/feed?query=${encodeURIComponent(label.toLowerCase())}`}
+												className="text-xs bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded text-gray-800 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+												prefetch
+												aria-label={`Filter by ${label}`}>
+												{label}
+											</Link>
+										))}
+									</div>
+								);
+							})()}
 						</div>
 					</div>
 				</aside>
 			</div>
+			{/* JSON-LD Article structured data for SEO */}
+			<script
+				type="application/ld+json"
+				dangerouslySetInnerHTML={{
+					__html: JSON.stringify({
+						'@context': 'https://schema.org',
+						'@type': 'Article',
+						headline: post.title,
+						datePublished: post._createdAt,
+						author:
+							post.author?.name ?
+								{ '@type': 'Person', name: post.author?.name }
+							:	undefined,
+						image: heroImage,
+						mainEntityOfPage: postUrl,
+						articleSection: post.category,
+						description: post.description,
+					}),
+				}}
+			/>
 		</main>
 	);
 }
