@@ -13,6 +13,7 @@ import { SessionProvider } from 'next-auth/react';
 import BackToTopButton from '@/components/BackToTopButton';
 import Script from 'next/script';
 import { auth } from '@/auth';
+import { SpeedInsights } from '@vercel/speed-insights/next';
 
 export const metadata: Metadata = {
 	title: 'Create Next App',
@@ -60,6 +61,10 @@ export default async function RootLayout({
 						:	'/rss.xml'
 					}
 				/>
+				<link
+					rel="prefetch"
+					href="/next-page"
+				/>
 				{/* Google Analytics */}
 				<Script
 					src="https://www.googletagmanager.com/gtag/js?id=G-4W89XZZ62S"
@@ -92,6 +97,7 @@ export default async function RootLayout({
 				</SessionProvider>
 				<BackToTopButton />
 				<Analytics />
+				<SpeedInsights />
 			</body>
 		</html>
 	);

@@ -147,6 +147,7 @@ input[type='search'] {
 	--scrollbar-thumb-hover: #a0a0a0;
 	--scrollbar-radius: 10px;
 	--scrollbar-shadow: rgba(0, 0, 0, 0.15);
+	font-display: swap
 }
 
 /* WebKit browsers (Chrome, Edge, Safari) */
