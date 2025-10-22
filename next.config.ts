@@ -5,7 +5,7 @@ import type { NextConfig } from 'next';
 // --- added for PWA ---
 import nextPwa from 'next-pwa';
 // @ts-expect-error: No types for 'next-pwa/cache'
-import runtimeCaching from 'next-pwa/cache';
+import runtimeCaching from 'next-pwa/cache.js';
 
 const withPWA = nextPwa({
 	dest: 'public',
@@ -56,13 +56,11 @@ const nextConfig: NextConfig = {
 	},
 	experimental: {
 		ppr: 'incremental',
-		after: true,
+		// after: true,
 	},
 	devIndicators: {
-		appIsrStatus: true,
-		buildActivity: true,
-		buildActivityPosition: 'bottom-right',
-	},
+		position: 'bottom-right',
+	  },
 };
 
 // wrap with PWA THEN wrap with Sentry (keep your Sentry options unchanged)

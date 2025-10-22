@@ -26,7 +26,7 @@ export async function GET(req: NextRequest) {
 			);
 		}
 		if (hasCursor) {
-			filterParts.push('_createdAt < datetime($cursor)');
+			filterParts.push('_createdAt < $cursor');
 		}
 		const filter = filterParts.join(' && ');
 

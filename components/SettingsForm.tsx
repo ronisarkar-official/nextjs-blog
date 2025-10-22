@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Save, User, Mail, Image as ImageIcon } from 'lucide-react';
 import ImageUploadButton from '@/components/ImageUploadButton';
-import toast, { Toaster } from 'react-hot-toast';
+import toast from 'react-hot-toast';
 
 interface User {
 	_id: string;
@@ -124,12 +124,9 @@ const SettingsForm: React.FC<SettingsFormProps> = ({ user }) => {
 	};
 
 	return (
-		<>
-			<Toaster position="top-right" />
-
-			<form
-				onSubmit={handleSubmit}
-				className="space-y-6">
+		<form
+			onSubmit={handleSubmit}
+			className="space-y-6">
 				{/* Profile Image Section */}
 				<Card className="p-6">
 					<div className="flex items-center gap-4 mb-4">
@@ -287,8 +284,7 @@ const SettingsForm: React.FC<SettingsFormProps> = ({ user }) => {
 						}
 					</Button>
 				</div>
-			</form>
-		</>
+		</form>
 	);
 };
 

@@ -17,6 +17,12 @@ type Props = {
 export default function OptimizedToastEditor({ value, onChange }: Props) {
 	const { resolvedTheme } = useTheme();
 	const editorRef = useRef<any>(null);
+	const [mounted, setMounted] = React.useState(false);
+
+	// Prevent hydration mismatch by only showing theme-dependent UI after mount
+	useEffect(() => {
+		setMounted(true);
+	}, []);
 
 	// Sync external value into editor once on mount
 	useEffect(() => {
@@ -99,14 +105,16 @@ export default function OptimizedToastEditor({ value, onChange }: Props) {
 	// removed: video insert, text color, text align per request
 
 	// Keep theme classes on container for better contrast
+	// Use neutral classes until mounted to prevent hydration mismatch
 	const containerClass = useMemo(
 		() =>
 			`w-full h-fit rounded-md border shadow-inner overflow-auto ${
-				resolvedTheme === 'dark' ?
+				!mounted ? 'bg-white border-gray-300'
+				: resolvedTheme === 'dark' ?
 					'bg-gray-900 border-gray-800'
 				:	'bg-white border-gray-300'
 			}`,
-		[resolvedTheme],
+		[resolvedTheme, mounted],
 	);
 
 	return (
@@ -122,13 +130,13 @@ export default function OptimizedToastEditor({ value, onChange }: Props) {
 			</div>
 
 			<ToastEditor
-				key={`toast-${resolvedTheme}`}
+				key={mounted ? `toast-${resolvedTheme}` : 'toast-default'}
 				ref={editorRef}
 				initialValue={value}
 				previewStyle="vertical"
 				height="500px"
 				initialEditType="wysiwyg"
-				theme={resolvedTheme === 'dark' ? 'dark' : 'default'}
+				theme={mounted && resolvedTheme === 'dark' ? 'dark' : 'default'}
 				useCommandShortcut
 				usageStatistics={false}
 				toolbarItems={[
