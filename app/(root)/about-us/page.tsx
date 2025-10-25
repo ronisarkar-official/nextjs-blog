@@ -40,7 +40,7 @@ export default function AboutPage() {
 	];
 
 	return (
-		<main className="min-h-screen bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 transition-colors duration-200">
+		<main className="min-h-screen  transition-colors duration-200">
 			<div className="max-w-6xl mx-auto px-6 py-20">
 				{/* HERO */}
 				<section className="grid gap-12 lg:grid-cols-12 items-center">

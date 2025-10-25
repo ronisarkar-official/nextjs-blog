@@ -19,18 +19,7 @@ const SearchForm = ({ query }: { query?: string }) => {
 					Search site
 				</label>
 
-				<div
-					className="
-            relative flex items-center w-full
-            bg-white/80 dark:bg-gray-900/60
-            backdrop-blur-md
-            border border-gray-200 dark:border-gray-700
-            rounded-full px-3 py-2
-            shadow-sm dark:shadow-none
-            transition-colors duration-150
-            focus-within:ring-2 focus-within:ring-indigo-500 focus-within:ring-offset-2
-            focus-within:dark:ring-offset-gray-900
-          ">
+				<div className="relative flex items-center w-full bg-white/80 dark:bg-gray-900/60 backdrop-blur-md border border-gray-200 dark:border-gray-700 rounded-full px-3 py-2 shadow-sm dark:shadow-none transition-colors duration-150 ">
 					{/* Left icon */}
 					<div className="flex items-center pointer-events-none pl-1 pr-3">
 						<Search
@@ -48,14 +37,7 @@ const SearchForm = ({ query }: { query?: string }) => {
 						placeholder="Search categories, articles, people..."
 						autoComplete="off"
 						aria-label="Search"
-						className="
-              flex-1 min-w-0 bg-transparent text-sm sm:text-base
-              placeholder:text-zinc-500 dark:placeholder:text-zinc-400
-              text-zinc-900 dark:text-gray-100
-              outline-none px-1 py-2 rounded-full
-              transition-colors duration-150
-              focus:placeholder-transparent
-            "
+						className="flex-1 min-w-0 bg-transparent text-sm sm:text-base placeholder:text-zinc-500 dark:placeholder:text-zinc-400 text-zinc-900 dark:text-gray-100 outline-none px-1 py-2 rounded-full transition-colors duration-150 focus:placeholder-transparent"
 					/>
 
 					{/* Actions (reset/submit) */}

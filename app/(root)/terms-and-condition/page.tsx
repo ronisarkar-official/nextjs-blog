@@ -15,7 +15,7 @@ export const metadata = {
 
 export default function TermsPage() {
 	return (
-		<main className="min-h-screen bg-white dark:bg-gray-900 text-black dark:text-gray-100 antialiased transition-colors">
+		<main className="min-h-screen  antialiased transition-colors">
 			<div className="max-w-6xl mx-auto px-6 py-16">
 				<header className="mb-10 text-center">
 					<h1 className="text-4xl font-extrabold center text-black dark:text-white">

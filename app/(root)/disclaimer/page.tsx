@@ -13,10 +13,10 @@ export const metadata = {
 
 export default function DisclaimerPage() {
 	return (
-		<main className="min-h-screen bg-white text-black antialiased">
+		<main className="min-h-screen  antialiased">
 			<div className="max-w-6xl mx-auto px-6 py-16">
 				<header className="mb-8 text-center">
-					<h1 className="text-4xl font-extrabold text-black">Disclaimer</h1>
+					<h1 className="text-4xl font-extrabold ">Disclaimer</h1>
 					<p className="mt-2 text-sm text-gray-600">
 						Last updated: <time>September 29, 2025</time>
 					</p>
@@ -24,7 +24,7 @@ export default function DisclaimerPage() {
 
 				<article className="prose prose-lg max-w-none space-y-8">
 					<section>
-						<h2 className="text-black font-bold">Website Disclaimer</h2>
+						<h2 className=" font-bold">Website Disclaimer</h2>
 						<p>
 							The information provided by {sitename} ("we", "us", or "our") on{' '}
 							<a
@@ -38,7 +38,7 @@ export default function DisclaimerPage() {
 							implied, regarding the accuracy, adequacy, validity, reliability,
 							availability, or completeness of any information on the Site.
 						</p>
-						<p className="font-semibold text-black">
+						<p className="font-semibold ">
 							UNDER NO CIRCUMSTANCE SHALL WE HAVE ANY LIABILITY TO YOU FOR ANY
 							LOSS OR DAMAGE OF ANY KIND INCURRED AS A RESULT OF THE USE OF THE
 							SITE OR RELIANCE ON ANY INFORMATION PROVIDED ON THE SITE. YOUR USE
@@ -48,7 +48,7 @@ export default function DisclaimerPage() {
 					</section>
 
 					<section>
-						<h3 className="text-black font-bold">External Links Disclaimer</h3>
+						<h3 className=" font-bold">External Links Disclaimer</h3>
 						<p>
 							The Site may contain (or you may be sent through the Site) links
 							to other websites or content belonging to or originating from
@@ -57,7 +57,7 @@ export default function DisclaimerPage() {
 							monitored, or checked for accuracy, adequacy, validity,
 							reliability, availability, or completeness by us.
 						</p>
-						<p className="font-semibold text-black">
+						<p className="font-semibold ">
 							WE DO NOT WARRANT, ENDORSE, GUARANTEE, OR ASSUME RESPONSIBILITY
 							FOR THE ACCURACY OR RELIABILITY OF ANY INFORMATION OFFERED BY
 							THIRD-PARTY WEBSITES LINKED THROUGH THE SITE OR ANY WEBSITE OR
@@ -69,7 +69,7 @@ export default function DisclaimerPage() {
 					</section>
 
 					<section>
-						<h3 className="text-black font-bold">Professional Disclaimer</h3>
+						<h3 className=" font-bold">Professional Disclaimer</h3>
 						<p>
 							The Site cannot and does not contain coding, gaming, or tech
 							advice. The coding, gaming, and tech information is provided for
@@ -79,7 +79,7 @@ export default function DisclaimerPage() {
 							with the appropriate professionals. We do not provide any kind of
 							coding, gaming, or tech advice.
 						</p>
-						<p className="font-semibold text-black">
+						<p className="font-semibold ">
 							THE USE OR RELIANCE OF ANY INFORMATION CONTAINED ON THE SITE IS
 							SOLELY AT YOUR OWN RISK.
 						</p>

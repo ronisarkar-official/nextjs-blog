@@ -84,7 +84,7 @@ const socials = [
 
 export default function ContactPage() {
 	return (
-		<main className="min-h-screen bg-white dark:bg-gray-900 text-black dark:text-gray-100 antialiased transition-colors duration-200">
+		<main className="min-h-screen  antialiased transition-colors duration-200">
 			<div className="max-w-3xl mx-auto px-6 py-20">
 				<header className="text-center mb-10">
 					<h1 className="text-4xl font-extrabold tracking-tight">

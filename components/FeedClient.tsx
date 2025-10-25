@@ -110,7 +110,7 @@ export default function FeedClient({
 							isLCP={idx < 6}
 						/>
 					))
-				:	<p className="no-results">No startups found</p>}
+				:	<p className="no-results">No posts found</p>}
 			</section>
 			{/* loader */}
 			<div

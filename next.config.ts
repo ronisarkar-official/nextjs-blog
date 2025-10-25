@@ -17,6 +17,7 @@ const withPWA = nextPwa({
 // --- end PWA additions ---
 
 const nextConfig: NextConfig = {
+	reactCompiler: true,
 	typescript: {
 		ignoreBuildErrors: true,
 	},
@@ -46,12 +47,30 @@ const nextConfig: NextConfig = {
 		return [
 			{
 				source: '/games/borderlands-4-requirements.html',
+				
+				destination: '/startups/borderlands-4-system-requirements',
+				permanent: true,
+			},
+			{
+				source: '/2025/09/battlefield-6-system-requirements.html',
+				destination: '/startups/battlefield-6-system-requirements',
+				permanent: true,
+			},
+			{
+				source: '/2025/09/arc-raiders-system-requirements.html',
 				destination: '/',
+				permanent: true,
+			},
+			{
+				source: '/2025/09/borderlands-4-system-requirements.html',
+				destination: '/startups/borderlands-4-system-requirements',
 				permanent: true,
 			},
 		];
 	},
 	experimental: {
+		// turbopackFileSystemCacheForDev: true,
+		turbopackFileSystemCacheForBuild: true,
 		// after: true,
 	},
 	devIndicators: {
