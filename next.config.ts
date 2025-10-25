@@ -69,8 +69,8 @@ const nextConfig: NextConfig = {
 		];
 	},
 	experimental: {
-		// turbopackFileSystemCacheForDev: true,
-		turbopackFileSystemCacheForBuild: true,
+		turbopackFileSystemCacheForDev: true,
+		
 		// after: true,
 	},
 	devIndicators: {
