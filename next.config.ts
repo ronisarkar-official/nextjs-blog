@@ -20,9 +20,6 @@ const nextConfig: NextConfig = {
 	typescript: {
 		ignoreBuildErrors: true,
 	},
-	eslint: {
-		ignoreDuringBuilds: true,
-	},
 	images: {
 		dangerouslyAllowSVG: true,
 		// NOTE: unoptimized: true disables Next's image optimization (and hostname checks).
@@ -55,7 +52,6 @@ const nextConfig: NextConfig = {
 		];
 	},
 	experimental: {
-		ppr: 'incremental',
 		// after: true,
 	},
 	devIndicators: {

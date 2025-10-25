@@ -8,7 +8,7 @@ import { STARTUP_BY_SLUG_QUERY } from '@/sanity/lib/queries';
 import { auth } from '@/auth';
 import { redirect } from 'next/navigation';
 
-type Props = { params: { slug?: string | string[] } };
+type Props = { params: Promise<{ slug?: string | string[] }> };
 
 type Startup = { _id?: string; author?: any };
 
@@ -41,7 +41,8 @@ export default async function Page({ params }: Props) {
 	const session = await auth();
 	if (!session) redirect('/');
 
-	const rawSlug = params?.slug;
+	const resolvedParams = await params;
+	const rawSlug = resolvedParams?.slug;
 	if (!rawSlug) return notFound();
 	const slug = Array.isArray(rawSlug) ? rawSlug[0] : rawSlug;
 	if (typeof slug !== 'string' || slug.trim() === '') return notFound();

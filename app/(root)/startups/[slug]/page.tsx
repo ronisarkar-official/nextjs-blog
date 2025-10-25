@@ -43,8 +43,6 @@ import { auth } from '@/auth';
 import { COMMENTS_BY_STARTUP_QUERY } from '@/sanity/lib/queries';
 import TableOfContents from '@/components/TableOfContents';
 
-// Server rendering policy: change to `force-dynamic` if you need always-fresh data.
-export const experimental_ppr = true;
 // If you prefer ISR instead of fully dynamic responses, replace the above with a revalidate value like:
 // export const revalidate = 60; // seconds
 
@@ -138,8 +136,8 @@ const renderMarkdownWithIds = (rawMd: string) => {
 	return { html: htmlWithIds, headings };
 };
 
-export default async function Page({ params }: { params: { slug: string } }) {
-	const { slug } = params;
+export default async function Page({ params }: { params: Promise<{ slug: string }> }) {
+	const { slug } = await params;
 
 	// fetch the startup by slug
 	let post: StartupPost | null = null;

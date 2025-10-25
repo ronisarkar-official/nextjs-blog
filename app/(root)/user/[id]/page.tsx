@@ -12,8 +12,6 @@ import UserStartups from '@/components/UserStartups';
 import { Suspense } from 'react';
 import { StartupCardSkeleton } from '@/components/StartupCard';
 
-export const experimental_ppr = true;
-
 // small UI class constants for easy dark-mode tweaks
 const PAGE_BG =
 	'bg-gradient-to-b from-white to-gray-50 dark:from-gray-900 dark:to-gray-800';
