@@ -59,9 +59,7 @@ export default function HomeClient() {
 					<motion.div
 						className="lg:col-span-6 space-y-5"
 						variants={itemVariants}>
-						<div
-							className="inline-flex items-center gap-3 px-3 py-1 rounded-full w-max
-										bg-emerald-50/70 dark:bg-emerald-900/30">
+						<div className="inline-flex items-center gap-3 px-3 py-1 rounded-full w-max bg-emerald-50/70 dark:bg-emerald-900/30">
 							<Users className="w-4 h-4 text-emerald-600 dark:text-emerald-200" />
 							<span className="text-sm font-semibold text-emerald-700 dark:text-emerald-200">
 								Trusted by creators

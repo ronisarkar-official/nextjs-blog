@@ -476,9 +476,6 @@ export const useThemeToggle = ({
 
     let styleElement = document.getElementById(styleId) as HTMLStyleElement;
 
-    console.log("style ELement", styleElement);
-    console.log("name", name);
-
     if (!styleElement) {
       styleElement = document.createElement("style");
       styleElement.id = styleId;
@@ -486,13 +483,9 @@ export const useThemeToggle = ({
     }
 
     styleElement.textContent = css;
-
-    console.log("content updated");
   }, []);
 
   const toggleTheme = useCallback(() => {
-    setIsDark(!isDark);
-
     const animation = createAnimation(variant, start, blur, gifUrl);
 
     updateStyles(animation.css, animation.name);
@@ -517,13 +510,9 @@ export const useThemeToggle = ({
     blur,
     gifUrl,
     updateStyles,
-    isDark,
-    setIsDark,
   ]);
 
   const setCrazyLightTheme = useCallback(() => {
-    setIsDark(false);
-
     const animation = createAnimation(variant, start, blur, gifUrl);
 
     updateStyles(animation.css, animation.name);
@@ -540,11 +529,9 @@ export const useThemeToggle = ({
     }
 
     document.startViewTransition(switchTheme);
-  }, [setTheme, variant, start, blur, gifUrl, updateStyles, setIsDark]);
+  }, [setTheme, variant, start, blur, gifUrl, updateStyles]);
 
   const setCrazyDarkTheme = useCallback(() => {
-    setIsDark(true);
-
     const animation = createAnimation(variant, start, blur, gifUrl);
 
     updateStyles(animation.css, animation.name);
@@ -561,7 +548,7 @@ export const useThemeToggle = ({
     }
 
     document.startViewTransition(switchTheme);
-  }, [setTheme, variant, start, blur, gifUrl, updateStyles, setIsDark]);
+  }, [setTheme, variant, start, blur, gifUrl, updateStyles]);
 
   return {
     isDark,
@@ -595,9 +582,14 @@ export const ThemeToggleButton = ({
   });
 
   return (
-     <Button variant="outline" size="icon" onClick={toggleTheme}>
-          <Sun className="h-[1.2rem] w-[1.2rem] scale-100 rotate-0 transition-all dark:scale-0 dark:-rotate-90" />
-          <Moon className="absolute h-[1.2rem] w-[1.2rem] scale-0 rotate-90 transition-all dark:scale-100 dark:rotate-0" />
+     <Button 
+       variant="outline" 
+       size="icon" 
+       onClick={toggleTheme}
+       style={{ viewTransitionName: 'none' } as any}
+     >
+          <Sun className="h-[1.2rem] w-[1.2rem] dark:hidden" />
+          <Moon className="absolute h-[1.2rem] w-[1.2rem] hidden dark:block" />
           <span className="sr-only">Toggle theme</span>
         </Button>
   );

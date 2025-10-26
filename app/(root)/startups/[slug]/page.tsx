@@ -1,5 +1,5 @@
 // app/(root)/startups/[slug]/page.tsx
-import React, { Suspense } from 'react';
+import React, { Suspense, cache } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
@@ -42,13 +42,24 @@ import { CommentSection } from '@/components/CommentSection';
 import { auth } from '@/auth';
 import { COMMENTS_BY_STARTUP_QUERY } from '@/sanity/lib/queries';
 import TableOfContents from '@/components/TableOfContents';
+import type { Metadata } from 'next';
 
-// If you prefer ISR instead of fully dynamic responses, replace the above with a revalidate value like:
-// export const revalidate = 60; // seconds
+// Enable ISR - revalidate every 60 seconds
+export const revalidate = 60;
 
 type StartupPost = any;
 
 const md = new markdownit({ html: true, linkify: true });
+
+// Cached data fetcher to prevent duplicate requests
+const getStartupBySlug = cache(async (slug: string) => {
+	try {
+		return await client.fetch(STARTUP_BY_SLUG_QUERY, { slug });
+	} catch (err) {
+		console.error('Sanity fetch error (by slug):', err);
+		return null;
+	}
+});
 
 // Sanitize options pulled out to top-level for reuse and performance
 const SANITIZE_OPTIONS = {
@@ -136,69 +147,136 @@ const renderMarkdownWithIds = (rawMd: string) => {
 	return { html: htmlWithIds, headings };
 };
 
+// Generate metadata for better SEO and caching
+export async function generateMetadata({
+	params,
+}: {
+	params: Promise<{ slug: string }>;
+}): Promise<Metadata> {
+	const { slug } = await params;
+	const post = await getStartupBySlug(slug);
+
+	if (!post) {
+		return {
+			title: 'Post Not Found',
+		};
+	}
+
+	const siteBase = process.env.NEXT_PUBLIC_SITE_URL || '';
+	const postUrl = `${siteBase}/startups/${post.slug?.current}`;
+
+	return {
+		title: post.title,
+		description: post.description || post.title,
+		openGraph: {
+			title: post.title,
+			description: post.description || post.title,
+			type: 'article',
+			url: postUrl,
+			images: [post.image || '/images/cover-placeholder.jpg'],
+			publishedTime: post._createdAt,
+		},
+		twitter: {
+			card: 'summary_large_image',
+			title: post.title,
+			description: post.description || post.title,
+			images: [post.image || '/images/cover-placeholder.jpg'],
+		},
+	};
+}
+
+// Generate static params for popular posts (improves build time)
+export async function generateStaticParams() {
+	try {
+		const posts = await client.fetch(RECENT_STARTUPS_QUERY);
+		return posts
+			.filter((post: any) => post.slug?.current)
+			.slice(0, 20)
+			.map((post: any) => ({
+				slug: post.slug.current,
+			}));
+	} catch {
+		return [];
+	}
+}
+
 export default async function Page({ params }: { params: Promise<{ slug: string }> }) {
 	const { slug } = await params;
 
-	// fetch the startup by slug
-	let post: StartupPost | null = null;
-	try {
-		post = await client.fetch(STARTUP_BY_SLUG_QUERY, { slug });
-	} catch (err) {
-		// server-side logging
-		// eslint-disable-next-line no-console
-		console.error('Sanity fetch error (by slug):', err);
-	}
+	// Fetch the startup using cached function (used by generateMetadata too)
+	const post = await getStartupBySlug(slug);
 
 	if (!post) return notFound();
 
-	// fetch related posts (same category, exclude current)
-	const relatedPosts =
-		(await client.fetch(RELATED_STARTUPS_BY_CATEGORY, {
-			category: post.category,
-			slug: post.slug?.current,
-		})) || [];
+	// Parallelize ALL data fetching for maximum performance
+	const [
+		relatedPosts,
+		popularPosts,
+		prevInCat,
+		nextInCat,
+		session,
+		comments,
+	] = await Promise.all([
+		// Related posts (same category)
+		client
+			.fetch(RELATED_STARTUPS_BY_CATEGORY, {
+				category: post.category,
+				slug: post.slug?.current,
+			})
+			.catch(() => []),
 
-	// markdown -> html + headings
+		// Popular posts (remove duplicate fetch)
+		client.fetch(RECENT_STARTUPS_QUERY).catch(() => []),
+
+		// Prev in category
+		client
+			.fetch(PREV_STARTUP_IN_CATEGORY, {
+				category: post.category,
+				createdAt: post._createdAt,
+			})
+			.catch(() => null),
+
+		// Next in category
+		client
+			.fetch(NEXT_STARTUP_IN_CATEGORY, {
+				category: post.category,
+				createdAt: post._createdAt,
+			})
+			.catch(() => null),
+
+		// Session (authentication)
+		auth(),
+
+		// Comments
+		client
+			.fetch(COMMENTS_BY_STARTUP_QUERY, { startupId: post._id })
+			.catch(() => []),
+	]);
+
+	// Fallback to global prev/next only if category-based not found
+	const [prevGlobal, nextGlobal] = await Promise.all([
+		!prevInCat ?
+			client
+				.fetch(PREV_STARTUP_GLOBAL, { createdAt: post._createdAt })
+				.catch(() => null)
+		:	Promise.resolve(null),
+		!nextInCat ?
+			client
+				.fetch(NEXT_STARTUP_GLOBAL, { createdAt: post._createdAt })
+				.catch(() => null)
+		:	Promise.resolve(null),
+	]);
+
+	const prevPost = prevInCat || prevGlobal;
+	const nextPost = nextInCat || nextGlobal;
+
+	// Process markdown (sync operation, done after fetches)
 	const rawMd = post.pitch || '';
 	const { html: htmlWithIds, headings } = renderMarkdownWithIds(rawMd);
 	const safeHtml = sanitizeHtml(htmlWithIds, SANITIZE_OPTIONS);
 
 	const authorImage = post.author?.image || '/images/avatar-placeholder.png';
 	const heroImage = post.image || '/images/cover-placeholder.jpg';
-
-	// fetch editor picks / popular posts (done server-side)
-	const editorPosts = (await client.fetch(RECENT_STARTUPS_QUERY)) || [];
-	const popularPosts = (await client.fetch(RECENT_STARTUPS_QUERY)) || [];
-
-	// Prev/Next: prefer same category; fallback to global by created date
-	const [prevInCat, nextInCat] = await Promise.all([
-		client.fetch(PREV_STARTUP_IN_CATEGORY, {
-			category: post.category,
-			createdAt: post._createdAt,
-		}),
-		client.fetch(NEXT_STARTUP_IN_CATEGORY, {
-			category: post.category,
-			createdAt: post._createdAt,
-		}),
-	]);
-
-	const [prevGlobal, nextGlobal] = await Promise.all([
-		prevInCat ?
-			Promise.resolve(null)
-		:	client.fetch(PREV_STARTUP_GLOBAL, { createdAt: post._createdAt }),
-		nextInCat ?
-			Promise.resolve(null)
-		:	client.fetch(NEXT_STARTUP_GLOBAL, { createdAt: post._createdAt }),
-	]);
-
-	const prevPost = prevInCat || prevGlobal;
-	const nextPost = nextInCat || nextGlobal;
-
-	// fetch comment data
-	const session = await auth();
-	const comments = await client.fetch(COMMENTS_BY_STARTUP_QUERY, {
-		startupId: post._id,
-	});
 
 	// Structured data (Article) for SEO — server-rendered JSON-LD
 	const siteBase = process.env.NEXT_PUBLIC_SITE_URL || '';
@@ -254,6 +332,7 @@ export default async function Page({ params }: { params: Promise<{ slug: string 
 											fill
 											style={{ objectFit: 'cover' }}
 											sizes="32px"
+											loading="lazy"
 										/>
 									</div>
 									<div>
@@ -291,7 +370,8 @@ export default async function Page({ params }: { params: Promise<{ slug: string 
 							fill
 							className="object-cover object-center"
 							priority
-							fetchPriority="high"
+							
+							sizes="(max-width: 768px) 100vw, (max-width: 1200px) 66vw, 800px"
 						/>
 						{/* subtle overlay for legibility in dark mode */}
 						<div
@@ -450,6 +530,8 @@ export default async function Page({ params }: { params: Promise<{ slug: string 
 													fill
 													className="object-cover group-hover:scale-105 transition-transform duration-300"
 													sizes="96px"
+													loading="lazy"
+													quality={75}
 												/>
 											</div>
 

@@ -159,13 +159,6 @@ export default function AboutPage() {
 						</p>
 
 						<div className="mt-6 flex flex-col sm:flex-row gap-3">
-							<Link
-								href="/subscribe"
-								className="rounded-full px-6 py-3 inline-block bg-indigo-600 text-white font-semibold hover:opacity-95 transition-opacity"
-								aria-label="Subscribe">
-								Subscribe
-							</Link>
-
 							<a
 								href="mailto:hello@spechype.com"
 								className="rounded-full px-6 py-3 inline-block border border-gray-200 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 font-semibold hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors"

@@ -1,10 +1,11 @@
 // app/startup/[id]/layout.tsx
-import React from 'react';
+import React, { cache } from 'react';
 import type { Metadata } from 'next';
 import { client } from '@/sanity/lib/client';
 import { STARTUP_BY_SLUG_QUERY } from '@/sanity/lib/queries';
 
-export const revalidate = 3600; // 1 hour
+// Align with page.tsx revalidation strategy
+export const revalidate = 60;
 
 interface StartupData {
 	title?: string;
@@ -18,10 +19,15 @@ interface StartupData {
 	_id?: string;
 }
 
-interface ResolvedParams {
-	slug?: string | string[];
-	id?: string | string[];
-}
+// Cached fetch to prevent duplicate requests between generateMetadata and layout
+const getStartupData = cache(async (slug: string): Promise<StartupData | null> => {
+	try {
+		return await client.fetch(STARTUP_BY_SLUG_QUERY, { slug });
+	} catch (err) {
+		console.error('Sanity fetch error:', err);
+		return null;
+	}
+});
 
 function resolveImageUrl(img: any): string | null {
 	if (!img) return null;
@@ -112,24 +118,14 @@ function getSiteConfig() {
 export async function generateMetadata({
 	params,
 }: {
-	params: ResolvedParams | Promise<ResolvedParams>;
+	params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
-	const paramsResolved = await params;
-	const raw = (paramsResolved.slug ?? paramsResolved.id) as
-		| string
-		| string[]
-		| undefined;
-	const slug = Array.isArray(raw) ? raw[0] : raw;
+	const { slug } = await params;
 
 	if (!slug) return getFallbackMetadata();
 
-	let post: StartupData | null = null;
-	try {
-		post = await client.fetch(STARTUP_BY_SLUG_QUERY, { slug });
-	} catch (err) {
-		console.error('Sanity fetch error for metadata:', err);
-		return getFallbackMetadata();
-	}
+	// Use cached function to prevent duplicate fetch
+	const post = await getStartupData(slug);
 
 	if (!post) return getFallbackMetadata();
 
@@ -232,19 +228,12 @@ export default async function StartupLayout({
 	params,
 }: {
 	children: React.ReactNode;
-	params: { id?: string | string[]; slug?: string | string[] };
+	params: Promise<{ slug: string }>;
 }) {
-	const rawParam = params?.slug ?? params?.id;
-	const slug = Array.isArray(rawParam) ? rawParam[0] : rawParam;
+	const { slug } = await params;
 
-	let post: StartupData | null = null;
-	try {
-		if (slug) {
-			post = await client.fetch(STARTUP_BY_SLUG_QUERY, { slug });
-		}
-	} catch (err) {
-		console.error('Sanity fetch error in layout:', err);
-	}
+	// Use cached function - will reuse data from generateMetadata
+	const post = await getStartupData(slug);
 
 	const { siteName, baseUrl } = getSiteConfig();
 	const pageUrl =
@@ -290,8 +279,9 @@ export default async function StartupLayout({
 		};
 	}
 
-	// BreadcrumbList (helpful for SERP breadcrumbs)
-	jsonLd.mainEntity = {
+	// BreadcrumbList as separate JSON-LD (not nested in article)
+	const breadcrumbJsonLd = {
+		'@context': 'https://schema.org',
 		'@type': 'BreadcrumbList',
 		itemListElement: [
 			{ '@type': 'ListItem', position: 1, name: 'Home', item: baseUrl },
@@ -311,20 +301,23 @@ export default async function StartupLayout({
 	};
 
 	return (
-		<div className="">
-			{/* JSON-LD renders server-side only */}
-			{typeof window === 'undefined' && (
-				<script
-					type="application/ld+json"
-					dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-				/>
-			)}
+		<>
+			{/* Article JSON-LD */}
+			<script
+				type="application/ld+json"
+				dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+			/>
+			{/* Breadcrumb JSON-LD (separate for better SEO) */}
+			<script
+				type="application/ld+json"
+				dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
+			/>
 
 			<main
 				itemScope
 				itemType="https://schema.org/Article">
 				{children}
 			</main>
-		</div>
+		</>
 	);
 }
