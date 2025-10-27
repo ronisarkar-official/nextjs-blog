@@ -61,10 +61,7 @@ export default async function RootLayout({
 						:	'/rss.xml'
 					}
 				/>
-				<link
-					rel="prefetch"
-					href="/next-page"
-				/>
+				
 				{/* Google Analytics */}
 				<Script
 					src="https://www.googletagmanager.com/gtag/js?id=G-4W89XZZ62S"
