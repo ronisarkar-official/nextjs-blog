@@ -23,6 +23,7 @@ const nextConfig: NextConfig = {
 	},
 	images: {
 		dangerouslyAllowSVG: true,
+		qualities: [25, 50,60, 75],
 		// NOTE: unoptimized: true disables Next's image optimization (and hostname checks).
 		// Keep it if you want to bypass hostname issues in dev/prod. Remove if you want Next optimizations.
 		unoptimized: true,
@@ -47,7 +48,7 @@ const nextConfig: NextConfig = {
 		return [
 			{
 				source: '/games/borderlands-4-requirements.html',
-				
+
 				destination: '/startups/borderlands-4-system-requirements',
 				permanent: true,
 			},
@@ -70,12 +71,12 @@ const nextConfig: NextConfig = {
 	},
 	experimental: {
 		turbopackFileSystemCacheForDev: true,
-		
+
 		// after: true,
 	},
 	devIndicators: {
 		position: 'bottom-right',
-	  },
+	},
 };
 
 // wrap with PWA THEN wrap with Sentry (keep your Sentry options unchanged)

@@ -13,9 +13,9 @@ import { JSDOM } from 'jsdom';
 const BASE_PROSE =
 	'mx-auto max-w-4xl font-work-sans text-gray-800 dark:text-gray-100 prose prose-neutral dark:prose-invert lg:prose-lg ' +
 	'[&_h1]:mt-8 [&_h1]:mb-4 [&_h1]:text-3xl [&_h1]:leading-tight ' +
-	'[&_h2]:mt-7 [&_h2]:mb-3 [&_h2]:text-2xl [&_h2]:leading-tight ' +
-	'[&_h3]:mt-6 [&_h3]:mb-2 [&_h3]:text-xl ' +
-	'[&_h4]:mt-5 [&_h4]:mb-2 [&_h4]:text-lg ' +
+	'[&_h2]:mt-7 [&_h2]:mb-3 [&_h2]:text-2xl [&_h2]:leading-tight [&_h2]:font-bold ' +
+	'[&_h3]:mt-6 [&_h3]:mb-2 [&_h3]:text-xl [&_h3]:font-bold ' +
+	'[&_h4]:mt-5 [&_h4]:mb-2 [&_h4]:text-lg [&_h4]:font-bold' +
 	'[&_p]:mb-5 [&_p]:leading-relaxed ' +
 	// list styling: ul = disc, ol = decimal, padding, marker color, item spacing
 	'[&_ul]:mb-5 [&_ul]:pl-6 [&_ul]:list-disc [&_ul]:marker:text-gray-600 dark:[&_ul]:marker:text-gray-400 ' +
@@ -54,13 +54,73 @@ function serverProcessHtml(html: string, sanitize = true) {
 		wrapper.appendChild(iframe);
 	});
 
-	// Tables: wrap into overflow container and add classes for tailwind table styles
+	// Tables: make responsive and fit content without scrollbars
 	doc.querySelectorAll('table').forEach((table) => {
 		const wrapper = doc.createElement('div');
-		wrapper.setAttribute('class', 'overflow-auto rounded-lg shadow-sm my-6');
+		wrapper.setAttribute('class', 'w-full rounded-xl shadow-sm my-8 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 overflow-hidden');
 		table.parentNode?.replaceChild(wrapper, table);
 		wrapper.appendChild(table);
-		table.classList.add('min-w-full', 'divide-y', 'divide-gray-200');
+		table.classList.add(
+			'w-full',
+			'text-sm',
+			'text-gray-900',
+			'dark:text-gray-100',
+			'border-collapse',
+			'border-spacing-0'
+		);
+
+		// Style table headers
+		const headers = table.querySelectorAll('th');
+		headers.forEach((th) => {
+			th.classList.add(
+				'px-3',
+				'py-3',
+				'md:px-6',
+				'md:py-4',
+				'text-left',
+				'font-semibold',
+				'text-gray-900',
+				'dark:text-gray-100',
+				'bg-gray-50',
+				'dark:bg-gray-800',
+				'border-b',
+				'border-gray-300',
+				'dark:border-gray-600',
+				'uppercase',
+				'tracking-wider',
+				'text-xs',
+				'md:text-sm'
+			);
+		});
+
+		// Style table cells
+		const cells = table.querySelectorAll('td');
+		cells.forEach((td) => {
+			td.classList.add(
+				'px-3',
+				'py-3',
+				'md:px-6',
+				'md:py-4',
+				'text-gray-900',
+				'dark:text-gray-100',
+				'border-b',
+				'border-gray-200',
+				'dark:border-gray-700',
+				'break-words',
+				'hyphens-auto'
+			);
+		});
+
+		// Style table rows with hover effect
+		const rows = table.querySelectorAll('tbody tr');
+		rows.forEach((row) => {
+			row.classList.add(
+				'hover:bg-gray-50',
+				'dark:hover:bg-gray-800',
+				'transition-colors',
+				'duration-150'
+			);
+		});
 	});
 
 	// Code blocks: add copy button markup server-side (client will only attach listener)

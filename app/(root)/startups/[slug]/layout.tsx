@@ -71,12 +71,29 @@ function generateKeywords(
 	pitch?: string,
 	description?: string | undefined,
 ): string {
+	// Extract game name from title (first substantial word that's not a common word)
+	const extractGameName = (title?: string): string => {
+		if (!title) return 'game';
+		const words = title.toLowerCase().split(/\s+/);
+		const gameName = words.find(word =>
+			word.length > 2 &&
+			!/^(the|and|for|with|game|games|system|requirements|specs|minimum|recommended|pc|gpu|vram|fps|battlefield)$/i.test(word)
+		);
+		return gameName || 'game';
+	};
+
+	const gameName = extractGameName(title);
+
 	const baseKeywords = [
-		'startup',
-		'innovation',
-		'entrepreneurship',
-		'business',
-		'technology',
+		`minimum specs for ${gameName}`,
+		`recommended specs for ${gameName}`,
+		`can my pc run ${gameName}`,
+		`check pc specs for ${gameName}`,
+		`how to check gpu usage for ${gameName}`,
+		`how much vram do i need for ${gameName}`,
+		`is my pc good for gaming for ${gameName}`,
+		`best settings for fps for ${gameName}`,
+		`${gameName} system requirements 2025`,
 	];
 
 	if (!title) return baseKeywords.join(', ');
@@ -90,6 +107,7 @@ function generateKeywords(
 
 	const unique = Array.from(new Set([...titleKeywords, ...baseKeywords]));
 	return unique.slice(0, 12).join(', ');
+	
 }
 
 function isGameArticle(title?: string): boolean {
