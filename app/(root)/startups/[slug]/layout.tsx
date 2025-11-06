@@ -20,14 +20,16 @@ interface StartupData {
 }
 
 // Cached fetch to prevent duplicate requests between generateMetadata and layout
-const getStartupData = cache(async (slug: string): Promise<StartupData | null> => {
-	try {
-		return await client.fetch(STARTUP_BY_SLUG_QUERY, { slug });
-	} catch (err) {
-		console.error('Sanity fetch error:', err);
-		return null;
-	}
-});
+const getStartupData = cache(
+	async (slug: string): Promise<StartupData | null> => {
+		try {
+			return await client.fetch(STARTUP_BY_SLUG_QUERY, { slug });
+		} catch (err) {
+			console.error('Sanity fetch error:', err);
+			return null;
+		}
+	},
+);
 
 function resolveImageUrl(img: any): string | null {
 	if (!img) return null;
@@ -66,48 +68,19 @@ function truncate(text = '', maxLength = 160): string {
 		:	cleaned;
 }
 
-function generateKeywords(
-	title?: string,
-	pitch?: string,
-	description?: string | undefined,
-): string {
-	// Extract game name from title (first substantial word that's not a common word)
-	const extractGameName = (title?: string): string => {
-		if (!title) return 'game';
-		const words = title.toLowerCase().split(/\s+/);
-		const gameName = words.find(word =>
-			word.length > 2 &&
-			!/^(the|and|for|with|game|games|system|requirements|specs|minimum|recommended|pc|gpu|vram|fps|battlefield)$/i.test(word)
-		);
-		return gameName || 'game';
-	};
-
-	const gameName = extractGameName(title);
-
-	const baseKeywords = [
-		`minimum specs for ${gameName}`,
-		`recommended specs for ${gameName}`,
-		`can my pc run ${gameName}`,
-		`check pc specs for ${gameName}`,
-		`how to check gpu usage for ${gameName}`,
-		`how much vram do i need for ${gameName}`,
-		`is my pc good for gaming for ${gameName}`,
-		`best settings for fps for ${gameName}`,
-		`${gameName} system requirements 2025`,
+function generateBaseKeywords(): string[] {
+	const currentYear = new Date().getFullYear();
+	return [
+		'PC system requirements',
+		'game optimization tips',
+		`gaming PC builds ${currentYear}`,
 	];
+}
 
-	if (!title) return baseKeywords.join(', ');
+function generateKeywords(title?: string): string {
+	const baseKeywords = generateBaseKeywords();
 
-	const titleKeywords = title
-		.toLowerCase()
-		.split(/\s+/)
-		.filter((w) => w.length > 3)
-		.map((w) => w.replace(/[^a-z0-9]/g, ''))
-		.filter(Boolean);
-
-	const unique = Array.from(new Set([...titleKeywords, ...baseKeywords]));
-	return unique.slice(0, 12).join(', ');
-	
+	return baseKeywords.join(', ');
 }
 
 function isGameArticle(title?: string): boolean {
@@ -195,7 +168,7 @@ function generatePostMetadata(post: StartupData, slug: string): Metadata {
 	const metadata: Metadata = {
 		title,
 		description,
-		keywords: generateKeywords(post.title, post.pitch),
+		keywords: generateKeywords(post.title),
 		authors: authorName ? [{ name: authorName }] : undefined,
 		openGraph: {
 			title,
@@ -280,7 +253,7 @@ export default async function StartupLayout({
 		description: truncate(
 			post?.description ?? post?.pitch ?? post?.excerpt ?? '',
 		),
-		keywords: generateKeywords(post?.title, post?.pitch, post?.description),
+		keywords: generateKeywords(post?.title),
 		isAccessibleForFree: true,
 		articleSection: 'Feed',
 	};
