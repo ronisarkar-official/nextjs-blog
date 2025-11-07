@@ -61,11 +61,7 @@ export default async function RootLayout({
 						:	'/rss.xml'
 					}
 				/>
-				<Script
-					async
-					src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3533195027100960"
-					crossOrigin="anonymous"
-				/>
+				
 				<meta
 					name="google-site-verification"
 					content="MYPOB2NHtzPHnWJnT1wGZUzkotBeIVNSdHiS-eWwKNM"
@@ -87,37 +83,7 @@ export default async function RootLayout({
 					`}
 				</Script>
 
-				{/* Microsoft Clarity */}
-				<Script
-					id="clarity"
-					strategy="afterInteractive">
-					{`(function(c,l,a,r,i,t,y){
-            c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
-            t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i+"?ref=bwt";
-            y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
-          })(window, document, "clarity", "script", "u2arm2kx99");`}
-				</Script>
-
-				<script
-					src="https://cmp.gatekeeperconsent.com/min.js"
-					data-cfasync="false"
-				/>
-				<script
-					src="https://the.gatekeeperconsent.com/cmp.min.js"
-					data-cfasync="false"
-				/>
-				{/* Ezoic - define window.ezstandalone then load external script */}
-				<Script
-					id="ezo-setup"
-					strategy="afterInteractive">
-					{`window.ezstandalone = window.ezstandalone || {}; ezstandalone.cmd = ezstandalone.cmd || [];`}
-				</Script>
-
-				<Script
-					id="ezo-src"
-					src="https://www.ezojs.com/ezoic/sa.min.js"
-					strategy="afterInteractive"
-				/>
+				
 			</head>
 			<body>
 				<SessionProvider session={session}>
