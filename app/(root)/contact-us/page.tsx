@@ -18,6 +18,7 @@ const SOCIAL = {
 	instagram: process.env.NEXT_PUBLIC_SOCIAL_INSTAGRAM ?? '#',
 	youtube: process.env.NEXT_PUBLIC_SOCIAL_YOUTUBE ?? '#',
 	github: process.env.NEXT_PUBLIC_SOCIAL_GITHUB ?? '#',
+	contactEmail: process.env.NEXT_PUBLIC_CONTACT_EMAIL ?? '#',
 	email:
 		process.env.NEXT_PUBLIC_CONTACT_EMAIL ?
 			`mailto:${process.env.NEXT_PUBLIC_CONTACT_EMAIL}`
@@ -96,6 +97,10 @@ export default function ContactPage() {
 				</header>
 
 				<section className="bg-white dark:bg-gray-800 rounded-2xl border shadow-sm p-8 border-gray-100 dark:border-gray-700">
+					<div className="mb-8 p-6 bg-indigo-50 dark:bg-indigo-900/25 rounded-lg text-center">
+						<h2 className="text-xl font-semibold mb-2">Contact Email</h2>
+						<p className="text-lg font-medium">{SOCIAL.contactEmail}</p>
+					</div>
 					<div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
 						{socials.map((s) => {
 							const Icon = s.Icon;

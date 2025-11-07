@@ -15,6 +15,7 @@ import {
 	Files,
 	Plus,
 	ChartNoAxesColumnIncreasing,
+	ChevronDown,
 } from 'lucide-react';
 import { ModeToggle } from './DarkmodeButton';
 import {
@@ -50,8 +51,8 @@ export default async function Navbar() {
 	// nav links (rendered server-side)
 	const navLinks = [
 		{ href: '/', label: 'Home' },
+		{ href: '/feed', label: 'Blogs' },
 		{ href: '/about-us', label: 'About Us' },
-		{ href: '/terms-and-condition', label: 'Terms and Conditions' },
 		{ href: '/privacy-policy', label: 'Privacy Policy' },
 		{ href: '/contact-us', label: 'Contact Us' },
 	];
@@ -89,11 +90,46 @@ export default async function Navbar() {
 								<Link
 									key={link.href}
 									href={link.href}
-									className={`flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800`}>
+									className={`flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors duration-150 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800`}>
 									<span>{link.label}</span>
 								</Link>
 							);
 						})}
+						<DropdownMenu>
+							<DropdownMenuTrigger asChild>
+								<button
+									className={`flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors duration-150 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800`}>
+									<span>More</span>
+									<ChevronDown className="h-4 w-4" />
+								</button>
+							</DropdownMenuTrigger>
+							<DropdownMenuContent align="start">
+								<DropdownMenuItem>
+									<Link href="/terms-and-condition">
+										<span className="font-medium">Terms and Conditions</span>
+										<p className="text-xs text-gray-500 dark:text-gray-400">
+											Read our terms and conditions
+										</p>
+									</Link>
+								</DropdownMenuItem>
+								<DropdownMenuItem>
+									<Link href="/disclaimer">
+										<span className="font-medium">Disclaimer</span>
+										<p className="text-xs text-gray-500 dark:text-gray-400">
+											Read our disclaimer
+										</p>
+									</Link>
+								</DropdownMenuItem>
+								<DropdownMenuItem>
+									<Link href="/dmca">
+										<span className="font-medium">DMCA</span>
+										<p className="text-xs text-gray-500 dark:text-gray-400">
+											Read our DMCA
+										</p>
+									</Link>
+								</DropdownMenuItem>
+							</DropdownMenuContent>
+						</DropdownMenu>
 					</nav>
 
 					{/* Right: actions */}
