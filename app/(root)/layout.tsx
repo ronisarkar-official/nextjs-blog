@@ -1,7 +1,7 @@
 import { Metadata } from 'next';
 
-import { Footer } from '@/components/footer';
-import { Hexagon, Twitter, Github } from 'lucide-react';
+import Footer from '@/components/footer';
+import { Twitter, Github } from 'lucide-react';
 const sitename = process.env.NEXT_PUBLIC_SITE_NAME;
 const sitetag = process.env.NEXT_PUBLIC_SITE_TAGLINE;
 const SOCIAL = {

@@ -40,6 +40,7 @@ import ArticleRenderer from '@/components/ArticleRender';
 import { CommentSection } from '@/components/CommentSection';
 import { auth } from '@/auth';
 import TableOfContents from '@/components/TableOfContents';
+import { formatDate } from '@/lib/utils';
 
 // ISR: Revalidate every 60 seconds for better performance
 export const revalidate = 60;
@@ -142,14 +143,14 @@ const slugify = (s: string) =>
 		.replace(/\s+/g, '-')
 		.replace(/-+/g, '-');
 
-const formatDate = (dateString?: string) => {
-	if (!dateString) return '';
-	return new Date(dateString).toLocaleDateString('en-US', {
-		year: 'numeric',
-		month: 'long',
-		day: 'numeric',
-	});
-};
+// const formatDate = (dateString?: string) => {
+// 	if (!dateString) return '';
+// 	return new Date(dateString).toLocaleDateString('en-US', {
+// 		year: 'numeric',
+// 		month: 'long',
+// 		day: 'numeric',
+// 	});
+// };
 
 // Memoized markdown rendering with heading extraction
 const renderMarkdownWithIds = (rawMd: string) => {
@@ -530,7 +531,7 @@ export default async function Page({
 													</div>
 													<div className="flex-1">
 														<div className="text-xs text-gray-500 dark:text-gray-400 mb-1">
-															{formatDate(p._createdAt)}{' '}
+															{formatDate(p._createdAt)}
 															<span className="mx-1">•</span> {p.category}
 														</div>
 														<div className="text-sm font-semibold text-gray-900 dark:text-gray-100 leading-snug group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">

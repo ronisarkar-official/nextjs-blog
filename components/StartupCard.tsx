@@ -9,7 +9,6 @@ import { Author, Startup } from '@/sanity/types';
 import { Skeleton } from './ui/skeleton';
 import { cn } from '@/lib/utils';
 import { client as sanityClient } from '@/sanity/lib/client';
-import DotWaveLoader from './Loaders/DotWaveLoader';
 
 export type StartupTypeCard = Omit<Startup, 'author'> & { author?: Author };
 
@@ -266,30 +265,7 @@ const Startupposts = ({
 									loading={isLCP ? undefined : 'lazy'}
 								/>
 							</div>
-						</div>
-
-						{/* Views badge */}
-						<div
-							className="absolute top-2 right-2 z-10 flex items-center gap-1 px-2 py-0.5 text-xs rounded-full bg-white text-black border border-gray-300 backdrop-blur dark:bg-gray-900/80 dark:text-gray-100 dark:border-gray-700"
-							aria-label="views">
-							<svg
-								xmlns="http://www.w3.org/2000/svg"
-								className="w-3 h-3"
-								viewBox="0 0 24 24"
-								fill="none"
-								stroke="currentColor"
-								strokeWidth="1.5"
-								strokeLinecap="round"
-								strokeLinejoin="round"
-								aria-hidden="true">
-								<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8S1 12 1 12z"></path>
-								<circle
-									cx="12"
-									cy="12"
-									r="3"></circle>
-							</svg>
-							<span className="ml-1 font-bold">{views}</span>
-						</div>
+						</div>	
 					</div>
 
 					{/* Author chip */}
@@ -330,7 +306,7 @@ const Startupposts = ({
 			</div>
 
 			{/* Content */}
-			<div className="px-4 pt-4 pb-2 bg-transparent">
+			<div className="px-4 pt-4 pb-2 ">
 				<Link
 					href={feedHref}
 					className="inline-block focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 rounded">
@@ -347,19 +323,14 @@ const Startupposts = ({
 					</Link>
 				</h2>
 
-				<p className="text-gray-600 dark:text-gray-300 text-sm mb-4 line-clamp-3">
+				<p className="text-gray-600 dark:text-gray-300 text-sm mb-1 line-clamp-2">
 					{displayText}
 				</p>
 
-				<div className="flex items-center justify-between">
-					<div className="flex items-center gap-3">
-						<span className="text-xs bg-indigo-600 text-white px-2 py-1 rounded-md">
-							Published
-						</span>
-						<span className="text-xs text-gray-600 dark:text-gray-400">
-							{formatDate(_createdAt)}
-						</span>
-					</div>
+				<div className="flex items-center justify-between ">
+					<p className="text-sm text-gray-600 dark:text-gray-400 font-semibold">
+						{views} views · {formatDate(_createdAt)}
+					</p>
 				</div>
 			</div>
 		</article>

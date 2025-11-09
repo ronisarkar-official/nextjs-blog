@@ -14,6 +14,7 @@ import BackToTopButton from '@/components/BackToTopButton';
 import Script from 'next/script';
 import { auth } from '@/auth';
 import { SpeedInsights } from '@vercel/speed-insights/next';
+import GtmScripts from '@/components/GtmScripts';
 
 export const metadata: Metadata = {
 	title: 'Create Next App',
@@ -86,6 +87,7 @@ export default async function RootLayout({
 				
 			</head>
 			<body>
+				<GtmScripts />
 				<SessionProvider session={session}>
 					<ThemeProvider
 						attribute="class"

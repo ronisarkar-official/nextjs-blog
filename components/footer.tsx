@@ -1,38 +1,42 @@
 'use client';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+
 import React, { useState } from 'react';
 import Image from 'next/image';
 import { Coffee } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+
+interface LinkItem {
+	href: string;
+	label: string;
+}
+
+interface SocialLink {
+	icon: React.ReactNode;
+	href: string;
+	label: string;
+}
 
 interface FooterProps {
 	logo: string;
 	brandName: string;
-	socialLinks: Array<{
-		icon: React.ReactNode;
-		href: string;
-		label: string;
-	}>;
-	mainLinks: Array<{
-		href: string;
-		label: string;
-	}>;
-	legalLinks: Array<{
-		href: string;
-		label: string;
-	}>;
+	tagline?: string;
+	socialLinks?: SocialLink[];
+	mainLinks?: LinkItem[];
+	legalLinks?: LinkItem[];
 	copyright: {
 		text: string;
 		license?: string;
 	};
 }
 
-export function Footer({
+export default function Footer({
 	logo,
 	brandName,
-	socialLinks,
-	mainLinks,
-	legalLinks,
+	tagline,
+	socialLinks = [],
+	mainLinks = [],
+	legalLinks = [],
 	copyright,
 }: FooterProps) {
 	const [email, setEmail] = useState('');
@@ -43,11 +47,14 @@ export function Footer({
 
 	async function handleSubscribe(e: React.FormEvent) {
 		e.preventDefault();
-		if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+
+		const valid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+		if (!valid) {
 			setStatus('error');
-			setMessage('Enter a valid email');
+			setMessage('Please enter a valid email address.');
 			return;
 		}
+
 		try {
 			setStatus('loading');
 			setMessage('');
@@ -56,125 +63,201 @@ export function Footer({
 				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify({ email }),
 			});
+
 			if (res.ok) {
 				setStatus('success');
-				setMessage('Subscribed! Please check your inbox.');
+				setMessage('Thanks — check your inbox for confirmation.');
 				setEmail('');
 			} else {
 				const data = await res.json().catch(() => ({}));
 				setStatus('error');
-				setMessage(data?.error || 'Subscription failed');
+				setMessage(data?.error || 'Subscription failed.');
 			}
 		} catch (err) {
 			setStatus('error');
-			setMessage('Network error');
+			setMessage('Network error. Please try again later.');
 		}
 	}
+
 	return (
-		<footer className="pb-6 pt-16 lg:pb-8 lg:pt-24">
-			<div className="px-4 lg:px-8">
-				<div className="md:flex md:items-start md:justify-between gap-6">
-					<a
-						href="/"
-						className="flex items-center gap-x-2"
-						aria-label={brandName}>
-						<img
-							src="/logo.webp"
-							alt="Logo"
-							className="h-9 w-auto dark:brightness-0 dark:invert"
-						/>
-					</a>
-					<div className="mt-6 md:mt-0">
-						<Button
-							className="h-10 rounded-full px-4 bg-white text-black hover:bg-neutral-100 dark:bg-white dark:text-black dark:hover:bg-neutral-200 border border-neutral-200"
-							asChild>
-							<a
-								href="https://www.buymeacoffee.com/ronisarkar"
-								target="_blank"
-								rel="noopener noreferrer"
-								aria-label="Buy me a coffee">
-								<Coffee className="w-5 h-5" />
-								Buy me a coffee
-							</a>
-						</Button>
-					</div>
-					{/* Subscribe compact form */}
-					<div className="mt-6 md:mt-0 w-full md:max-w-md">
-						<h3 className="text-sm font-semibold tracking-wide">Subscribe</h3>
-						<p className="text-sm text-muted-foreground mt-1">
-							Get updates in your inbox.
+		<footer className="bg-white dark:bg-slate-900 border-t dark:border-slate-800 text-slate-700 dark:text-slate-300">
+			<div className="max-w-7xl mx-auto px-6 lg:px-8 py-12">
+				<div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-12 gap-8 items-start">
+					{/* Brand */}
+					<div className="lg:col-span-4 flex flex-col gap-4">
+						<a
+							href="/"
+							aria-label={brandName}
+							className="flex items-center gap-3">
+							<div className="relative w-full h-10 flex-shrink-0 ">
+								<Image
+									src={logo}
+									alt={`${brandName} logo`}
+									fill
+									className="object-contain object-left dark:brightness-0 dark:invert"
+								/>
+							</div>
+							
+						</a>
+
+						<p className="text-sm text-muted-foreground max-w-md">
+							Clean, focused content and tools for people who want to get things
+							done. No fluff, just value.
 						</p>
+
+						<div className="flex items-center gap-3">
+							<Button
+								className="rounded-full px-4 py-2 bg-white text-black border border-neutral-200 hover:bg-neutral-50 dark:bg-white/95 dark:text-black"
+								asChild>
+								<a
+									href="https://www.buymeacoffee.com/ronisarkar"
+									target="_blank"
+									rel="noopener noreferrer"
+									aria-label="Buy me a coffee">
+									<Coffee className="w-4 h-4 mr-2 inline-block" />
+									Support
+								</a>
+							</Button>
+
+							<div className="flex items-center gap-2">
+								{socialLinks.map((s, idx) => (
+									<a
+										key={idx}
+										href={s.href}
+										target="_blank"
+										rel="noopener noreferrer"
+										aria-label={s.label}
+										className="inline-flex items-center justify-center w-9 h-9 rounded-full bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700">
+										{s.icon}
+									</a>
+								))}
+							</div>
+						</div>
+					</div>
+
+					{/* Links */}
+					<div className="lg:col-span-5 grid grid-cols-2 gap-6 md:grid-cols-3">
+						<div>
+							<h4 className="text-sm font-medium text-slate-900 dark:text-white mb-3">
+								Product
+							</h4>
+							<ul className="space-y-2 text-sm text-muted-foreground">
+								{mainLinks.slice(0, 6).map((l, i) => (
+									<li key={i}>
+										<a
+											href={l.href}
+											className="hover:underline">
+											{l.label}
+										</a>
+									</li>
+								))}
+							</ul>
+						</div>
+
+						<div>
+							<h4 className="text-sm font-medium text-slate-900 dark:text-white mb-3">
+								Resources
+							</h4>
+							<ul className="space-y-2 text-sm text-muted-foreground">
+								{mainLinks.slice(6, 12).map((l, i) => (
+									<li key={i}>
+										<a
+											href={l.href}
+											className="hover:underline">
+											{l.label}
+										</a>
+									</li>
+								))}
+							</ul>
+						</div>
+
+						<div>
+							<h4 className="text-sm font-medium text-slate-900 dark:text-white mb-3">
+								Legal
+							</h4>
+							<ul className="space-y-2 text-sm text-muted-foreground">
+								{legalLinks.map((l, i) => (
+									<li key={i}>
+										<a
+											href={l.href}
+											className="hover:underline">
+											{l.label}
+										</a>
+									</li>
+								))}
+							</ul>
+						</div>
+					</div>
+
+					{/* Subscribe */}
+					<div className="lg:col-span-3">
+						<h4 className="text-sm font-medium text-slate-900 dark:text-white">
+							Subscribe to updates
+						</h4>
+						<p className="text-sm text-muted-foreground mt-1">
+							Monthly newsletter — useful tips, new posts, and product updates.
+						</p>
+
 						<form
 							onSubmit={handleSubscribe}
-							className="mt-3 flex gap-2">
+							className="mt-4 flex flex-col gap-3"
+							aria-live="polite">
 							<label
-								htmlFor="footer-subscribe"
+								htmlFor="footer-email"
 								className="sr-only">
-								Email
+								Email address
 							</label>
-							<Input
-								id="footer-subscribe"
-								type="email"
-								placeholder="you@example.com"
-								value={email}
-								onChange={(e) => setEmail(e.target.value)}
-								aria-invalid={status === 'error' ? 'true' : 'false'}
-								className="h-10 rounded-full"
-							/>
-							<Button
-								type="submit"
-								size="sm"
-								disabled={status === 'loading'}
-								className="h-10 rounded-full px-4">
-								{status === 'loading' ? 'Subscribing…' : 'Subscribe'}
-							</Button>
-						</form>
-						{message && (
-							<p
-								className={`mt-2 text-xs ${status === 'error' ? 'text-red-600' : 'text-emerald-700'}`}>
-								{message}
-							</p>
-						)}
-					</div>
-					<ul className="flex list-none mt-6 md:mt-0 space-x-3">
-						{socialLinks.map((link, i) => (
-							<li key={i}>
+							<div className="flex gap-2">
+								<Input
+									id="footer-email"
+									type="email"
+									placeholder="you@example.com"
+									value={email}
+									onChange={(e) => setEmail(e.target.value)}
+									className="rounded-md"
+									aria-invalid={status === 'error'}
+								/>
 								<Button
-									variant="secondary"
-									size="icon"
-									className="h-10 w-10 rounded-full"
-									asChild>
-									<a
-										href={link.href}
-										target="_blank"
-										aria-label={link.label}>
-										{link.icon}
-									</a>
+									type="submit"
+									disabled={status === 'loading'}
+									className="rounded-md px-4">
+									{status === 'loading' ? 'Subscribing…' : 'Subscribe'}
 								</Button>
-							</li>
-						))}
-					</ul>
+							</div>
+
+							{message && (
+								<p
+									className={`text-sm ${status === 'error' ? 'text-red-600' : 'text-emerald-600'}`}>
+									{message}
+								</p>
+							)}
+
+							<p className="text-xs text-muted-foreground mt-2">
+								We respect your privacy. Unsubscribe at any time.
+							</p>
+						</form>
+					</div>
 				</div>
 
-				<div className="border-t mt-6 pt-6 md:mt-4 md:pt-8 lg:grid lg:grid-cols-10">
-					<div className=" text-sm leading-6 text-muted-foreground whitespace-nowrap flex flex-row gap-2 ">
-						<div>{copyright.text}</div>
-						{copyright.license && <div>{copyright.license}</div>}
+				<div className="mt-8 border-t border-slate-100 dark:border-slate-800 pt-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+					<div className="text-sm text-muted-foreground">
+						{copyright.text}{' '}
+						{copyright.license && (
+							<span className="ml-2">{copyright.license}</span>
+						)}
 					</div>
-					<nav className="lg:mt-0 lg:col-[4/11]">
-						<ul className="list-none flex flex-wrap -my-1 -mx-2 lg:justify-end">
-							{mainLinks.map((link, i) => (
-								<li
-									key={i}
-									className="my-1 mx-2 shrink-0">
-									<a
-										href={link.href}
-										className="text-sm text-primary underline-offset-4 hover:underline">
-										{link.label}
-									</a>
-								</li>
-							))}
-						</ul>
+
+					<nav
+						aria-label="footer secondary"
+						className="flex gap-4">
+						{legalLinks.map((l, i) => (
+							<a
+								key={i}
+								href={l.href}
+								className="text-sm text-muted-foreground hover:underline">
+								{l.label}
+							</a>
+						))}
 					</nav>
 				</div>
 			</div>
