@@ -53,12 +53,7 @@ function getStaticRoutes(baseUrl: string): MetadataRoute.Sitemap {
 			changeFrequency: 'daily',
 			priority: 1.0,
 		},
-		{
-			url: `${baseUrl}/feed`,
-			lastModified: now,
-			changeFrequency: 'weekly',
-			priority: 0.9,
-		},
+
 		{
 			url: `${baseUrl}/about-us`,
 			lastModified: now,
@@ -85,6 +80,12 @@ function getStaticRoutes(baseUrl: string): MetadataRoute.Sitemap {
 		},
 		{
 			url: `${baseUrl}/disclaimer`,
+			lastModified: now,
+			changeFrequency: 'yearly',
+			priority: 0.3,
+		},
+		{
+			url: `${baseUrl}/dmca`,
 			lastModified: now,
 			changeFrequency: 'yearly',
 			priority: 0.3,
