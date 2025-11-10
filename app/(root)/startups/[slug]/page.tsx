@@ -143,14 +143,6 @@ const slugify = (s: string) =>
 		.replace(/\s+/g, '-')
 		.replace(/-+/g, '-');
 
-// const formatDate = (dateString?: string) => {
-// 	if (!dateString) return '';
-// 	return new Date(dateString).toLocaleDateString('en-US', {
-// 		year: 'numeric',
-// 		month: 'long',
-// 		day: 'numeric',
-// 	});
-// };
 
 // Memoized markdown rendering with heading extraction
 const renderMarkdownWithIds = (rawMd: string) => {
@@ -288,7 +280,7 @@ export default async function Page({
 								<BreadcrumbItem>
 									<BreadcrumbLink asChild>
 										<Link
-											href="/feed"
+											href="/"
 											className="text-sm text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200">
 											Home
 										</Link>
@@ -554,7 +546,7 @@ export default async function Page({
 										{uniqueLabels.map((label) => (
 											<Link
 												key={label}
-												href={`/feed?query=${encodeURIComponent(label.toLowerCase())}`}
+												href={`/?query=${encodeURIComponent(label.toLowerCase())}`}
 												className="text-xs bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded text-gray-800 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
 												prefetch={false}
 												aria-label={`Filter by ${label}`}>

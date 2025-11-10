@@ -9,7 +9,7 @@ const SearchForm = ({ query }: { query?: string }) => {
 	return (
 		<div className="mt-8 flex items-center justify-center px-4">
 			<Form
-				action="/feed"
+				action="/"
 				role="search"
 				aria-label="Site search"
 				className="search-form w-full max-w-xl">

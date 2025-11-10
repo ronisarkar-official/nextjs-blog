@@ -1,78 +1,60 @@
-// app/page.tsx  (server component)
-import React from 'react';
-import { auth } from '@/auth'; // must be a server-side helper
-import { redirect } from 'next/navigation';
-import HomeClient from '@/components/HomeClient'; // client component (no server calls)
-import type { Metadata } from 'next';
+export const dynamic = 'force-dynamic';
+export const fetchCache = 'force-no-store';
+
+import type { StartupTypeCard } from '@/components/StartupCard';
+import SearchForm from '@/components/SearchForm';
+import { client } from '@/sanity/lib/client'; // use client directly to control useCdn
+import { SanityLive } from '@/sanity/lib/live';
+import FeedClient from '@/components/FeedClient';
 
 // Generate metadata for landing page SEO
-export async function generateMetadata(): Promise<Metadata> {
-	const siteName = process.env.NEXT_PUBLIC_SITE_NAME || 'SpecHype';
-	const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://example.com';
-	const description =
-		process.env.NEXT_PUBLIC_SITE_TAGLINE ||
-		'Discover and share innovative startups, cutting-edge technology, and entrepreneurial insights.';
-	const twitterHandle = process.env.NEXT_PUBLIC_SOCIAL_TWITTER || '';
 
-	return {
-		title: {
-			default: siteName,
-			template: `%s | ${siteName}`,
-		},
-		description,
-		keywords:
-			'startups, innovation, entrepreneurship, technology, business ideas, startup community',
-		openGraph: {
-			title: siteName,
-			description,
-			url: baseUrl,
-			siteName,
-			type: 'website',
-			images: [
-				{
-					url: `${baseUrl}/thumbnail.png`,
-					width: 1200,
-					height: 630,
-					alt: siteName,
-				},
-			],
-			locale: 'en_US',
-		},
-		twitter: {
-			card: 'summary_large_image',
-			title: siteName,
-			description,
-			images: [`${baseUrl}/thumbnail.png`],
-			site: twitterHandle || undefined,
-			creator: twitterHandle || undefined,
-		},
-		metadataBase: new URL(baseUrl),
-		robots: {
-			index: true,
-			follow: true,
-			googleBot: {
-				index: true,
-				follow: true,
-				'max-video-preview': -1,
-				'max-image-preview': 'large',
-				'max-snippet': -1,
-			},
-		},
-		alternates: {
-			canonical: baseUrl,
-		},
-	};
-}
+export default async function Home({
+	searchParams,
+}: {
+	searchParams: Promise<{ query?: string }>;
+}) {
+	const { query: rawQuery } = (await searchParams) || {};
+	const query = (rawQuery || '').trim();
+	const searchParam = query ? `*${query}*` : null;
 
-export default async function Page() {
-	// server-side: check session
-	const session = await auth(); // <-- must be usable on server
+	// fetch initial page (SSR) — limit to page size for faster TTFB
+	const PAGE_SIZE = 6;
+	const INITIAL_QUERY = `*[_type == "startup" && defined(slug.current) && (!defined($search) || title match $search || category match $search || author->name match $search)] | order(_createdAt desc)[0...$limit] {
+  _id,
+  title,
+  slug,
+  _createdAt,
+  author -> { _id, name, image, bio },
+  views,
+  description,
+  category,
+  image,
+}`;
+	const posts: StartupTypeCard[] = await client
+		.withConfig({ useCdn: false })
+		.fetch(INITIAL_QUERY, {
+			search: searchParam,
+			limit: PAGE_SIZE,
+		});
+	const nextCursor =
+		posts?.length === PAGE_SIZE ? posts[posts.length - 1]?._createdAt : null;
 
-	if (session) {
-		// server redirect (no client flash)
-		redirect('/feed');
-	}
+	return (
+		<main className="pt-16 pb-5 max-w-screen-xl mx-auto min-h-screen px-2 sm:px-6 lg:px-14">
+			<SearchForm query={query} />
+			<p className="text-30-semibold mt-6">
+				{query ? `Showing results for "${query}"` : 'Recent Posts'}
+			</p>
 
-	// not logged in -> render client UI
-	return <HomeClient />;
+			<FeedClient
+				initialPosts={posts}
+				initialNextCursor={nextCursor}
+				query={query}
+				pageSize={PAGE_SIZE}
+			/>
+
+			<SanityLive />
+		</main>
+	);
 }

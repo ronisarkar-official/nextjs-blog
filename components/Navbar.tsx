@@ -30,10 +30,7 @@ import {
 type Session = any;
 
 // Server actions for auth (keeps them server-side so forms can call them)
-async function handleSignIn() {
-	'use server';
-	await signIn('github');
-}
+
 
 async function handleSignOut() {
 	'use server';
@@ -51,7 +48,6 @@ export default async function Navbar() {
 	// nav links (rendered server-side)
 	const navLinks = [
 		{ href: '/', label: 'Home' },
-		{ href: '/feed', label: 'Blogs' },
 		{ href: '/about-us', label: 'About Us' },
 		{ href: '/privacy-policy', label: 'Privacy Policy' },
 		{ href: '/contact-us', label: 'Contact Us' },
@@ -75,6 +71,7 @@ export default async function Navbar() {
 							<img
 								src="/logo.webp"
 								alt="Logo"
+								fetchPriority='high'
 								className="h-9 w-auto dark:brightness-0 dark:invert"
 							/>
 						</Link>
@@ -144,7 +141,7 @@ export default async function Navbar() {
 							</Link>
 						)}
 
-						{/* Notifications removed */}
+					
 
 						{/* Profile / Auth */}
 						{session?.user ?
@@ -221,16 +218,18 @@ export default async function Navbar() {
 									</form>
 								</DropdownMenuContent>
 							</DropdownMenu>
-						:	<form
-								action={handleSignIn}
-								className="m-0">
-								<button
-									type="submit"
-									className="inline-flex items-center gap-2 border border-gray-300 dark:border-gray-600 px-3 py-2 rounded-md text-sm transition-colors duration-150 hover:bg-gray-50 dark:hover:bg-gray-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 text-gray-700 dark:text-gray-100">
-									<LogIn className="h-4 w-4 text-gray-500 dark:text-gray-300" />
-									Sign in
-								</button>
-							</form>
+							:
+							// <form
+							// 	action={handleSignIn}
+							// 	className="m-0">
+							// 	<button
+							// 		type="submit"
+							// 		className="inline-flex items-center gap-2 border border-gray-300 dark:border-gray-600 px-3 py-2 rounded-md text-sm transition-colors duration-150 hover:bg-gray-50 dark:hover:bg-gray-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 text-gray-700 dark:text-gray-100">
+							// 		<LogIn className="h-4 w-4 text-gray-500 dark:text-gray-300" />
+							// 		Sign in
+							// 	</button>
+							// </form>
+							""
 						}
 						<ModeToggle />
 					</div>

@@ -236,8 +236,8 @@ const Startupposts = ({
 	const authorHref = author?._id ? `/user/${author._id}` : '#';
 	const feedHref =
 		category ?
-			`/feed?query=${encodeURIComponent(String(category).toLowerCase())}`
-		:	'/feed';
+			`/?query=${encodeURIComponent(String(category).toLowerCase())}`
+		:	'/';
 
 	return (
 		<article className="rounded-2xl overflow-hidden relative bg-transparent">
@@ -261,6 +261,7 @@ const Startupposts = ({
 									fill
 									sizes="(max-width: 768px) 100vw, 50vw"
 									className="object-cover"
+									fetchPriority='high'
 									priority={isLCP}
 									loading={isLCP ? undefined : 'lazy'}
 								/>
