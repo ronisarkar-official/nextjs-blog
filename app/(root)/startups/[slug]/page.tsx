@@ -289,7 +289,7 @@ export default async function Page({
 								<BreadcrumbSeparator />
 								<BreadcrumbItem>
 									<Link
-										href={`/feed?query=${post.category?.toLowerCase()}`}
+										href={`/?query=${post.category?.toLowerCase()}`}
 										className="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200">
 										<BreadcrumbPage>{post.category}</BreadcrumbPage>
 									</Link>

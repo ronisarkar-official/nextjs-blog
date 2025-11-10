@@ -27,7 +27,7 @@ export const metadataBase = new URL(siteUrl);
 export const metadata: Metadata = {
 	title: {
 		default: `${sitename} — ${sitetag}`,
-		template: `%s | ${sitename}`,
+		template: `%s`,
 	},
 	description: `Discover the latest gaming news, system requirements, hardware specs, reviews and in-depth insights on games and PC components.`,
 	keywords: [

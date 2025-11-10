@@ -156,7 +156,7 @@ function generatePostMetadata(post: StartupData, slug: string): Metadata {
 	const url = new URL(`/startups/${slug}`, baseUrl).toString();
 
 	// Use exact post title as the canonical title. Do NOT append site name here.
-	const title = (post.title || siteName).trim();
+	const title = post.title;
 	const description = truncate(
 		post.description ?? post.pitch ?? post.excerpt ?? '',
 	);
