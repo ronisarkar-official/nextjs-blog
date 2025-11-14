@@ -23,7 +23,7 @@ export default function FeedClient({
 	initialPosts,
 	initialNextCursor,
 	query,
-	pageSize = 12,
+	pageSize = 3,
 }: FeedClientProps): React.JSX.Element {
 	const [posts, setPosts] = useState<StartupTypeCard[]>(
 		() => initialPosts || [],
@@ -36,6 +36,11 @@ export default function FeedClient({
 
 	const sentinelRef = useRef<HTMLDivElement | null>(null);
 	const loadingRef = useRef<boolean>(false);
+	const containerRef = useRef<HTMLDivElement | null>(null);
+
+	// simple windowed virtualization indices
+	const [startIndex, setStartIndex] = useState(0);
+	const [endIndex, setEndIndex] = useState(24); // roughly 2 pages by default
 
 	// Reset when query changes
 	useEffect(() => {
@@ -97,19 +102,86 @@ export default function FeedClient({
 		return () => observer.disconnect();
 	}, [fetchMore, isDone]);
 
+	// Virtualization: track scroll and only render a slice of posts
+	useEffect(() => {
+		const container = containerRef.current ?? window;
+		const isWindow = container === window;
+
+		const handleScroll = () => {
+			if (!posts || posts.length === 0) return;
+
+			// Estimate items per row based on breakpoints
+			let perRow = 1;
+			if (window.innerWidth >= 1024) perRow = 3; // md:grid-cols-3
+			else if (window.innerWidth >= 640) perRow = 2; // sm:grid-cols-2
+
+			// Approximate card height; adjust if needed
+			const CARD_HEIGHT = 320; // px
+
+			const scrollTop = isWindow
+				? window.scrollY
+				: (container as HTMLElement).scrollTop;
+			const viewportHeight = isWindow
+				? window.innerHeight
+				: (container as HTMLElement).clientHeight;
+
+			// Compute which rows are visible
+			const firstVisibleRow = Math.max(
+				0,
+				Math.floor(scrollTop / CARD_HEIGHT) - 2, // small buffer above
+			);
+			const lastVisibleRow = Math.floor(
+				(scrollTop + viewportHeight) / CARD_HEIGHT,
+			) + 2; // small buffer below
+
+			const totalRows = Math.ceil(posts.length / perRow);
+			const clampedFirstRow = Math.min(firstVisibleRow, totalRows);
+			const clampedLastRow = Math.min(lastVisibleRow, totalRows);
+
+			const newStartIndex = clampedFirstRow * perRow;
+			const newEndIndex = clampedLastRow * perRow + perRow; // inclusive buffer
+
+			setStartIndex((prev) => (prev === newStartIndex ? prev : newStartIndex));
+			setEndIndex((prev) =>
+				prev === newEndIndex ? prev : Math.min(newEndIndex, posts.length + perRow),
+			);
+		};
+
+		handleScroll();
+		container.addEventListener('scroll', handleScroll, { passive: true });
+		window.addEventListener('resize', handleScroll);
+
+		return () => {
+			container.removeEventListener('scroll', handleScroll as any);
+			window.removeEventListener('resize', handleScroll as any);
+		};
+	}, [posts]);
+
 	const list = useMemo(() => posts, [posts]);
+	const virtualizedList = useMemo(() => {
+		if (!list || list.length === 0) return list;
+		const start = Math.max(0, startIndex);
+		const end = Math.max(start, endIndex);
+		return list.slice(start, end);
+	}, [list, startIndex, endIndex]);
 
 	return (
 		<>
-			<section className="grid md:grid-cols-3 sm:grid-cols-2 grid-cols-1 gap-6 pt-6">
+			<section
+				ref={containerRef}
+				className="grid md:grid-cols-3 sm:grid-cols-2 grid-cols-1 gap-6 pt-6"
+			>
 				{list?.length > 0 ?
-					list.map((post, idx) => (
-						<StartupCard
-							key={post._id}
-							post={post}
-							isLCP={idx < 6}
-						/>
-					))
+					virtualizedList?.map((post, idx) => {
+						const absoluteIndex = startIndex + idx;
+						return (
+							<StartupCard
+								key={post._id}
+								post={post}
+								isLCP={absoluteIndex < 6}
+							/>
+						);
+					})
 				:	<p className="no-results">No posts found</p>}
 			</section>
 			{/* loader */}

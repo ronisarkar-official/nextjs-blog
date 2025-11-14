@@ -17,6 +17,7 @@ interface CategoryProps {
 	value?: string;
 	onValueChange?: (value: string) => void;
 	disabled?: boolean;
+	id?: string;
 }
 
 const STARTUP_CATEGORIES = [
@@ -37,11 +38,12 @@ const STARTUP_CATEGORIES = [
 	{ value: 'food-beverage', label: 'Food & Beverage' },
 	{ value: 'fashion', label: 'Fashion' },
 	{ value: 'media', label: 'Media' },
+	{ value: 'news', label: 'News' },
 	{ value: 'security', label: 'Security' },
 	{ value: 'other', label: 'Other' },
 ];
 
-export function Category({ value, onValueChange, disabled }: CategoryProps) {
+export function Category({ value, onValueChange, disabled, id }: CategoryProps) {
 	const [searchTerm, setSearchTerm] = useState('');
 	const [isOpen, setIsOpen] = useState(false);
 
@@ -82,7 +84,7 @@ export function Category({ value, onValueChange, disabled }: CategoryProps) {
 			disabled={disabled}
 			open={isOpen}
 			onOpenChange={setIsOpen}>
-			<SelectTrigger className="w-full">
+			<SelectTrigger id={id} className="w-full">
 				<SelectValue placeholder="Select a category">
 					{selectedCategory ? selectedCategory.label : 'Select a category'}
 				</SelectValue>

@@ -590,6 +590,7 @@ export default function EditStartupForm({
 											value={category}
 											onValueChange={setCategory}
 											disabled={isSubmitting}
+											id="category"
 										/>
 										{errors.category && (
 											<p className="text-sm text-red-500 mt-1">

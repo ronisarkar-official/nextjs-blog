@@ -347,7 +347,7 @@ export default async function Page({
 						</header>
 
 						{/* Hero Image - keep out of Suspense to preserve LCP */}
-						<div className="relative w-full aspect-video rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-800 mb-4">
+						<div className="relative w-full aspect-video rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-800 mb-4 border border-gray-200 dark:border-gray-700">
 							<Image
 								src={heroImage}
 								alt={post.title || 'Cover image'}

@@ -106,18 +106,7 @@ export default function Footer({
 						</p>
 
 						<div className="flex items-center gap-3">
-							<Button
-								className="rounded-full px-4 py-2 bg-white text-black border border-neutral-200 hover:bg-neutral-50 dark:bg-white/95 dark:text-black"
-								asChild>
-								<a
-									href="https://www.buymeacoffee.com/ronisarkar"
-									target="_blank"
-									rel="noopener noreferrer"
-									aria-label="Buy me a coffee">
-									<Coffee className="w-4 h-4 mr-2 inline-block" />
-									Support
-								</a>
-							</Button>
+							
 
 							<div className="flex items-center gap-2">
 								{socialLinks.map((s, idx) => (

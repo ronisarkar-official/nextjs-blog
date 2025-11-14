@@ -584,6 +584,7 @@ const StartupForm: React.FC = () => {
 												value={category}
 												onValueChange={setCategory}
 												disabled={isSubmitting}
+												id="category"
 											/>
 											{errors.category && (
 												<p className="text-sm text-red-500 mt-1">
@@ -679,7 +680,7 @@ const StartupForm: React.FC = () => {
 												name="description"
 												required
 												defaultValue=""
-												maxLength={150}
+												maxLength={160}
 												placeholder="Short summary that appears in previews"
 												className="w-full text-sm placeholder:text-gray-400 dark:placeholder:text-gray-500 bg-transparent outline-none text-gray-900 dark:text-gray-100"
 											/>
@@ -689,7 +690,7 @@ const StartupForm: React.FC = () => {
 												</p>
 											)}
 											<div className="mt-2 text-xs text-gray-400 dark:text-gray-400">
-												Make the description under 150 character
+												Make the description under 160 character
 											</div>
 										</div>
 									</div>
