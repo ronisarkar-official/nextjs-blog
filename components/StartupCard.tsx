@@ -261,12 +261,12 @@ const Startupposts = ({
 									fill
 									sizes="(max-width: 768px) 100vw, 50vw"
 									className="object-cover"
-									fetchPriority='high'
+									fetchPriority="high"
 									priority={isLCP}
 									loading={isLCP ? undefined : 'lazy'}
 								/>
 							</div>
-						</div>	
+						</div>
 					</div>
 
 					{/* Author chip */}

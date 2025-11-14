@@ -17,7 +17,7 @@ const withPWA = nextPwa({
 // --- end PWA additions ---
 
 const nextConfig: NextConfig = {
-	reactCompiler: true,
+	// reactCompiler: true,
 	typescript: {
 		ignoreBuildErrors: true,
 	},
@@ -73,6 +73,7 @@ const nextConfig: NextConfig = {
 		turbopackFileSystemCacheForDev: true,
 
 		// after: true,
+		disableOptimizedLoading: true,
 	},
 	devIndicators: {
 		position: 'bottom-right',
