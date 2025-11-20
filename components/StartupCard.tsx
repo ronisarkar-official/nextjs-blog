@@ -23,7 +23,7 @@ const builder = imageUrlBuilder(sanityClient);
 const urlFor = (src: any) => (src ? builder.image(src) : null);
 
 // --- Query used to fetch a single startup by id or slug
-const STARTUP_QUERY = `*[_type == "startup" && (_id == $idOrSlug || slug.current == $idOrSlug)][0]{ ..., author->{name, image, _id} }`;
+const STARTUP_QUERY = `*[_type == "startup" && (_id == $idOrSlug || slug.current == $idOrSlug)][0]{ ..., author->{_id, name, image, bio} }`;
 
 function isStale(ts?: number) {
 	return !ts || Date.now() - ts > CACHE_TTL;
@@ -233,11 +233,22 @@ const Startupposts = ({
 	}, [author?.image, stamp]);
 
 	const startupHref = slug?.current ? `/startups/${slug.current}` : '#';
-	const authorHref = author?._id ? `/user/${author._id}` : '#';
+	const authorHref = author?._id ? 'https://ronisarkar.spechype.com' : '#';
 	const feedHref =
 		category ?
 			`/?query=${encodeURIComponent(String(category).toLowerCase())}`
 		:	'/';
+
+	// Format view count like YouTube (1.2K, 1M, etc.)
+	const formatViewCount = (count: number): string => {
+		if (count >= 1_000_000) {
+			return (count / 1_000_000).toFixed(1).replace(/\.0$/, '') + 'M';
+		}
+		if (count >= 1_000) {
+			return (count / 1_000).toFixed(1).replace(/\.0$/, '') + 'K';
+		}
+		return count.toString();
+	};
 
 	return (
 		<article className="rounded-2xl overflow-hidden relative bg-transparent">
@@ -272,6 +283,8 @@ const Startupposts = ({
 					{/* Author chip */}
 					<Link
 						href={authorHref || '#'}
+						target="_blank"
+						rel="noopener noreferrer"
 						className="absolute left-5 bottom-5 z-20 flex items-center gap-3 rounded-sm px-2 py-1 border border-gray-300 bg-white/95 dark:bg-gray-900/70 dark:border-gray-700 shadow-sm"
 						aria-label={
 							author?.name ?
@@ -330,7 +343,7 @@ const Startupposts = ({
 
 				<div className="flex items-center justify-between ">
 					<p className="text-sm text-gray-600 dark:text-gray-400 font-semibold">
-						{views} views · {formatDate(_createdAt)}
+						{formatViewCount(views ?? 0)} views · {formatDate(_createdAt)}
 					</p>
 				</div>
 			</div>

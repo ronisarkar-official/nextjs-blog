@@ -143,7 +143,6 @@ const slugify = (s: string) =>
 		.replace(/\s+/g, '-')
 		.replace(/-+/g, '-');
 
-
 // Memoized markdown rendering with heading extraction
 const renderMarkdownWithIds = (rawMd: string) => {
 	const html = md.render(rawMd || '');
@@ -310,7 +309,9 @@ export default async function Page({
 
 							<div className="flex items-center justify-between gap-4 text-sm text-gray-600 dark:text-gray-400">
 								<Link
-									href={`/user/${post.author?._id}`}
+									href="https://ronisarkar.spechype.com"
+									target="_blank"
+									rel="noopener noreferrer"
 									className="group inline-block"
 									prefetch={false}>
 									<div className="flex items-center gap-3">

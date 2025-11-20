@@ -61,6 +61,17 @@ const View = async ({ id }: { id: string }) => {
 
 	const displayCount = totalViews + 1;
 
+	// Format view count like YouTube (1.2K, 1M, etc.)
+	const formatViewCount = (count: number): string => {
+		if (count >= 1_000_000) {
+			return (count / 1_000_000).toFixed(1).replace(/\.0$/, '') + 'M';
+		}
+		if (count >= 1_000) {
+			return (count / 1_000).toFixed(1).replace(/\.0$/, '') + 'K';
+		}
+		return count.toString();
+	};
+
 	return (
 		<div className="relative inline-flex items-center gap-2 px-2 py-2 rounded-xs bg-gray-100 dark:bg-gray-800 shadow-sm dark:shadow-lg transition-colors">
 			<div className="absolute -top-1 -right-1">
@@ -70,7 +81,7 @@ const View = async ({ id }: { id: string }) => {
 
 			<p className="text-xs">
 				<span className="font-bold text-gray-900 dark:text-gray-100">
-					{displayCount}
+					{formatViewCount(displayCount)}
 				</span>
 				<span className="ml-1 text-gray-600 dark:text-gray-300">views</span>
 			</p>

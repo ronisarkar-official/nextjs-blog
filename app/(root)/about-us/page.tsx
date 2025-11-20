@@ -70,7 +70,7 @@ export default function AboutPage() {
 
 						<div className="mt-8 flex flex-wrap gap-3">
 							<Link
-								href="/feed"
+								href="/"
 								className="inline-flex items-center gap-2 rounded-full px-5 py-3 font-medium shadow-sm border border-indigo-100 bg-white dark:bg-gray-800 text-indigo-600 dark:text-indigo-300 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 transition-colors"
 								aria-label="Browse articles">
 								Browse Articles

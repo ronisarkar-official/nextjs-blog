@@ -15,6 +15,7 @@ import Script from 'next/script';
 import { auth } from '@/auth';
 import { SpeedInsights } from '@vercel/speed-insights/next';
 import GtmScripts from '@/components/GtmScripts';
+import AdSense from './components/AdSense';
 
 export const metadata: Metadata = {
 	title: 'Create Next App',
@@ -62,7 +63,7 @@ export default async function RootLayout({
 						:	'/rss.xml'
 					}
 				/>
-				
+
 				<meta
 					name="google-site-verification"
 					content="MYPOB2NHtzPHnWJnT1wGZUzkotBeIVNSdHiS-eWwKNM"
@@ -84,7 +85,7 @@ export default async function RootLayout({
 					`}
 				</Script>
 
-				
+				<AdSense pId="3533195027100960" />
 			</head>
 			<body>
 				<GtmScripts />
