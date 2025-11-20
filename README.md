@@ -4,7 +4,7 @@
 [![Node version](https://img.shields.io/badge/node-%3E%3D18-green.svg)]()
 [![Next.js](https://img.shields.io/badge/Next.js-%3E%3D15-blue.svg)]()
 
-**Spechype** — All types of blogs for PC system requirements, performance guides, game-ready builds, and general tech content. This repository (`simple-blog-app`) is a production-ready Next.js starter configured with Sanity CMS, multiple editor options, authentication, and SEO tooling.
+**Spechype** — All types of blogs for PC system requirements, performance guides, game-ready builds, and general tech content. This repository (`nextjs-blog`) is a production-ready Next.js starter configured with Sanity CMS, multiple editor options, authentication, and SEO tooling.
 
 ---
 
